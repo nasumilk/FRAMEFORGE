@@ -48,7 +48,7 @@ export function EventCard({
       <div className="event-grid">
         <SelectField label={t.clothingState} value={event.clothingState} options={master.clothings} onChange={(clothingState) => onUpdate({ clothingState })} />
         {maleActor && <SelectField label={t.position} value={event.position} options={master.positions} onChange={(position) => onUpdate({ position })} />}
-        <SelectField label={t.action} value={event.action} options={actions.includes(event.action) ? actions : [event.action, ...actions]} onChange={(action) => onUpdate({ action })} />
+        <SelectField label={t.action} value={event.action} options={actions} onChange={(action) => onUpdate({ action })} />
         <SelectField label={t.expression} value={event.expression} options={master.expressions} onChange={(expression) => onUpdate({ expression })} />
       </div>
 

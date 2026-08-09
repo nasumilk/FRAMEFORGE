@@ -1,4 +1,5 @@
 import type { MasterData } from "./types";
+import { japaneseOption } from "./localization";
 
 export const BODY_TYPES = [
   "slender",
@@ -165,23 +166,24 @@ export const LIGHTING_OPTIONS = [
 
 export const MALE_BODY_TYPES = ["lean", "athletic", "muscular", "broad-shouldered"];
 export const MALE_AGE_FEELS = ["early 20s adult", "late 20s", "early 30s", "mature 40s"];
+const asMasterItems = (values: string[]) => values.map((value) => ({ value, japanese: japaneseOption(value) }));
 
 export const DEFAULT_MASTER_DATA: MasterData = {
-  bodyTypes: [...BODY_TYPES],
-  hairStyles: [...HAIR_STYLES],
-  eyeStyles: [...EYE_STYLES],
-  skinOptions: [...SKIN_OPTIONS],
-  situations: [...SITUATIONS],
-  clothings: [...CLOTHINGS],
-  positions: [...POSITIONS],
-  partnerActions: [...PARTNER_ACTIONS],
-  soloActions: [...SOLO_ACTIONS],
-  cameras: [...CAMERAS],
-  expressions: [...EXPRESSIONS],
-  soundPresets: [...SOUND_PRESETS],
-  musicOptions: [...MUSIC_OPTIONS],
-  stylePresets: [...STYLE_PRESETS],
-  lightingOptions: [...LIGHTING_OPTIONS],
-  maleBodyTypes: [...MALE_BODY_TYPES],
-  maleAgeFeels: [...MALE_AGE_FEELS],
+  bodyTypes: asMasterItems(BODY_TYPES),
+  hairStyles: asMasterItems(HAIR_STYLES),
+  eyeStyles: asMasterItems(EYE_STYLES),
+  skinOptions: asMasterItems(SKIN_OPTIONS),
+  situations: asMasterItems(SITUATIONS),
+  clothings: asMasterItems(CLOTHINGS),
+  positions: asMasterItems(POSITIONS),
+  partnerActions: asMasterItems(PARTNER_ACTIONS),
+  soloActions: asMasterItems(SOLO_ACTIONS),
+  cameras: asMasterItems(CAMERAS),
+  expressions: asMasterItems(EXPRESSIONS),
+  soundPresets: asMasterItems(SOUND_PRESETS),
+  musicOptions: asMasterItems(MUSIC_OPTIONS),
+  stylePresets: asMasterItems(STYLE_PRESETS),
+  lightingOptions: asMasterItems(LIGHTING_OPTIONS),
+  maleBodyTypes: asMasterItems(MALE_BODY_TYPES),
+  maleAgeFeels: asMasterItems(MALE_AGE_FEELS),
 };

@@ -3,8 +3,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
-import type { AgeValue, BasicSettings, MasterCategory, MasterData, PromptSnapshot, SavedPreset, TimelineEvent, UiLanguage } from "../lib/types";
+import type { AgeValue, BasicSettings, MasterCategory, MasterData, MasterItem, PromptSnapshot, SavedPreset, TimelineEvent, UiLanguage } from "../lib/types";
 import { DEFAULT_MASTER_DATA, STYLE_PRESETS } from "../lib/constants";
+import { japaneseOption } from "../lib/localization";
 
 interface PromptState extends PromptSnapshot {
   uiLanguage: UiLanguage;
@@ -25,8 +26,8 @@ interface PromptState extends PromptSnapshot {
   savePreset: (name: string) => void;
   loadPreset: (id: string) => void;
   deletePreset: (id: string) => void;
-  addMasterItem: (category: MasterCategory, value: string) => void;
-  updateMasterItem: (category: MasterCategory, index: number, value: string) => void;
+  addMasterItem: (category: MasterCategory, item: MasterItem) => void;
+  updateMasterItem: (category: MasterCategory, index: number, item: Partial<MasterItem>) => void;
   removeMasterItem: (category: MasterCategory, index: number) => void;
   resetMasterData: () => void;
   resetAll: () => void;
@@ -66,6 +67,24 @@ const clampAge = (age: AgeValue): AgeValue => {
   return { kind: "exact", value: Math.max(18, age.value) };
 };
 
+const migrateMasterData = (data: unknown): MasterData => {
+  const legacy = data as Partial<Record<MasterCategory, unknown>> | undefined;
+  const result = {} as MasterData;
+  for (const category of Object.keys(DEFAULT_MASTER_DATA) as MasterCategory[]) {
+    const items = legacy?.[category];
+    result[category] = Array.isArray(items)
+      ? items.filter(Boolean).map((item) => {
+        if (typeof item === "string") return { value: item, japanese: japaneseOption(item) };
+        const candidate = item as Partial<MasterItem>;
+        const value = typeof candidate.value === "string" ? candidate.value : "";
+        return { value, japanese: typeof candidate.japanese === "string" ? candidate.japanese : japaneseOption(value) };
+      }).filter((item) => item.value.trim())
+      : structuredClone(DEFAULT_MASTER_DATA[category]);
+    if (!result[category].length) result[category] = structuredClone(DEFAULT_MASTER_DATA[category]);
+  }
+  return result;
+};
+
 const snapshotFromState = (state: PromptState): PromptSnapshot => ({
   basic: structuredClone(state.basic),
   situation: state.situation,
@@ -103,7 +122,7 @@ export const usePromptStore = create<PromptState>()(
           nextEvents = nextEvents.map((event, index) => ({
             ...event,
             position: "",
-            action: state.masterData.soloActions[Math.min(index, state.masterData.soloActions.length - 1)],
+            action: state.masterData.soloActions[Math.min(index, state.masterData.soloActions.length - 1)].value,
           }));
         }
         return { basic: nextBasic, events: nextEvents };
@@ -121,7 +140,7 @@ export const usePromptStore = create<PromptState>()(
           start: 0,
           end: state.basic.duration,
           position: state.basic.maleActor ? "missionary position" : "",
-          action: state.basic.maleActor ? (state.masterData.partnerActions[3] ?? state.masterData.partnerActions[0]) : state.masterData.soloActions[0],
+          action: state.basic.maleActor ? (state.masterData.partnerActions[3] ?? state.masterData.partnerActions[0]).value : state.masterData.soloActions[0].value,
           clothingState: state.clothing,
           camera: "medium shot",
           expression: "flushed cheeks, slightly open mouth, eyes half-closed",
@@ -150,17 +169,19 @@ export const usePromptStore = create<PromptState>()(
         return preset ? structuredClone(preset.snapshot) : {};
       }),
       deletePreset: (id) => set((state) => ({ savedPresets: state.savedPresets.filter((item) => item.id !== id) })),
-      addMasterItem: (category, value) => set((state) => {
-        const clean = value.trim();
+      addMasterItem: (category, item) => set((state) => {
+        const clean = item.value.trim();
         const items = state.masterData[category];
-        if (!clean || items.some((item) => item.toLocaleLowerCase() === clean.toLocaleLowerCase())) return {};
-        return { masterData: { ...state.masterData, [category]: [...items, clean] } };
+        if (!clean || items.some((existing) => existing.value.toLocaleLowerCase() === clean.toLocaleLowerCase())) return {};
+        return { masterData: { ...state.masterData, [category]: [...items, { value: clean, japanese: item.japanese.trim() }] } };
       }),
-      updateMasterItem: (category, index, value) => set((state) => {
-        const clean = value.trim();
+      updateMasterItem: (category, index, patch) => set((state) => {
         const items = state.masterData[category];
-        if (!clean || items.some((item, itemIndex) => itemIndex !== index && item.toLocaleLowerCase() === clean.toLocaleLowerCase())) return {};
-        return { masterData: { ...state.masterData, [category]: items.map((item, itemIndex) => itemIndex === index ? clean : item) } };
+        const current = items[index];
+        if (!current) return {};
+        const value = patch.value === undefined ? current.value : patch.value.trim();
+        if (!value || items.some((item, itemIndex) => itemIndex !== index && item.value.toLocaleLowerCase() === value.toLocaleLowerCase())) return {};
+        return { masterData: { ...state.masterData, [category]: items.map((item, itemIndex) => itemIndex === index ? { value, japanese: patch.japanese === undefined ? item.japanese : patch.japanese.trim() } : item) } };
       }),
       removeMasterItem: (category, index) => set((state) => {
         const items = state.masterData[category];
@@ -172,12 +193,13 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 2,
+      version: 3,
       migrate: (persistedState) => {
         const persisted = persistedState as Partial<PromptState>;
         return {
           ...persisted,
           basic: persisted.basic ? { ...persisted.basic, age: clampAge(persisted.basic.age) } : defaultBasic,
+          masterData: migrateMasterData(persisted.masterData),
         };
       },
     },

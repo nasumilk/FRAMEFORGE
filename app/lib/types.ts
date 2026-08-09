@@ -50,24 +50,29 @@ export interface SavedPreset {
   snapshot: PromptSnapshot;
 }
 
+export interface MasterItem {
+  value: string;
+  japanese: string;
+}
+
 export interface MasterData {
-  bodyTypes: string[];
-  hairStyles: string[];
-  eyeStyles: string[];
-  skinOptions: string[];
-  situations: string[];
-  clothings: string[];
-  positions: string[];
-  partnerActions: string[];
-  soloActions: string[];
-  cameras: string[];
-  expressions: string[];
-  soundPresets: string[];
-  musicOptions: string[];
-  stylePresets: string[];
-  lightingOptions: string[];
-  maleBodyTypes: string[];
-  maleAgeFeels: string[];
+  bodyTypes: MasterItem[];
+  hairStyles: MasterItem[];
+  eyeStyles: MasterItem[];
+  skinOptions: MasterItem[];
+  situations: MasterItem[];
+  clothings: MasterItem[];
+  positions: MasterItem[];
+  partnerActions: MasterItem[];
+  soloActions: MasterItem[];
+  cameras: MasterItem[];
+  expressions: MasterItem[];
+  soundPresets: MasterItem[];
+  musicOptions: MasterItem[];
+  stylePresets: MasterItem[];
+  lightingOptions: MasterItem[];
+  maleBodyTypes: MasterItem[];
+  maleAgeFeels: MasterItem[];
 }
 
 export type MasterCategory = keyof MasterData;

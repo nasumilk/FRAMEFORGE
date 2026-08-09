@@ -30,6 +30,7 @@ export function MasterDataManager({ label }: { label: string }) {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<MasterCategory>("situations");
   const [newValue, setNewValue] = useState("");
+  const [newJapanese, setNewJapanese] = useState("");
   const [search, setSearch] = useState("");
   const master = usePromptStore((state) => state.masterData);
   const addMasterItem = usePromptStore((state) => state.addMasterItem);
@@ -42,7 +43,7 @@ export function MasterDataManager({ label }: { label: string }) {
   const activeMeta = CATEGORY_LABELS.find((item) => item.key === category)!;
   const visibleItems = useMemo(() => master[category]
     .map((value, index) => ({ value, index }))
-    .filter((item) => item.value.toLocaleLowerCase().includes(search.toLocaleLowerCase())), [master, category, search]);
+    .filter((item) => `${item.value.value} ${item.value.japanese}`.toLocaleLowerCase().includes(search.toLocaleLowerCase())), [master, category, search]);
 
   useEffect(() => {
     if (!open) return;
@@ -55,8 +56,9 @@ export function MasterDataManager({ label }: { label: string }) {
 
   const add = () => {
     if (!newValue.trim()) return;
-    addMasterItem(category, newValue);
+    addMasterItem(category, { value: newValue, japanese: newJapanese });
     setNewValue("");
+    setNewJapanese("");
   };
 
   return (
@@ -92,16 +94,19 @@ export function MasterDataManager({ label }: { label: string }) {
                 </div>
 
                 <div className="master-add">
-                  <input value={newValue} onChange={(event) => setNewValue(event.target.value)} onKeyDown={(event) => event.key === "Enter" && add()} placeholder={t.addTo.replace("{category}", activeMeta.label[localeIndex])} aria-label={t.addOption.replace("{category}", activeMeta.label[localeIndex])} />
+                  <input value={newValue} onChange={(event) => setNewValue(event.target.value)} onKeyDown={(event) => event.key === "Enter" && add()} placeholder={t.englishPlaceholder} aria-label={t.addOption.replace("{category}", activeMeta.label[localeIndex])} />
+                  <input value={newJapanese} onChange={(event) => setNewJapanese(event.target.value)} onKeyDown={(event) => event.key === "Enter" && add()} placeholder={t.japanesePlaceholder} aria-label={t.masterJapanese} />
                   <button className="primary-button" onClick={add}><Plus size={15} /> {t.add}</button>
                 </div>
 
                 <div className="master-list">
+                  {visibleItems.length > 0 && <div className="master-row master-row-labels"><span>#</span><span>{t.masterEnglish}</span><span>{t.masterJapanese}</span><span /></div>}
                   {visibleItems.map((item) => (
                     <div className="master-row" key={`${category}-${item.index}`}>
                       <span>{String(item.index + 1).padStart(2, "0")}</span>
-                      <input defaultValue={item.value} key={item.value} onBlur={(event) => updateMasterItem(category, item.index, event.target.value)} onKeyDown={(event) => event.key === "Enter" && event.currentTarget.blur()} aria-label={t.editOption.replace("{value}", item.value)} />
-                      <button className="icon-button danger" disabled={master[category].length <= 1} onClick={() => removeMasterItem(category, item.index)} aria-label={t.deleteOption.replace("{value}", item.value)}><Trash2 size={14} /></button>
+                      <input defaultValue={item.value.value} key={`${item.value.value}-english`} onBlur={(event) => updateMasterItem(category, item.index, { value: event.target.value })} onKeyDown={(event) => event.key === "Enter" && event.currentTarget.blur()} aria-label={t.editOption.replace("{value}", item.value.value)} />
+                      <input defaultValue={item.value.japanese} key={`${item.value.value}-japanese`} onBlur={(event) => updateMasterItem(category, item.index, { japanese: event.target.value })} onKeyDown={(event) => event.key === "Enter" && event.currentTarget.blur()} aria-label={t.masterJapanese} placeholder={t.japanesePlaceholder} />
+                      <button className="icon-button danger" disabled={master[category].length <= 1} onClick={() => removeMasterItem(category, item.index)} aria-label={t.deleteOption.replace("{value}", item.value.value)}><Trash2 size={14} /></button>
                     </div>
                   ))}
                   {!visibleItems.length && <div className="master-empty">{t.noMatching}</div>}

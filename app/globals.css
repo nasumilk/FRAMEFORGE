@@ -172,10 +172,13 @@ select { cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: 
 .master-search { width: 220px; height: 34px; display: flex; align-items: center; gap: 7px; border: 1px solid var(--border); border-radius: 8px; padding: 0 9px; color: var(--faint); background: #151519; }
 .master-search input { border: 0; padding: 0; background: transparent; }
 .master-search input:focus { background: transparent; outline: 0; }
-.master-add { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin: 17px 0 12px; }
+.master-add { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; margin: 17px 0 12px; }
 .master-list { min-height: 0; overflow-y: auto; display: grid; align-content: start; gap: 7px; padding-right: 5px; }
-.master-row { display: grid; grid-template-columns: 26px 1fr 34px; gap: 7px; align-items: center; }
+.master-row { display: grid; grid-template-columns: 26px minmax(0, 1fr) minmax(0, 1fr) 34px; gap: 7px; align-items: center; }
 .master-row > span { color: var(--faint); font: 500 8px var(--font-geist-mono); text-align: center; }
+.master-row-labels { padding: 0 0 2px; }
+.master-row-labels > span { color: var(--muted); font: 650 8px var(--font-geist-mono); text-align: left; letter-spacing: .05em; text-transform: uppercase; }
+.master-row-labels > span:first-child { text-align: center; }
 .master-row input { height: 36px; }
 .master-row .icon-button { width: 34px; height: 34px; }
 .master-row .icon-button:disabled { opacity: .25; cursor: not-allowed; }

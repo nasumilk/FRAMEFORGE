@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { japaneseOption } from "../lib/localization";
+import type { MasterItem } from "../lib/types";
 
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
@@ -22,13 +23,15 @@ export function SelectField({
 }: {
   label: string;
   value: string;
-  options: readonly string[];
+  options: readonly MasterItem[];
   onChange: (value: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const listId = useId();
-  const displayOptions = options.includes(value) || !value ? [...options] : [value, ...options];
+  const displayOptions = options.some((option) => option.value === value) || !value
+    ? [...options]
+    : [{ value, japanese: japaneseOption(value) }, ...options];
 
   useEffect(() => {
     const close = (event: MouseEvent) => {
@@ -38,8 +41,8 @@ export function SelectField({
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
-  const select = (option: string) => {
-    onChange(option);
+  const select = (option: MasterItem) => {
+    onChange(option.value);
     setOpen(false);
   };
 
@@ -68,13 +71,13 @@ export function SelectField({
               <button
                 type="button"
                 role="option"
-                aria-selected={option === value}
-                className={`translated-select-option ${option === value ? "selected" : ""}`}
-                key={option}
+                aria-selected={option.value === value}
+                className={`translated-select-option ${option.value === value ? "selected" : ""}`}
+                key={option.value}
                 onClick={() => select(option)}
               >
-                <span>{option}</span>
-                <span className="option-translation" role="tooltip">{japaneseOption(option)}</span>
+                <span>{option.value}</span>
+                <span className="option-translation" role="tooltip">{option.japanese || "日本語説明は未登録です"}</span>
               </button>
             ))}
           </div>
