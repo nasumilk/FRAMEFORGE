@@ -30,6 +30,7 @@ export interface TimelineEvent {
   clothingState: string;
   camera: string;
   expression: string;
+  intimacyMode: "standard intimate contact" | "consensual anal intercourse";
   additionalDetails: string;
 }
 

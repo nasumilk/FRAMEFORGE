@@ -105,6 +105,11 @@ const fitEvents = (events: TimelineEvent[], duration: number): TimelineEvent[] =
   }));
 };
 
+const normalizeIntimacyMode = (event: TimelineEvent): TimelineEvent => ({
+  ...event,
+  intimacyMode: event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "standard intimate contact",
+});
+
 export const usePromptStore = create<PromptState>()(
   persist(
     (set) => ({
@@ -123,6 +128,7 @@ export const usePromptStore = create<PromptState>()(
             ...event,
             position: "",
             camera: event.camera === MALE_POV_CAMERA ? "medium shot" : event.camera,
+            intimacyMode: "standard intimate contact",
             action: state.masterData.soloActions[Math.min(index, state.masterData.soloActions.length - 1)].value,
           }));
         }
@@ -145,6 +151,7 @@ export const usePromptStore = create<PromptState>()(
           clothingState: state.clothing,
           camera: "medium shot",
           expression: "flushed cheeks, slightly open mouth, eyes half-closed",
+          intimacyMode: "standard intimate contact",
           additionalDetails: "",
         };
         return { events: fitEvents([...state.events, newEvent], state.basic.duration).slice(0, count) };
@@ -167,7 +174,7 @@ export const usePromptStore = create<PromptState>()(
       })),
       loadPreset: (id) => set((state) => {
         const preset = state.savedPresets.find((item) => item.id === id);
-        return preset ? structuredClone(preset.snapshot) : {};
+        return preset ? { ...structuredClone(preset.snapshot), events: preset.snapshot.events.map(normalizeIntimacyMode) } : {};
       }),
       deletePreset: (id) => set((state) => ({ savedPresets: state.savedPresets.filter((item) => item.id !== id) })),
       addMasterItem: (category, item) => set((state) => {
@@ -194,7 +201,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 4,
+      version: 5,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);
@@ -205,6 +212,7 @@ export const usePromptStore = create<PromptState>()(
           ...persisted,
           basic: persisted.basic ? { ...persisted.basic, age: clampAge(persisted.basic.age) } : defaultBasic,
           masterData,
+          events: persisted.events?.map(normalizeIntimacyMode),
         };
       },
     },

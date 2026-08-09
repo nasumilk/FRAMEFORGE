@@ -3,11 +3,16 @@
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { GripVertical, Trash2 } from "lucide-react";
-import type { TimelineEvent } from "../lib/types";
+import type { MasterItem, TimelineEvent } from "../lib/types";
 import { Field, SelectField } from "./Field";
 import { usePromptStore } from "../store/usePromptStore";
 import { UI_COPY } from "../lib/localization";
 import { MALE_POV_CAMERA } from "../lib/constants";
+
+const INTIMACY_OPTIONS: MasterItem[] = [
+  { value: "standard intimate contact", japanese: "通常の親密な接触" },
+  { value: "consensual anal intercourse", japanese: "合意した成人同士のアナル性交" },
+];
 
 export function EventCard({
   event,
@@ -50,6 +55,7 @@ export function EventCard({
       <div className="event-grid">
         <SelectField label={t.clothingState} value={event.clothingState} options={master.clothings} onChange={(clothingState) => onUpdate({ clothingState })} />
         {maleActor && <SelectField label={t.position} value={event.position} options={master.positions} onChange={(position) => onUpdate({ position })} />}
+        {maleActor && <SelectField label={language === "JAP" ? "接触モード" : "Intimacy mode"} value={event.intimacyMode} options={INTIMACY_OPTIONS} onChange={(intimacyMode) => onUpdate({ intimacyMode: intimacyMode as TimelineEvent["intimacyMode"] })} />}
         <SelectField label={t.action} value={event.action} options={actions} onChange={(action) => onUpdate({ action })} />
         <SelectField label={t.expression} value={event.expression} options={master.expressions} onChange={(expression) => onUpdate({ expression })} />
       </div>

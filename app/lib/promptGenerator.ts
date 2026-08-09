@@ -17,6 +17,7 @@ export function buildTimelineSegment(
     cleanSentence(event.camera),
     `She is ${cleanSentence(event.clothingState)}`,
     maleActor && event.position ? cleanSentence(event.position) : "solo scene",
+    maleActor && event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "",
     cleanSentence(event.action),
     cleanSentence(event.expression),
     event.additionalDetails ? cleanSentence(event.additionalDetails) : "",
