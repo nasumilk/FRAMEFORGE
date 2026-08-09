@@ -3,6 +3,7 @@
 import { Clapperboard, RotateCcw, Sparkles } from "lucide-react";
 import { usePromptStore } from "../store/usePromptStore";
 import { generateH3Prompt } from "../lib/promptGenerator";
+import { MasterDataManager } from "./MasterDataManager";
 
 export function TopBar() {
   const mode = usePromptStore((state) => state.basic.mode);
@@ -29,6 +30,7 @@ export function TopBar() {
         </div>
       </div>
       <div className="topbar-actions">
+        <MasterDataManager />
         <button className="icon-button" aria-label="Reset all" onClick={() => window.confirm("Reset the current prompt?") && resetAll()}><RotateCcw size={16} /></button>
         <button className="primary-button" onClick={generate}><Sparkles size={16} /> Generate & copy</button>
       </div>

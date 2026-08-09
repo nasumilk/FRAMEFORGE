@@ -48,3 +48,25 @@ export interface SavedPreset {
   savedAt: string;
   snapshot: PromptSnapshot;
 }
+
+export interface MasterData {
+  bodyTypes: string[];
+  hairStyles: string[];
+  eyeStyles: string[];
+  skinOptions: string[];
+  situations: string[];
+  clothings: string[];
+  positions: string[];
+  partnerActions: string[];
+  soloActions: string[];
+  cameras: string[];
+  expressions: string[];
+  soundPresets: string[];
+  musicOptions: string[];
+  stylePresets: string[];
+  lightingOptions: string[];
+  maleBodyTypes: string[];
+  maleAgeFeels: string[];
+}
+
+export type MasterCategory = keyof MasterData;

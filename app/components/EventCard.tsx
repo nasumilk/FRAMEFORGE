@@ -5,8 +5,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { GripVertical, Trash2 } from "lucide-react";
 import type { TimelineEvent } from "../lib/types";
 import { ACTIONS_PLACEHOLDER } from "./internal";
-import { CAMERAS, CLOTHINGS, EXPRESSIONS, PARTNER_ACTIONS, POSITIONS, SOLO_ACTIONS } from "../lib/constants";
 import { Field } from "./Field";
+import { usePromptStore } from "../store/usePromptStore";
 
 export function EventCard({
   event,
@@ -25,7 +25,8 @@ export function EventCard({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: event.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
-  const actions = maleActor ? PARTNER_ACTIONS : SOLO_ACTIONS;
+  const master = usePromptStore((state) => state.masterData);
+  const actions = maleActor ? master.partnerActions : master.soloActions;
   const invalid = event.start < 0 || event.end > duration || event.end <= event.start;
 
   return (
@@ -39,14 +40,14 @@ export function EventCard({
       <div className="event-grid time-grid">
         <Field label="Start"><input type="number" min={0} max={duration} step={0.1} value={event.start} onChange={(e) => onUpdate({ start: Number(e.target.value) })} /></Field>
         <Field label="End"><input type="number" min={0} max={duration} step={0.1} value={event.end} onChange={(e) => onUpdate({ end: Number(e.target.value) })} /></Field>
-        <Field label="Camera"><select value={event.camera} onChange={(e) => onUpdate({ camera: e.target.value })}>{CAMERAS.map((item) => <option key={item}>{item}</option>)}</select></Field>
+        <Field label="Camera"><select value={event.camera} onChange={(e) => onUpdate({ camera: e.target.value })}>{!master.cameras.includes(event.camera) && <option value={event.camera}>{event.camera} (existing)</option>}{master.cameras.map((item) => <option key={item}>{item}</option>)}</select></Field>
       </div>
 
       <div className="event-grid">
-        <Field label="Clothing state"><select value={event.clothingState} onChange={(e) => onUpdate({ clothingState: e.target.value })}>{CLOTHINGS.map((item) => <option key={item}>{item}</option>)}</select></Field>
-        {maleActor && <Field label="Position"><select value={event.position} onChange={(e) => onUpdate({ position: e.target.value })}>{POSITIONS.map((item) => <option key={item}>{item}</option>)}</select></Field>}
+        <Field label="Clothing state"><select value={event.clothingState} onChange={(e) => onUpdate({ clothingState: e.target.value })}>{!master.clothings.includes(event.clothingState) && <option value={event.clothingState}>{event.clothingState} (existing)</option>}{master.clothings.map((item) => <option key={item}>{item}</option>)}</select></Field>
+        {maleActor && <Field label="Position"><select value={event.position} onChange={(e) => onUpdate({ position: e.target.value })}>{!master.positions.includes(event.position) && event.position && <option value={event.position}>{event.position} (existing)</option>}{master.positions.map((item) => <option key={item}>{item}</option>)}</select></Field>}
         <Field label="Action"><select value={actions.includes(event.action) ? event.action : ACTIONS_PLACEHOLDER} onChange={(e) => onUpdate({ action: e.target.value })}>{!actions.includes(event.action) && <option value={ACTIONS_PLACEHOLDER}>{event.action}</option>}{actions.map((item) => <option key={item}>{item}</option>)}</select></Field>
-        <Field label="Expression"><select value={event.expression} onChange={(e) => onUpdate({ expression: e.target.value })}>{EXPRESSIONS.map((item) => <option key={item}>{item}</option>)}</select></Field>
+        <Field label="Expression"><select value={event.expression} onChange={(e) => onUpdate({ expression: e.target.value })}>{!master.expressions.includes(event.expression) && <option value={event.expression}>{event.expression} (existing)</option>}{master.expressions.map((item) => <option key={item}>{item}</option>)}</select></Field>
       </div>
 
       <Field label="Additional direction"><input value={event.additionalDetails} onChange={(e) => onUpdate({ additionalDetails: e.target.value })} placeholder="Body movement, continuity, lens behavior…" /></Field>

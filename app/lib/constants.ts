@@ -1,3 +1,5 @@
+import type { MasterData } from "./types";
+
 export const BODY_TYPES = [
   "slender",
   "petite adult",
@@ -163,3 +165,23 @@ export const LIGHTING_OPTIONS = [
 
 export const MALE_BODY_TYPES = ["lean", "athletic", "muscular", "broad-shouldered"];
 export const MALE_AGE_FEELS = ["early 20s adult", "late 20s", "early 30s", "mature 40s"];
+
+export const DEFAULT_MASTER_DATA: MasterData = {
+  bodyTypes: [...BODY_TYPES],
+  hairStyles: [...HAIR_STYLES],
+  eyeStyles: [...EYE_STYLES],
+  skinOptions: [...SKIN_OPTIONS],
+  situations: [...SITUATIONS],
+  clothings: [...CLOTHINGS],
+  positions: [...POSITIONS],
+  partnerActions: [...PARTNER_ACTIONS],
+  soloActions: [...SOLO_ACTIONS],
+  cameras: [...CAMERAS],
+  expressions: [...EXPRESSIONS],
+  soundPresets: [...SOUND_PRESETS],
+  musicOptions: [...MUSIC_OPTIONS],
+  stylePresets: [...STYLE_PRESETS],
+  lightingOptions: [...LIGHTING_OPTIONS],
+  maleBodyTypes: [...MALE_BODY_TYPES],
+  maleAgeFeels: [...MALE_AGE_FEELS],
+};

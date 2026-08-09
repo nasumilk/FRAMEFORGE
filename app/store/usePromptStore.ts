@@ -3,11 +3,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
-import type { BasicSettings, PromptSnapshot, SavedPreset, TimelineEvent } from "../lib/types";
-import { SOLO_ACTIONS, STYLE_PRESETS } from "../lib/constants";
+import type { BasicSettings, MasterCategory, MasterData, PromptSnapshot, SavedPreset, TimelineEvent } from "../lib/types";
+import { DEFAULT_MASTER_DATA, STYLE_PRESETS } from "../lib/constants";
 
 interface PromptState extends PromptSnapshot {
   savedPresets: SavedPreset[];
+  masterData: MasterData;
   setBasic: (partial: Partial<BasicSettings>) => void;
   setSituation: (value: string) => void;
   setClothing: (value: string) => void;
@@ -22,6 +23,10 @@ interface PromptState extends PromptSnapshot {
   savePreset: (name: string) => void;
   loadPreset: (id: string) => void;
   deletePreset: (id: string) => void;
+  addMasterItem: (category: MasterCategory, value: string) => void;
+  updateMasterItem: (category: MasterCategory, index: number, value: string) => void;
+  removeMasterItem: (category: MasterCategory, index: number) => void;
+  resetMasterData: () => void;
   resetAll: () => void;
 }
 
@@ -76,6 +81,7 @@ export const usePromptStore = create<PromptState>()(
     (set) => ({
       ...initialSnapshot,
       savedPresets: [],
+      masterData: structuredClone(DEFAULT_MASTER_DATA),
       setBasic: (partial) => set((state) => {
         const nextBasic = { ...state.basic, ...partial };
         let nextEvents = state.events;
@@ -86,7 +92,7 @@ export const usePromptStore = create<PromptState>()(
           nextEvents = nextEvents.map((event, index) => ({
             ...event,
             position: "",
-            action: SOLO_ACTIONS[Math.min(index, SOLO_ACTIONS.length - 1)],
+            action: state.masterData.soloActions[Math.min(index, state.masterData.soloActions.length - 1)],
           }));
         }
         return { basic: nextBasic, events: nextEvents };
@@ -103,7 +109,7 @@ export const usePromptStore = create<PromptState>()(
           start: 0,
           end: state.basic.duration,
           position: state.basic.maleActor ? "missionary position" : "",
-          action: state.basic.maleActor ? "slow rhythmic movement" : SOLO_ACTIONS[0],
+          action: state.basic.maleActor ? (state.masterData.partnerActions[3] ?? state.masterData.partnerActions[0]) : state.masterData.soloActions[0],
           clothingState: state.clothing,
           camera: "medium shot",
           expression: "flushed cheeks, slightly open mouth, eyes half-closed",
@@ -132,7 +138,25 @@ export const usePromptStore = create<PromptState>()(
         return preset ? structuredClone(preset.snapshot) : {};
       }),
       deletePreset: (id) => set((state) => ({ savedPresets: state.savedPresets.filter((item) => item.id !== id) })),
-      resetAll: () => set((state) => ({ ...structuredClone(initialSnapshot), savedPresets: state.savedPresets })),
+      addMasterItem: (category, value) => set((state) => {
+        const clean = value.trim();
+        const items = state.masterData[category];
+        if (!clean || items.some((item) => item.toLocaleLowerCase() === clean.toLocaleLowerCase())) return {};
+        return { masterData: { ...state.masterData, [category]: [...items, clean] } };
+      }),
+      updateMasterItem: (category, index, value) => set((state) => {
+        const clean = value.trim();
+        const items = state.masterData[category];
+        if (!clean || items.some((item, itemIndex) => itemIndex !== index && item.toLocaleLowerCase() === clean.toLocaleLowerCase())) return {};
+        return { masterData: { ...state.masterData, [category]: items.map((item, itemIndex) => itemIndex === index ? clean : item) } };
+      }),
+      removeMasterItem: (category, index) => set((state) => {
+        const items = state.masterData[category];
+        if (items.length <= 1) return {};
+        return { masterData: { ...state.masterData, [category]: items.filter((_, itemIndex) => itemIndex !== index) } };
+      }),
+      resetMasterData: () => set({ masterData: structuredClone(DEFAULT_MASTER_DATA) }),
+      resetAll: () => set((state) => ({ ...structuredClone(initialSnapshot), savedPresets: state.savedPresets, masterData: state.masterData })),
     }),
     { name: "frameforge-h3-adult-prompt-storage", version: 1 },
   ),

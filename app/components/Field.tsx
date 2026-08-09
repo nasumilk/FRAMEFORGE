@@ -24,6 +24,7 @@ export function SelectField({
   return (
     <Field label={label}>
       <select value={value} onChange={(event) => onChange(event.target.value)}>
+        {!options.includes(value) && value && <option value={value}>{value} (existing)</option>}
         {options.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
     </Field>

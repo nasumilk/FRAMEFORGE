@@ -3,19 +3,10 @@
 import { UserRound, UsersRound } from "lucide-react";
 import { Field, SelectField } from "./Field";
 import { usePromptStore } from "../store/usePromptStore";
-import {
-  BODY_TYPES,
-  EYE_STYLES,
-  HAIR_STYLES,
-  LIGHTING_OPTIONS,
-  MALE_AGE_FEELS,
-  MALE_BODY_TYPES,
-  SKIN_OPTIONS,
-  STYLE_PRESETS,
-} from "../lib/constants";
 
 export function BasicSettings() {
   const basic = usePromptStore((state) => state.basic);
+  const master = usePromptStore((state) => state.masterData);
   const setBasic = usePromptStore((state) => state.setBasic);
   const age = basic.age;
 
@@ -45,10 +36,10 @@ export function BasicSettings() {
         </div>
       )}
 
-      <SelectField label="Body type" value={basic.bodyType} options={BODY_TYPES} onChange={(bodyType) => setBasic({ bodyType })} />
-      <SelectField label="Hair" value={basic.hair} options={HAIR_STYLES} onChange={(hair) => setBasic({ hair })} />
-      <SelectField label="Eyes" value={basic.eyes} options={EYE_STYLES} onChange={(eyes) => setBasic({ eyes })} />
-      <SelectField label="Skin" value={basic.skin} options={SKIN_OPTIONS} onChange={(skin) => setBasic({ skin })} />
+      <SelectField label="Body type" value={basic.bodyType} options={master.bodyTypes} onChange={(bodyType) => setBasic({ bodyType })} />
+      <SelectField label="Hair" value={basic.hair} options={master.hairStyles} onChange={(hair) => setBasic({ hair })} />
+      <SelectField label="Eyes" value={basic.eyes} options={master.eyeStyles} onChange={(eyes) => setBasic({ eyes })} />
+      <SelectField label="Skin" value={basic.skin} options={master.skinOptions} onChange={(skin) => setBasic({ skin })} />
 
       <div className="section-rule" />
       <label className="switch-row">
@@ -58,15 +49,15 @@ export function BasicSettings() {
 
       {basic.maleActor && (
         <div className="nested-settings">
-          <SelectField label="Build" value={basic.maleBodyType} options={MALE_BODY_TYPES} onChange={(maleBodyType) => setBasic({ maleBodyType })} />
-          <SelectField label="Age feel" value={basic.maleAgeFeel} options={MALE_AGE_FEELS} onChange={(maleAgeFeel) => setBasic({ maleAgeFeel })} />
+          <SelectField label="Build" value={basic.maleBodyType} options={master.maleBodyTypes} onChange={(maleBodyType) => setBasic({ maleBodyType })} />
+          <SelectField label="Age feel" value={basic.maleAgeFeel} options={master.maleAgeFeels} onChange={(maleAgeFeel) => setBasic({ maleAgeFeel })} />
           <label className="check-row"><input type="checkbox" checked={basic.maleFaceVisible} onChange={(event) => setBasic({ maleFaceVisible: event.target.checked })} /> Face visible</label>
         </div>
       )}
 
       <div className="section-rule" />
-      <SelectField label="Global style" value={basic.style} options={STYLE_PRESETS} onChange={(style) => setBasic({ style })} />
-      <SelectField label="Lighting" value={basic.lighting} options={LIGHTING_OPTIONS} onChange={(lighting) => setBasic({ lighting })} />
+      <SelectField label="Global style" value={basic.style} options={master.stylePresets} onChange={(style) => setBasic({ style })} />
+      <SelectField label="Lighting" value={basic.lighting} options={master.lightingOptions} onChange={(lighting) => setBasic({ lighting })} />
     </aside>
   );
 }
