@@ -4,12 +4,15 @@ import { useMemo, useState } from "react";
 import { Check, ChevronDown, Copy, Save, Trash2 } from "lucide-react";
 import { usePromptStore } from "../store/usePromptStore";
 import { generateH3Prompt } from "../lib/promptGenerator";
+import { UI_COPY } from "../lib/localization";
 
 export function PromptPreview() {
   const state = usePromptStore();
   const [copied, setCopied] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [presetName, setPresetName] = useState("");
+  const language = usePromptStore((store) => store.uiLanguage);
+  const t = UI_COPY[language];
   const prompt = useMemo(() => generateH3Prompt(state), [state]);
 
   const copy = async () => {
@@ -28,13 +31,13 @@ export function PromptPreview() {
     <section className={`preview ${collapsed ? "collapsed" : ""}`}>
       <div className="preview-top">
         <div>
-          <span className="preview-kicker">LIVE OUTPUT</span>
-          <strong>H3 structured prompt</strong>
+          <span className="preview-kicker">{t.liveOutput}</span>
+          <strong>{t.structuredPrompt}</strong>
         </div>
         <div className="preview-actions">
-          <span>{prompt.length.toLocaleString()} chars</span>
-          <button className="secondary-button" onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? "Copied" : "Copy"}</button>
-          <button className="icon-button" onClick={() => setCollapsed((value) => !value)} aria-label="Toggle prompt preview"><ChevronDown size={17} /></button>
+          <span>{prompt.length.toLocaleString()} {t.chars}</span>
+          <button className="secondary-button" onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? t.copied : t.copy}</button>
+          <button className="icon-button" onClick={() => setCollapsed((value) => !value)} aria-label={t.togglePreview}><ChevronDown size={17} /></button>
         </div>
       </div>
       {!collapsed && (
@@ -42,15 +45,15 @@ export function PromptPreview() {
           <pre>{prompt}</pre>
           <div className="preset-bar">
             <div className="preset-save">
-              <input value={presetName} onChange={(event) => setPresetName(event.target.value)} placeholder="Preset name" />
-              <button className="secondary-button" onClick={save}><Save size={15} /> Save preset</button>
+              <input value={presetName} onChange={(event) => setPresetName(event.target.value)} placeholder={t.presetName} />
+              <button className="secondary-button" onClick={save}><Save size={15} /> {t.savePreset}</button>
             </div>
             {state.savedPresets.length > 0 && (
               <div className="preset-list">
                 {state.savedPresets.slice(0, 4).map((preset) => (
                   <div className="preset-chip" key={preset.id}>
                     <button onClick={() => state.loadPreset(preset.id)}>{preset.name}</button>
-                    <button aria-label={`Delete ${preset.name}`} onClick={() => state.deletePreset(preset.id)}><Trash2 size={12} /></button>
+                    <button aria-label={t.deletePreset.replace("{name}", preset.name)} onClick={() => state.deletePreset(preset.id)}><Trash2 size={12} /></button>
                   </div>
                 ))}
               </div>

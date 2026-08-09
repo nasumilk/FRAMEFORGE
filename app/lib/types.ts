@@ -1,4 +1,5 @@
 export type Mode = "T2V" | "I2V";
+export type UiLanguage = "ENG" | "JAP";
 
 export type AgeValue =
   | { kind: "exact"; value: number }

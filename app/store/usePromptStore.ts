@@ -3,10 +3,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
-import type { BasicSettings, MasterCategory, MasterData, PromptSnapshot, SavedPreset, TimelineEvent } from "../lib/types";
+import type { AgeValue, BasicSettings, MasterCategory, MasterData, PromptSnapshot, SavedPreset, TimelineEvent, UiLanguage } from "../lib/types";
 import { DEFAULT_MASTER_DATA, STYLE_PRESETS } from "../lib/constants";
 
 interface PromptState extends PromptSnapshot {
+  uiLanguage: UiLanguage;
   savedPresets: SavedPreset[];
   masterData: MasterData;
   setBasic: (partial: Partial<BasicSettings>) => void;
@@ -15,6 +16,7 @@ interface PromptState extends PromptSnapshot {
   setSoundscape: (value: string) => void;
   setMusic: (value: string) => void;
   setCustomNotes: (value: string) => void;
+  setUiLanguage: (language: UiLanguage) => void;
   addEvent: () => void;
   updateEvent: (id: string, data: Partial<TimelineEvent>) => void;
   removeEvent: (id: string) => void;
@@ -56,6 +58,14 @@ const initialSnapshot: PromptSnapshot = {
   customNotes: "",
 };
 
+const clampAge = (age: AgeValue): AgeValue => {
+  if (age.kind === "range") {
+    const min = Math.max(18, age.min);
+    return { kind: "range", min, max: Math.max(min, age.max, 18) };
+  }
+  return { kind: "exact", value: Math.max(18, age.value) };
+};
+
 const snapshotFromState = (state: PromptState): PromptSnapshot => ({
   basic: structuredClone(state.basic),
   situation: state.situation,
@@ -80,10 +90,11 @@ export const usePromptStore = create<PromptState>()(
   persist(
     (set) => ({
       ...initialSnapshot,
+      uiLanguage: "ENG",
       savedPresets: [],
       masterData: structuredClone(DEFAULT_MASTER_DATA),
       setBasic: (partial) => set((state) => {
-        const nextBasic = { ...state.basic, ...partial };
+        const nextBasic = { ...state.basic, ...partial, age: clampAge(partial.age ?? state.basic.age) };
         let nextEvents = state.events;
         if (partial.duration !== undefined && partial.duration !== state.basic.duration) {
           nextEvents = fitEvents(state.events, partial.duration);
@@ -102,6 +113,7 @@ export const usePromptStore = create<PromptState>()(
       setSoundscape: (soundscape) => set({ soundscape }),
       setMusic: (music) => set({ music }),
       setCustomNotes: (customNotes) => set({ customNotes }),
+      setUiLanguage: (uiLanguage) => set({ uiLanguage }),
       addEvent: () => set((state) => {
         const count = state.events.length + 1;
         const newEvent: TimelineEvent = {
@@ -158,6 +170,16 @@ export const usePromptStore = create<PromptState>()(
       resetMasterData: () => set({ masterData: structuredClone(DEFAULT_MASTER_DATA) }),
       resetAll: () => set((state) => ({ ...structuredClone(initialSnapshot), savedPresets: state.savedPresets, masterData: state.masterData })),
     }),
-    { name: "frameforge-h3-adult-prompt-storage", version: 1 },
+    {
+      name: "frameforge-h3-adult-prompt-storage",
+      version: 2,
+      migrate: (persistedState) => {
+        const persisted = persistedState as Partial<PromptState>;
+        return {
+          ...persisted,
+          basic: persisted.basic ? { ...persisted.basic, age: clampAge(persisted.basic.age) } : defaultBasic,
+        };
+      },
+    },
   ),
 );

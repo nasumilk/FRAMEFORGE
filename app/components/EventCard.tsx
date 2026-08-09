@@ -4,9 +4,9 @@ import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { GripVertical, Trash2 } from "lucide-react";
 import type { TimelineEvent } from "../lib/types";
-import { ACTIONS_PLACEHOLDER } from "./internal";
-import { Field } from "./Field";
+import { Field, SelectField } from "./Field";
 import { usePromptStore } from "../store/usePromptStore";
+import { UI_COPY } from "../lib/localization";
 
 export function EventCard({
   event,
@@ -26,31 +26,33 @@ export function EventCard({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: event.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
   const master = usePromptStore((state) => state.masterData);
+  const language = usePromptStore((state) => state.uiLanguage);
+  const t = UI_COPY[language];
   const actions = maleActor ? master.partnerActions : master.soloActions;
   const invalid = event.start < 0 || event.end > duration || event.end <= event.start;
 
   return (
     <article ref={setNodeRef} style={style} className={`event-card ${isDragging ? "dragging" : ""} ${invalid ? "invalid" : ""}`}>
       <div className="event-head">
-        <button className="drag-handle" aria-label={`Drag event ${index + 1}`} {...attributes} {...listeners}><GripVertical size={18} /></button>
-        <div><span className="event-number">EVENT {String(index + 1).padStart(2, "0")}</span><strong>{event.start.toFixed(1)} — {event.end.toFixed(1)}s</strong></div>
-        <button className="icon-button danger" onClick={onRemove} aria-label={`Delete event ${index + 1}`}><Trash2 size={16} /></button>
+        <button className="drag-handle" aria-label={`${t.dragEvent} ${index + 1}`} {...attributes} {...listeners}><GripVertical size={18} /></button>
+        <div><span className="event-number">{t.event} {String(index + 1).padStart(2, "0")}</span><strong>{event.start.toFixed(1)} — {event.end.toFixed(1)}s</strong></div>
+        <button className="icon-button danger" onClick={onRemove} aria-label={`${t.deleteEvent} ${index + 1}`}><Trash2 size={16} /></button>
       </div>
 
       <div className="event-grid time-grid">
-        <Field label="Start"><input type="number" min={0} max={duration} step={0.1} value={event.start} onChange={(e) => onUpdate({ start: Number(e.target.value) })} /></Field>
-        <Field label="End"><input type="number" min={0} max={duration} step={0.1} value={event.end} onChange={(e) => onUpdate({ end: Number(e.target.value) })} /></Field>
-        <Field label="Camera"><select value={event.camera} onChange={(e) => onUpdate({ camera: e.target.value })}>{!master.cameras.includes(event.camera) && <option value={event.camera}>{event.camera} (existing)</option>}{master.cameras.map((item) => <option key={item}>{item}</option>)}</select></Field>
+        <Field label={t.start}><input type="number" min={0} max={duration} step={0.1} value={event.start} onChange={(e) => onUpdate({ start: Number(e.target.value) })} /></Field>
+        <Field label={t.end}><input type="number" min={0} max={duration} step={0.1} value={event.end} onChange={(e) => onUpdate({ end: Number(e.target.value) })} /></Field>
+        <SelectField label={t.camera} value={event.camera} options={master.cameras} onChange={(camera) => onUpdate({ camera })} />
       </div>
 
       <div className="event-grid">
-        <Field label="Clothing state"><select value={event.clothingState} onChange={(e) => onUpdate({ clothingState: e.target.value })}>{!master.clothings.includes(event.clothingState) && <option value={event.clothingState}>{event.clothingState} (existing)</option>}{master.clothings.map((item) => <option key={item}>{item}</option>)}</select></Field>
-        {maleActor && <Field label="Position"><select value={event.position} onChange={(e) => onUpdate({ position: e.target.value })}>{!master.positions.includes(event.position) && event.position && <option value={event.position}>{event.position} (existing)</option>}{master.positions.map((item) => <option key={item}>{item}</option>)}</select></Field>}
-        <Field label="Action"><select value={actions.includes(event.action) ? event.action : ACTIONS_PLACEHOLDER} onChange={(e) => onUpdate({ action: e.target.value })}>{!actions.includes(event.action) && <option value={ACTIONS_PLACEHOLDER}>{event.action}</option>}{actions.map((item) => <option key={item}>{item}</option>)}</select></Field>
-        <Field label="Expression"><select value={event.expression} onChange={(e) => onUpdate({ expression: e.target.value })}>{!master.expressions.includes(event.expression) && <option value={event.expression}>{event.expression} (existing)</option>}{master.expressions.map((item) => <option key={item}>{item}</option>)}</select></Field>
+        <SelectField label={t.clothingState} value={event.clothingState} options={master.clothings} onChange={(clothingState) => onUpdate({ clothingState })} />
+        {maleActor && <SelectField label={t.position} value={event.position} options={master.positions} onChange={(position) => onUpdate({ position })} />}
+        <SelectField label={t.action} value={event.action} options={actions.includes(event.action) ? actions : [event.action, ...actions]} onChange={(action) => onUpdate({ action })} />
+        <SelectField label={t.expression} value={event.expression} options={master.expressions} onChange={(expression) => onUpdate({ expression })} />
       </div>
 
-      <Field label="Additional direction"><input value={event.additionalDetails} onChange={(e) => onUpdate({ additionalDetails: e.target.value })} placeholder="Body movement, continuity, lens behavior…" /></Field>
+      <Field label={t.additionalDirection}><input value={event.additionalDetails} onChange={(e) => onUpdate({ additionalDetails: e.target.value })} placeholder={t.directionPlaceholder} /></Field>
     </article>
   );
 }

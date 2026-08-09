@@ -15,6 +15,7 @@ import { AlertTriangle, Plus, Sparkles } from "lucide-react";
 import { usePromptStore } from "../store/usePromptStore";
 import { validateTimeline } from "../lib/promptGenerator";
 import { EventCard } from "./EventCard";
+import { UI_COPY } from "../lib/localization";
 
 export function TimelineEditor() {
   const basic = usePromptStore((state) => state.basic);
@@ -24,6 +25,8 @@ export function TimelineEditor() {
   const removeEvent = usePromptStore((state) => state.removeEvent);
   const reorderEvents = usePromptStore((state) => state.reorderEvents);
   const autoFitEvents = usePromptStore((state) => state.autoFitEvents);
+  const language = usePromptStore((state) => state.uiLanguage);
+  const t = UI_COPY[language];
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -41,18 +44,18 @@ export function TimelineEditor() {
     <main className="timeline-area">
       <div className="timeline-header">
         <div>
-          <div className="panel-kicker">Sequence builder</div>
-          <h1>Timeline</h1>
-          <p>Arrange physical beats, framing, and emotional progression.</p>
+          <div className="panel-kicker">{t.sequenceBuilder}</div>
+          <h1>{t.timeline}</h1>
+          <p>{t.timelineDescription}</p>
         </div>
         <div className="duration-control">
-          <span>DURATION</span>
+          <span>{t.duration}</span>
           <strong>{basic.duration}s</strong>
-          <input aria-label="Duration" type="range" min={4} max={15} step={1} value={basic.duration} onChange={(event) => usePromptStore.getState().setBasic({ duration: Number(event.target.value) })} />
+          <input aria-label={t.durationControl} type="range" min={4} max={15} step={1} value={basic.duration} onChange={(event) => usePromptStore.getState().setBasic({ duration: Number(event.target.value) })} />
         </div>
       </div>
 
-      <div className="ruler" aria-label={`${basic.duration} second timeline`}>
+      <div className="ruler" aria-label={`${basic.duration} ${t.secondTimeline}`}>
         <div className="ruler-track" />
         {Array.from({ length: basic.duration + 1 }, (_, second) => (
           <span key={second} style={{ left: `${(second / basic.duration) * 100}%` }}><i />{second}s</span>
@@ -62,9 +65,9 @@ export function TimelineEditor() {
       <div className="timeline-tools">
         <div className={`status-pill ${issues.length ? "warning" : "ok"}`}>
           {issues.length ? <AlertTriangle size={14} /> : <Sparkles size={14} />}
-          {issues.length ? `${issues.length} timing issue${issues.length > 1 ? "s" : ""}` : "Sequence aligned"}
+          {issues.length ? `${issues.length} ${issues.length > 1 ? t.timingIssues : t.timingIssue}` : t.sequenceAligned}
         </div>
-        {issues.length > 0 && <button className="text-button" onClick={autoFitEvents}>Auto-fit timing</button>}
+        {issues.length > 0 && <button className="text-button" onClick={autoFitEvents}>{t.autoFit}</button>}
       </div>
       {issues.length > 0 && <div className="issue-list">{issues.slice(0, 3).map((issue, index) => <span key={`${issue.message}-${index}`}>{issue.message}</span>)}</div>}
 
@@ -81,12 +84,12 @@ export function TimelineEditor() {
       ) : (
         <button className="empty-timeline" onClick={addEvent}>
           <span><Plus size={22} /></span>
-          <strong>Create the first event</strong>
-          <small>Your {basic.duration}-second sequence will be timed automatically.</small>
+          <strong>{t.createFirstEvent}</strong>
+          <small>{t.autoTimed.replace("{duration}", String(basic.duration))}</small>
         </button>
       )}
 
-      {events.length > 0 && <button className="add-event" onClick={addEvent}><Plus size={17} /> Add event</button>}
+      {events.length > 0 && <button className="add-event" onClick={addEvent}><Plus size={17} /> {t.addEvent}</button>}
     </main>
   );
 }

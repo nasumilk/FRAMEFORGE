@@ -4,28 +4,29 @@ import { useEffect, useMemo, useState } from "react";
 import { ListPlus, Plus, RotateCcw, Search, Trash2, X } from "lucide-react";
 import type { MasterCategory } from "../lib/types";
 import { usePromptStore } from "../store/usePromptStore";
+import { UI_COPY } from "../lib/localization";
 
-const CATEGORY_LABELS: Array<{ key: MasterCategory; label: string; group: string }> = [
-  { key: "bodyTypes", label: "Body types", group: "Character" },
-  { key: "hairStyles", label: "Hair", group: "Character" },
-  { key: "eyeStyles", label: "Eyes", group: "Character" },
-  { key: "skinOptions", label: "Skin", group: "Character" },
-  { key: "maleBodyTypes", label: "Male builds", group: "Character" },
-  { key: "maleAgeFeels", label: "Male age feel", group: "Character" },
-  { key: "situations", label: "Situations", group: "Scene" },
-  { key: "clothings", label: "Clothing", group: "Scene" },
-  { key: "positions", label: "Positions", group: "Timeline" },
-  { key: "partnerActions", label: "Partner actions", group: "Timeline" },
-  { key: "soloActions", label: "Solo actions", group: "Timeline" },
-  { key: "cameras", label: "Cameras", group: "Timeline" },
-  { key: "expressions", label: "Expressions", group: "Timeline" },
-  { key: "soundPresets", label: "Soundscapes", group: "Output" },
-  { key: "musicOptions", label: "Music", group: "Output" },
-  { key: "stylePresets", label: "Styles", group: "Output" },
-  { key: "lightingOptions", label: "Lighting", group: "Output" },
+const CATEGORY_LABELS: Array<{ key: MasterCategory; label: [string, string]; group: [string, string] }> = [
+  { key: "bodyTypes", label: ["Body types", "体型"], group: ["Character", "人物"] },
+  { key: "hairStyles", label: ["Hair", "髪型"], group: ["Character", "人物"] },
+  { key: "eyeStyles", label: ["Eyes", "目元"], group: ["Character", "人物"] },
+  { key: "skinOptions", label: ["Skin", "肌"], group: ["Character", "人物"] },
+  { key: "maleBodyTypes", label: ["Male builds", "男性の体格"], group: ["Character", "人物"] },
+  { key: "maleAgeFeels", label: ["Male age feel", "男性の年齢感"], group: ["Character", "人物"] },
+  { key: "situations", label: ["Situations", "状況"], group: ["Scene", "シーン"] },
+  { key: "clothings", label: ["Clothing", "衣装"], group: ["Scene", "シーン"] },
+  { key: "positions", label: ["Positions", "体位"], group: ["Timeline", "タイムライン"] },
+  { key: "partnerActions", label: ["Partner actions", "相手ありのアクション"], group: ["Timeline", "タイムライン"] },
+  { key: "soloActions", label: ["Solo actions", "ソロアクション"], group: ["Timeline", "タイムライン"] },
+  { key: "cameras", label: ["Cameras", "カメラ"], group: ["Timeline", "タイムライン"] },
+  { key: "expressions", label: ["Expressions", "表情"], group: ["Timeline", "タイムライン"] },
+  { key: "soundPresets", label: ["Soundscapes", "サウンド"], group: ["Output", "出力"] },
+  { key: "musicOptions", label: ["Music", "音楽"], group: ["Output", "出力"] },
+  { key: "stylePresets", label: ["Styles", "スタイル"], group: ["Output", "出力"] },
+  { key: "lightingOptions", label: ["Lighting", "ライティング"], group: ["Output", "出力"] },
 ];
 
-export function MasterDataManager() {
+export function MasterDataManager({ label }: { label: string }) {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<MasterCategory>("situations");
   const [newValue, setNewValue] = useState("");
@@ -35,6 +36,9 @@ export function MasterDataManager() {
   const updateMasterItem = usePromptStore((state) => state.updateMasterItem);
   const removeMasterItem = usePromptStore((state) => state.removeMasterItem);
   const resetMasterData = usePromptStore((state) => state.resetMasterData);
+  const language = usePromptStore((state) => state.uiLanguage);
+  const t = UI_COPY[language];
+  const localeIndex = language === "JAP" ? 1 : 0;
   const activeMeta = CATEGORY_LABELS.find((item) => item.key === category)!;
   const visibleItems = useMemo(() => master[category]
     .map((value, index) => ({ value, index }))
@@ -57,24 +61,24 @@ export function MasterDataManager() {
 
   return (
     <>
-      <button className="secondary-button master-trigger" onClick={() => setOpen(true)}><ListPlus size={15} /><span>Edit lists</span></button>
+      <button className="secondary-button master-trigger" onClick={() => setOpen(true)}><ListPlus size={15} /><span>{label}</span></button>
       {open && (
         <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setOpen(false)}>
           <section className="master-modal" role="dialog" aria-modal="true" aria-labelledby="master-title">
             <header className="master-header">
-              <div><span>LOCAL MASTER DATA</span><h2 id="master-title">Dropdown library</h2><p>Add, rename, or remove the options used throughout the studio.</p></div>
-              <button className="icon-button" onClick={() => setOpen(false)} aria-label="Close list editor"><X size={17} /></button>
+              <div><span>{t.localMasterData}</span><h2 id="master-title">{t.dropdownLibrary}</h2><p>{t.masterDescription}</p></div>
+              <button className="icon-button" onClick={() => setOpen(false)} aria-label={t.closeListEditor}><X size={17} /></button>
             </header>
 
             <div className="master-body">
-              <nav className="master-nav" aria-label="Master data categories">
+              <nav className="master-nav" aria-label={t.masterCategories}>
                 {CATEGORY_LABELS.map((item, index) => {
-                  const showGroup = index === 0 || CATEGORY_LABELS[index - 1].group !== item.group;
+                  const showGroup = index === 0 || CATEGORY_LABELS[index - 1].group[localeIndex] !== item.group[localeIndex];
                   return (
                     <div key={item.key}>
-                      {showGroup && <span className="master-group">{item.group}</span>}
+                      {showGroup && <span className="master-group">{item.group[localeIndex]}</span>}
                       <button className={category === item.key ? "active" : ""} onClick={() => { setCategory(item.key); setSearch(""); }}>
-                        <span>{item.label}</span><i>{master[item.key].length}</i>
+                        <span>{item.label[localeIndex]}</span><i>{master[item.key].length}</i>
                       </button>
                     </div>
                   );
@@ -83,31 +87,31 @@ export function MasterDataManager() {
 
               <div className="master-content">
                 <div className="master-content-head">
-                  <div><span>{activeMeta.group}</span><h3>{activeMeta.label}</h3></div>
-                  <label className="master-search"><Search size={14} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Filter options" aria-label="Filter options" /></label>
+                  <div><span>{activeMeta.group[localeIndex]}</span><h3>{activeMeta.label[localeIndex]}</h3></div>
+                  <label className="master-search"><Search size={14} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t.filterOptions} aria-label={t.filterOptions} /></label>
                 </div>
 
                 <div className="master-add">
-                  <input value={newValue} onChange={(event) => setNewValue(event.target.value)} onKeyDown={(event) => event.key === "Enter" && add()} placeholder={`Add to ${activeMeta.label.toLocaleLowerCase()}`} aria-label={`Add ${activeMeta.label} option`} />
-                  <button className="primary-button" onClick={add}><Plus size={15} /> Add</button>
+                  <input value={newValue} onChange={(event) => setNewValue(event.target.value)} onKeyDown={(event) => event.key === "Enter" && add()} placeholder={t.addTo.replace("{category}", activeMeta.label[localeIndex])} aria-label={t.addOption.replace("{category}", activeMeta.label[localeIndex])} />
+                  <button className="primary-button" onClick={add}><Plus size={15} /> {t.add}</button>
                 </div>
 
                 <div className="master-list">
                   {visibleItems.map((item) => (
                     <div className="master-row" key={`${category}-${item.index}`}>
                       <span>{String(item.index + 1).padStart(2, "0")}</span>
-                      <input defaultValue={item.value} key={item.value} onBlur={(event) => updateMasterItem(category, item.index, event.target.value)} onKeyDown={(event) => event.key === "Enter" && event.currentTarget.blur()} aria-label={`Edit ${item.value}`} />
-                      <button className="icon-button danger" disabled={master[category].length <= 1} onClick={() => removeMasterItem(category, item.index)} aria-label={`Delete ${item.value}`}><Trash2 size={14} /></button>
+                      <input defaultValue={item.value} key={item.value} onBlur={(event) => updateMasterItem(category, item.index, event.target.value)} onKeyDown={(event) => event.key === "Enter" && event.currentTarget.blur()} aria-label={t.editOption.replace("{value}", item.value)} />
+                      <button className="icon-button danger" disabled={master[category].length <= 1} onClick={() => removeMasterItem(category, item.index)} aria-label={t.deleteOption.replace("{value}", item.value)}><Trash2 size={14} /></button>
                     </div>
                   ))}
-                  {!visibleItems.length && <div className="master-empty">No matching options.</div>}
+                  {!visibleItems.length && <div className="master-empty">{t.noMatching}</div>}
                 </div>
               </div>
             </div>
 
             <footer className="master-footer">
-              <span>Changes are saved automatically on this device.</span>
-              <button className="text-button reset-master" onClick={() => window.confirm("Restore every dropdown list to its original values?") && resetMasterData()}><RotateCcw size={13} /> Restore all defaults</button>
+              <span>{t.changesSaved}</span>
+              <button className="text-button reset-master" onClick={() => window.confirm(t.restoreConfirm) && resetMasterData()}><RotateCcw size={13} /> {t.restoreDefaults}</button>
             </footer>
           </section>
         </div>
