@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 import type { AgeValue, BasicSettings, MasterCategory, MasterData, MasterItem, PromptSnapshot, SavedPreset, TimelineEvent, UiLanguage } from "../lib/types";
-import { DEFAULT_MASTER_DATA, STYLE_PRESETS } from "../lib/constants";
+import { DEFAULT_MASTER_DATA, MALE_POV_CAMERA, STYLE_PRESETS } from "../lib/constants";
 import { japaneseOption } from "../lib/localization";
 
 interface PromptState extends PromptSnapshot {
@@ -122,6 +122,7 @@ export const usePromptStore = create<PromptState>()(
           nextEvents = nextEvents.map((event, index) => ({
             ...event,
             position: "",
+            camera: event.camera === MALE_POV_CAMERA ? "medium shot" : event.camera,
             action: state.masterData.soloActions[Math.min(index, state.masterData.soloActions.length - 1)].value,
           }));
         }
@@ -193,13 +194,17 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 3,
-      migrate: (persistedState) => {
+      version: 4,
+      migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
+        const masterData = migrateMasterData(persisted.masterData);
+        if (version < 4 && !masterData.cameras.some((item) => item.value === MALE_POV_CAMERA)) {
+          masterData.cameras.push({ value: MALE_POV_CAMERA, japanese: japaneseOption(MALE_POV_CAMERA) });
+        }
         return {
           ...persisted,
           basic: persisted.basic ? { ...persisted.basic, age: clampAge(persisted.basic.age) } : defaultBasic,
-          masterData: migrateMasterData(persisted.masterData),
+          masterData,
         };
       },
     },

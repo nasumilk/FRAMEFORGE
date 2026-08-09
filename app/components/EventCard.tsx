@@ -7,6 +7,7 @@ import type { TimelineEvent } from "../lib/types";
 import { Field, SelectField } from "./Field";
 import { usePromptStore } from "../store/usePromptStore";
 import { UI_COPY } from "../lib/localization";
+import { MALE_POV_CAMERA } from "../lib/constants";
 
 export function EventCard({
   event,
@@ -29,6 +30,7 @@ export function EventCard({
   const language = usePromptStore((state) => state.uiLanguage);
   const t = UI_COPY[language];
   const actions = maleActor ? master.partnerActions : master.soloActions;
+  const cameraOptions = maleActor ? master.cameras : master.cameras.filter((camera) => camera.value !== MALE_POV_CAMERA);
   const invalid = event.start < 0 || event.end > duration || event.end <= event.start;
 
   return (
@@ -42,7 +44,7 @@ export function EventCard({
       <div className="event-grid time-grid">
         <Field label={t.start}><input type="number" min={0} max={duration} step={0.1} value={event.start} onChange={(e) => onUpdate({ start: Number(e.target.value) })} /></Field>
         <Field label={t.end}><input type="number" min={0} max={duration} step={0.1} value={event.end} onChange={(e) => onUpdate({ end: Number(e.target.value) })} /></Field>
-        <SelectField label={t.camera} value={event.camera} options={master.cameras} onChange={(camera) => onUpdate({ camera })} />
+        <SelectField label={t.camera} value={event.camera} options={cameraOptions} onChange={(camera) => onUpdate({ camera })} />
       </div>
 
       <div className="event-grid">

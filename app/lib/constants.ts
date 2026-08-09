@@ -113,6 +113,8 @@ export const SOLO_ACTIONS = [
   "looking at the camera with an intense expression",
 ];
 
+export const MALE_POV_CAMERA = "male performer POV, first-person perspective";
+
 export const CAMERAS = [
   "medium shot",
   "medium close-up",
@@ -125,6 +127,7 @@ export const CAMERAS = [
   "slow push-in",
   "static shot",
   "gentle tracking shot",
+  MALE_POV_CAMERA,
 ];
 
 export const EXPRESSIONS = [
