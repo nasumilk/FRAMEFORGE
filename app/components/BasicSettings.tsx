@@ -12,6 +12,7 @@ export function BasicSettings() {
   const language = usePromptStore((state) => state.uiLanguage);
   const t = UI_COPY[language];
   const age = basic.age;
+  const femalePartnerAge = basic.femalePartnerAge;
 
   return (
     <aside className="panel settings-panel">
@@ -63,6 +64,21 @@ export function BasicSettings() {
 
       {basic.sceneType === "female-female" && (
         <div className="nested-settings">
+          <div className="field-label"><span>{language === "JAP" ? "2人目の女性の年齢" : "Second woman's age"}</span><small>{t.hardMinimum}</small></div>
+          <div className="segmented compact" aria-label={language === "JAP" ? "2人目の女性の年齢入力モード" : "Second woman's age input mode"}>
+            <button className={femalePartnerAge.kind === "exact" ? "active" : ""} onClick={() => setBasic({ femalePartnerAge: { kind: "exact", value: femalePartnerAge.kind === "exact" ? femalePartnerAge.value : femalePartnerAge.min } })}>{t.exact}</button>
+            <button className={femalePartnerAge.kind === "range" ? "active" : ""} onClick={() => setBasic({ femalePartnerAge: { kind: "range", min: femalePartnerAge.kind === "range" ? femalePartnerAge.min : femalePartnerAge.value, max: femalePartnerAge.kind === "range" ? femalePartnerAge.max : Math.min(femalePartnerAge.value + 4, 80) } })}>{t.range}</button>
+          </div>
+          {femalePartnerAge.kind === "exact" ? (
+            <Field label={language === "JAP" ? "2人目の女性の年齢" : "Second woman's age"}>
+              <input type="number" min={18} max={80} value={Math.max(18, femalePartnerAge.value)} onChange={(event) => setBasic({ femalePartnerAge: { kind: "exact", value: Math.max(18, Number(event.target.value)) } })} />
+            </Field>
+          ) : (
+            <div className="field-row">
+              <Field label={t.ageFrom}><input type="number" min={18} max={80} value={Math.max(18, femalePartnerAge.min)} onChange={(event) => setBasic({ femalePartnerAge: { ...femalePartnerAge, min: Math.max(18, Math.min(Number(event.target.value), femalePartnerAge.max)) } })} /></Field>
+              <Field label={t.ageTo}><input type="number" min={18} max={80} value={Math.max(18, femalePartnerAge.max)} onChange={(event) => setBasic({ femalePartnerAge: { ...femalePartnerAge, max: Math.max(femalePartnerAge.min, Number(event.target.value), 18) } })} /></Field>
+            </div>
+          )}
           <SelectField label={language === "JAP" ? "2人目の女性の体型" : "Second woman's body type"} value={basic.femalePartnerBodyType} options={master.bodyTypes} onChange={(femalePartnerBodyType) => setBasic({ femalePartnerBodyType })} />
           <SelectField label={language === "JAP" ? "2人目の女性の胸" : "Second woman's bust"} value={basic.femalePartnerBustSize} options={master.bustSizes} onChange={(femalePartnerBustSize) => setBasic({ femalePartnerBustSize })} />
           <SelectField label={language === "JAP" ? "2人目の女性の髪" : "Second woman's hair"} value={basic.femalePartnerHair} options={master.hairStyles} onChange={(femalePartnerHair) => setBasic({ femalePartnerHair })} />

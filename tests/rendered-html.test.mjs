@@ -41,11 +41,12 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(constants, /suction-cup mounted dildo/);
   assert.match(generator, /generateApiPayload/);
   assert.match(generator, /2,000-character limit/);
-  assert.match(store, /version: 11/);
+  assert.match(store, /version: 12/);
   assert.match(generator, /consenting adults aged 18 or older/);
   assert.match(generator, /must not mirror or copy the woman's pose/);
   assert.match(generator, /Both of the male partner's hands remain visibly accounted for/);
   assert.match(generator, /Two-woman action/);
+  assert.match(generator, /basic\.femalePartnerAge/);
   assert.match(constants, /LESBIAN_POSITIONS/);
   assert.match(constants, /PARTNER_HAND_ACTIONS/);
   assert.match(generator, /basic\.bustSize/);

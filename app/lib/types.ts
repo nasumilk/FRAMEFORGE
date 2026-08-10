@@ -19,6 +19,7 @@ export interface BasicSettings {
   maleBodyType: string;
   maleAgeFeel: string;
   maleFaceVisible: boolean;
+  femalePartnerAge: AgeValue;
   femalePartnerBodyType: string;
   femalePartnerBustSize: string;
   femalePartnerHair: string;

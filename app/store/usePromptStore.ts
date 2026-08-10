@@ -47,6 +47,7 @@ export const defaultBasic: BasicSettings = {
   maleBodyType: "muscular",
   maleAgeFeel: "late 20s",
   maleFaceVisible: true,
+  femalePartnerAge: { kind: "exact", value: 25 },
   femalePartnerBodyType: "slender",
   femalePartnerBustSize: "B-cup breasts",
   femalePartnerHair: "shoulder-length black hair",
@@ -154,7 +155,14 @@ const normalizeEventForRole = (event: TimelineEvent, sceneType: SceneType): Time
 
 const normalizeBasic = (candidate: BasicSettings): BasicSettings => {
   const sceneType: SceneType = candidate.sceneType || (candidate.maleActor ? "male-female" : "solo");
-  const basic = { ...defaultBasic, ...candidate, sceneType, maleActor: sceneType === "male-female", age: clampAge(candidate.age) };
+  const basic = {
+    ...defaultBasic,
+    ...candidate,
+    sceneType,
+    maleActor: sceneType === "male-female",
+    age: clampAge(candidate.age),
+    femalePartnerAge: clampAge(candidate.femalePartnerAge ?? defaultBasic.femalePartnerAge),
+  };
   if (basic.mode === "FLF") {
     basic.model = "MiniMax-Hailuo-02";
     if (basic.resolution === "512P") basic.resolution = "768P";
@@ -328,7 +336,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 11,
+      version: 12,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);

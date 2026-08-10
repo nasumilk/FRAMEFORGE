@@ -82,7 +82,7 @@ export function generateH3Prompt(state: PromptSnapshot): string {
     subject += basic.maleFaceVisible ? "." : ", with his face kept out of clear view.";
   }
   if (basic.sceneType === "female-female") {
-    subject += ` A second consenting adult Japanese woman, ${cleanSentence(basic.femalePartnerBodyType)}, ${cleanSentence(basic.femalePartnerBustSize)}, ${cleanSentence(basic.femalePartnerHair)}, with a clearly distinct identity from the first woman.`;
+    subject += ` A second consenting ${formatAge(basic.femalePartnerAge)} Japanese woman, ${cleanSentence(basic.femalePartnerBodyType)}, ${cleanSentence(basic.femalePartnerBustSize)}, ${cleanSentence(basic.femalePartnerHair)}, with a clearly distinct identity from the first woman.`;
   }
 
   const device = CAPTURE_DEVICE_DESCRIPTIONS[basic.captureDevice] ?? cleanSentence(basic.captureDevice);
