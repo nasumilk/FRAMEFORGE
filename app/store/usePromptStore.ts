@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
-import type { AgeValue, BasicSettings, MasterCategory, MasterData, MasterItem, PromptSnapshot, SavedPreset, TimelineEvent, UiLanguage } from "../lib/types";
+import type { AgeValue, BasicSettings, MasterCategory, MasterData, MasterItem, PromptSnapshot, SavedPreset, SceneType, TimelineEvent, UiLanguage } from "../lib/types";
 import { AUTO_POSE, DEFAULT_MASTER_DATA, MALE_POV_CAMERA, STYLE_PRESETS } from "../lib/constants";
 import { japaneseOption } from "../lib/localization";
 
@@ -42,10 +42,14 @@ export const defaultBasic: BasicSettings = {
   hair: "long straight black hair",
   eyes: "large brown eyes",
   skin: "fair Japanese skin with realistic texture",
+  sceneType: "male-female",
   maleActor: true,
   maleBodyType: "muscular",
   maleAgeFeel: "late 20s",
   maleFaceVisible: true,
+  femalePartnerBodyType: "slender",
+  femalePartnerBustSize: "B-cup breasts",
+  femalePartnerHair: "shoulder-length black hair",
   duration: 6,
   style: STYLE_PRESETS[0],
   lighting: "soft warm bedside lighting",
@@ -130,6 +134,7 @@ const normalizeEvent = (event: TimelineEvent): TimelineEvent => ({
   ...event,
   pose: event.pose || "standing in a relaxed pose",
   adultToy: event.adultToy || "no adult toy",
+  partnerHandAction: event.partnerHandAction || "both hands firmly supporting the adult woman's hips",
   intimacyMode: event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "standard intimate contact",
   shotNumber: Math.max(1, event.shotNumber || 1),
   transition: event.transition || "continuous cut-free movement",
@@ -142,13 +147,14 @@ const normalizeEvent = (event: TimelineEvent): TimelineEvent => ({
   shutterAngle: event.shutterAngle || "180-degree shutter",
 });
 
-const normalizeEventForRole = (event: TimelineEvent, maleActor: boolean): TimelineEvent => normalizeEvent({
+const normalizeEventForRole = (event: TimelineEvent, sceneType: SceneType): TimelineEvent => normalizeEvent({
   ...event,
-  pose: maleActor && event.position && (!event.pose || event.pose === "standing in a relaxed pose") ? AUTO_POSE : event.pose,
+  pose: sceneType !== "solo" && event.position && (!event.pose || event.pose === "standing in a relaxed pose") ? AUTO_POSE : event.pose,
 });
 
 const normalizeBasic = (candidate: BasicSettings): BasicSettings => {
-  const basic = { ...defaultBasic, ...candidate, age: clampAge(candidate.age) };
+  const sceneType: SceneType = candidate.sceneType || (candidate.maleActor ? "male-female" : "solo");
+  const basic = { ...defaultBasic, ...candidate, sceneType, maleActor: sceneType === "male-female", age: clampAge(candidate.age) };
   if (basic.mode === "FLF") {
     basic.model = "MiniMax-Hailuo-02";
     if (basic.resolution === "512P") basic.resolution = "768P";
@@ -173,26 +179,41 @@ export const usePromptStore = create<PromptState>()(
       savedPresets: [],
       masterData: structuredClone(DEFAULT_MASTER_DATA),
       setBasic: (partial) => set((state) => {
-        const nextBasic = normalizeBasic({ ...state.basic, ...partial, age: partial.age ?? state.basic.age });
+        const requestedSceneType: SceneType = partial.sceneType
+          ?? (partial.maleActor === true ? "male-female" : partial.maleActor === false ? "solo" : state.basic.sceneType);
+        const nextBasic = normalizeBasic({ ...state.basic, ...partial, sceneType: requestedSceneType, maleActor: requestedSceneType === "male-female", age: partial.age ?? state.basic.age });
         let nextEvents = state.events;
         if (nextBasic.duration !== state.basic.duration) {
           nextEvents = fitEvents(state.events, nextBasic.duration);
         }
-        if (partial.maleActor === false) {
+        if (requestedSceneType !== state.basic.sceneType && requestedSceneType === "solo") {
           nextEvents = nextEvents.map((event, index) => ({
             ...event,
             position: "",
+            partnerHandAction: "both hands firmly supporting the adult woman's hips",
             camera: event.camera === MALE_POV_CAMERA ? "medium shot" : event.camera,
             intimacyMode: "standard intimate contact",
             action: state.masterData.soloActions[Math.min(index, state.masterData.soloActions.length - 1)].value,
           }));
         }
-        if (partial.maleActor === true) {
+        if (requestedSceneType !== state.basic.sceneType && requestedSceneType === "male-female") {
           nextEvents = nextEvents.map((event, index) => ({
             ...event,
-            position: event.position || "missionary position",
+            position: "missionary position",
             pose: event.pose === "standing in a relaxed pose" ? AUTO_POSE : event.pose,
             action: state.masterData.partnerActions[Math.min(index, state.masterData.partnerActions.length - 1)].value,
+            partnerHandAction: state.masterData.partnerHandActions[0].value,
+          }));
+        }
+        if (requestedSceneType !== state.basic.sceneType && requestedSceneType === "female-female") {
+          nextEvents = nextEvents.map((event, index) => ({
+            ...event,
+            position: state.masterData.lesbianPositions[Math.min(index, state.masterData.lesbianPositions.length - 1)].value,
+            pose: event.pose === "standing in a relaxed pose" ? AUTO_POSE : event.pose,
+            camera: event.camera === MALE_POV_CAMERA ? "medium shot" : event.camera,
+            intimacyMode: "standard intimate contact",
+            action: state.masterData.lesbianActions[Math.min(index, state.masterData.lesbianActions.length - 1)].value,
+            partnerHandAction: state.masterData.partnerHandActions[Math.min(3, state.masterData.partnerHandActions.length - 1)].value,
           }));
         }
         return { basic: nextBasic, events: nextEvents };
@@ -209,13 +230,14 @@ export const usePromptStore = create<PromptState>()(
           id: uuidv4(),
           start: 0,
           end: state.basic.duration,
-          position: state.basic.maleActor ? "missionary position" : "",
-          action: state.basic.maleActor ? (state.masterData.partnerActions[3] ?? state.masterData.partnerActions[0]).value : state.masterData.soloActions[0].value,
+          position: state.basic.sceneType === "female-female" ? state.masterData.lesbianPositions[0].value : state.basic.sceneType === "male-female" ? "missionary position" : "",
+          action: state.basic.sceneType === "female-female" ? state.masterData.lesbianActions[0].value : state.basic.sceneType === "male-female" ? (state.masterData.partnerActions[3] ?? state.masterData.partnerActions[0]).value : state.masterData.soloActions[0].value,
           clothingState: state.clothing,
           camera: "medium shot",
-          pose: state.basic.maleActor ? AUTO_POSE : "standing in a relaxed pose",
+          pose: state.basic.sceneType !== "solo" ? AUTO_POSE : "standing in a relaxed pose",
           expression: "flushed cheeks, slightly open mouth, eyes half-closed",
           adultToy: "no adult toy",
+          partnerHandAction: state.masterData.partnerHandActions[0].value,
           intimacyMode: "standard intimate contact",
           additionalDetails: "",
           shotNumber: Math.max(1, ...state.events.map((event) => event.shotNumber || 1)),
@@ -235,15 +257,16 @@ export const usePromptStore = create<PromptState>()(
         const template = state.events[state.events.length - 1];
         const newEvent = normalizeEvent({
           id: uuidv4(), start: 0, end: state.basic.duration,
-          position: state.basic.maleActor ? (template?.position || "missionary position") : "",
-          action: template?.action || (state.basic.maleActor ? state.masterData.partnerActions[0].value : state.masterData.soloActions[0].value),
+          position: state.basic.sceneType === "female-female" ? (template?.position || state.masterData.lesbianPositions[0].value) : state.basic.sceneType === "male-female" ? (template?.position || "missionary position") : "",
+          action: template?.action || (state.basic.sceneType === "female-female" ? state.masterData.lesbianActions[0].value : state.basic.sceneType === "male-female" ? state.masterData.partnerActions[0].value : state.masterData.soloActions[0].value),
           clothingState: template?.clothingState || state.clothing,
           camera: template?.camera || "medium shot",
-          pose: state.basic.maleActor
+          pose: state.basic.sceneType !== "solo"
             ? (!template?.pose || template.pose === "standing in a relaxed pose" ? AUTO_POSE : template.pose)
             : (template?.pose || "standing in a relaxed pose"),
           expression: template?.expression || "flushed cheeks, slightly open mouth, eyes half-closed",
           adultToy: template?.adultToy || "no adult toy",
+          partnerHandAction: template?.partnerHandAction || state.masterData.partnerHandActions[0].value,
           intimacyMode: template?.intimacyMode || "standard intimate contact",
           additionalDetails: "",
           shotNumber: nextShot,
@@ -278,7 +301,7 @@ export const usePromptStore = create<PromptState>()(
         if (!preset) return {};
         const snapshot = structuredClone(preset.snapshot);
         const basic = normalizeBasic({ ...defaultBasic, ...snapshot.basic });
-        return { ...snapshot, basic, events: snapshot.events.map((event) => normalizeEventForRole(event, basic.maleActor)) };
+        return { ...snapshot, basic, events: snapshot.events.map((event) => normalizeEventForRole(event, basic.sceneType)) };
       }),
       deletePreset: (id) => set((state) => ({ savedPresets: state.savedPresets.filter((item) => item.id !== id) })),
       addMasterItem: (category, item) => set((state) => {
@@ -305,7 +328,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 10,
+      version: 11,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);
@@ -320,7 +343,7 @@ export const usePromptStore = create<PromptState>()(
           ...persisted,
           basic,
           masterData,
-          events: persisted.events?.map((event) => normalizeEventForRole(event, basic.maleActor)),
+          events: persisted.events?.map((event) => normalizeEventForRole(event, basic.sceneType)),
         };
       },
     },

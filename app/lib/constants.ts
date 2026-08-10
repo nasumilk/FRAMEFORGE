@@ -113,6 +113,45 @@ export const PARTNER_ACTIONS = [
   "looking at the camera with an intense expression",
 ];
 
+export const PARTNER_HAND_ACTIONS = [
+  "both hands firmly supporting the adult woman's hips",
+  "both hands kneading the adult woman's breasts with anatomically natural finger placement",
+  "fingertips stimulating the adult woman's nipples while the palms support her breasts",
+  "one hand kneading her breast while the other hand supports her hip",
+  "one hand stimulating her nipple while the other hand holds her waist",
+  "one hand caressing her chest while the other hand supports her lower back",
+  "both hands holding her thighs in a stable and physically plausible grip",
+  "one hand interlaced with hers while the other hand caresses her breast",
+];
+
+export const LESBIAN_POSITIONS = [
+  "face-to-face embrace between two adult women",
+  "side-by-side scissoring position",
+  "face-to-face tribadism position",
+  "mutual oral 69 position between two adult women",
+  "one woman kneeling between the reclining woman's thighs",
+  "one woman straddling the other woman's thigh",
+  "spooning position with the second woman behind",
+  "seated lap embrace between two adult women",
+  "one woman reclining while the second woman leans over her",
+  "standing face-to-face against a wall",
+];
+
+export const LESBIAN_ACTIONS = [
+  "the two adult women kiss passionately and caress each other",
+  "they slowly undress each other while maintaining eye contact",
+  "the second woman massages and stimulates the first woman's breasts and nipples",
+  "the second woman performs deliberate manual vulva stimulation",
+  "the second woman performs oral stimulation on the reclining woman",
+  "both women perform mutual oral stimulation",
+  "the two women perform slow rhythmic tribadism",
+  "the two women perform intense rhythmic scissoring",
+  "the second woman uses a selected adult toy on the first woman",
+  "the two women change positions while maintaining continuous intimate contact",
+  "both women approach a shared climax with trembling",
+  "the two women cuddle and kiss during the afterglow",
+];
+
 export const SOLO_ACTIONS = [
   "slowly undressing and caressing her body",
   "sensual self-touch while reclining",
@@ -264,6 +303,9 @@ export const DEFAULT_MASTER_DATA: MasterData = {
   clothings: asMasterItems(CLOTHINGS),
   positions: asMasterItems(POSITIONS),
   partnerActions: asMasterItems(PARTNER_ACTIONS),
+  lesbianPositions: asMasterItems(LESBIAN_POSITIONS),
+  lesbianActions: asMasterItems(LESBIAN_ACTIONS),
+  partnerHandActions: asMasterItems(PARTNER_HAND_ACTIONS),
   soloActions: asMasterItems(SOLO_ACTIONS),
   cameras: asMasterItems(CAMERAS),
   expressions: asMasterItems(EXPRESSIONS),

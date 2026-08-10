@@ -3,7 +3,7 @@
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { Aperture, GripVertical, UserRound, Video, Trash2 } from "lucide-react";
-import type { MasterItem, TimelineEvent } from "../lib/types";
+import type { MasterItem, SceneType, TimelineEvent } from "../lib/types";
 import { Field, SelectField } from "./Field";
 import { usePromptStore } from "../store/usePromptStore";
 import { UI_COPY } from "../lib/localization";
@@ -14,8 +14,8 @@ const INTIMACY_OPTIONS: MasterItem[] = [
   { value: "consensual anal intercourse", japanese: "合意のある成人同士のアナル性交" },
 ];
 
-export function EventCard({ event, index, duration, maleActor, onUpdate, onRemove }: {
-  event: TimelineEvent; index: number; duration: number; maleActor: boolean;
+export function EventCard({ event, index, duration, sceneType, onUpdate, onRemove }: {
+  event: TimelineEvent; index: number; duration: number; sceneType: SceneType;
   onUpdate: (data: Partial<TimelineEvent>) => void; onRemove: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: event.id });
@@ -23,8 +23,10 @@ export function EventCard({ event, index, duration, maleActor, onUpdate, onRemov
   const master = usePromptStore((state) => state.masterData);
   const language = usePromptStore((state) => state.uiLanguage);
   const t = UI_COPY[language];
-  const actions = maleActor ? master.partnerActions : master.soloActions;
-  const cameraOptions = maleActor ? master.cameras : master.cameras.filter((camera) => camera.value !== MALE_POV_CAMERA);
+  const partnered = sceneType !== "solo";
+  const actions = sceneType === "female-female" ? master.lesbianActions : sceneType === "male-female" ? master.partnerActions : master.soloActions;
+  const positions = sceneType === "female-female" ? master.lesbianPositions : master.positions;
+  const cameraOptions = sceneType === "male-female" ? master.cameras : master.cameras.filter((camera) => camera.value !== MALE_POV_CAMERA);
   const invalid = event.start < 0 || event.end > duration || event.end <= event.start;
   const label = (eng: string, jap: string) => language === "JAP" ? jap : eng;
   const toggleCommand = (command: string) => {
@@ -53,9 +55,10 @@ export function EventCard({ event, index, duration, maleActor, onUpdate, onRemov
         <div className="event-grid">
           <SelectField label={label("Woman pose (Auto recommended)", "女性ポーズ（自動推奨）")} value={event.pose} options={master.poses} onChange={(pose) => onUpdate({ pose })} />
           <SelectField label={t.clothingState} value={event.clothingState} options={master.clothings} onChange={(clothingState) => onUpdate({ clothingState })} />
-          {maleActor && <SelectField label={label("Couple position", "カップルの体位")} value={event.position} options={master.positions} onChange={(position) => onUpdate({ position })} />}
-          {maleActor && <SelectField label={label("Intimacy mode", "接触モード")} value={event.intimacyMode} options={INTIMACY_OPTIONS} onChange={(intimacyMode) => onUpdate({ intimacyMode: intimacyMode as TimelineEvent["intimacyMode"] })} />}
+          {partnered && <SelectField label={sceneType === "female-female" ? label("Women-couple position", "女性同士の体位") : label("Couple position", "カップルの体位")} value={event.position} options={positions} onChange={(position) => onUpdate({ position })} />}
+          {sceneType === "male-female" && <SelectField label={label("Intimacy mode", "接触モード")} value={event.intimacyMode} options={INTIMACY_OPTIONS} onChange={(intimacyMode) => onUpdate({ intimacyMode: intimacyMode as TimelineEvent["intimacyMode"] })} />}
           <SelectField label={t.action} value={event.action} options={actions} onChange={(action) => onUpdate({ action })} />
+          {partnered && <SelectField label={sceneType === "female-female" ? label("Second woman's hand action", "2人目の女性の手の動作") : label("Male partner hand action", "男優の手の動作")} value={event.partnerHandAction} options={master.partnerHandActions} onChange={(partnerHandAction) => onUpdate({ partnerHandAction })} />}
           <SelectField label={t.expression} value={event.expression} options={master.expressions} onChange={(expression) => onUpdate({ expression })} />
           <SelectField label={label("Adult toy", "大人向けトイ")} value={event.adultToy} options={master.adultToys} onChange={(adultToy) => onUpdate({ adultToy })} />
         </div>

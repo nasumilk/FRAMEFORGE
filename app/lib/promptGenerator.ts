@@ -1,4 +1,4 @@
-import type { AgeValue, BasicSettings, PromptSnapshot, TimelineEvent } from "./types";
+import type { AgeValue, BasicSettings, PromptSnapshot, SceneType, TimelineEvent } from "./types";
 import { AUTO_POSE, CAPTURE_DEVICE_DESCRIPTIONS } from "./constants";
 
 const cleanSentence = (value = "") => value.trim().replace(/[.\s]+$/, "");
@@ -15,15 +15,27 @@ export function supportedDurations(basic: Pick<BasicSettings, "mode" | "resoluti
 
 const commandText = (commands: string[]) => commands.length ? `[${commands.slice(0, 3).join(",")}]` : "";
 
-export function buildTimelineSegment(event: TimelineEvent, maleActor: boolean): string {
-  const roleDetails = maleActor && event.position
+export function buildTimelineSegment(event: TimelineEvent, sceneType: SceneType): string {
+  const roleDetails = sceneType === "male-female" && event.position
     ? [
       `Couple position: ${cleanSentence(event.position)}`,
       event.pose === AUTO_POSE
         ? "The adult woman's body pose is derived from her role in the selected couple position"
         : `Adult woman-only pose modifier within this position: ${cleanSentence(event.pose)}`,
       "The adult male partner adopts the complementary role-specific posture required by the couple position; he must not mirror or copy the woman's pose or limb placement",
+      `Male partner hand action: ${cleanSentence(event.partnerHandAction)}`,
+      "Both of the male partner's hands remain visibly accounted for in this action with stable wrists, natural finger placement, and no idle or duplicated hands",
     ]
+    : sceneType === "female-female" && event.position
+      ? [
+        `Two-woman position: ${cleanSentence(event.position)}`,
+        event.pose === AUTO_POSE
+          ? "The first adult woman's body pose is derived from her role in the selected two-woman position"
+          : `First adult woman-only pose modifier within this position: ${cleanSentence(event.pose)}`,
+        "The second adult woman adopts the complementary role-specific posture without mirroring or copying the first woman's limb placement",
+        `Second adult woman's hand action: ${cleanSentence(event.partnerHandAction)}`,
+        "Both hands of the second adult woman remain visibly accounted for with stable wrists, natural finger placement, and no idle or duplicated hands",
+      ]
     : [
       event.pose === AUTO_POSE ? "Adult woman's full-body pose: standing in a relaxed pose" : `Adult woman's full-body pose: ${cleanSentence(event.pose)}`,
       "solo scene",
@@ -33,8 +45,8 @@ export function buildTimelineSegment(event: TimelineEvent, maleActor: boolean): 
     cleanSentence(event.camera),
     ...roleDetails,
     `The adult woman wears ${cleanSentence(event.clothingState)}`,
-    maleActor && event.intimacyMode === "consensual anal intercourse" ? "Couple interaction mode: consensual anal intercourse" : "",
-    `${maleActor ? "Couple action" : "Adult woman's action"}: ${cleanSentence(event.action)}`,
+    sceneType === "male-female" && event.intimacyMode === "consensual anal intercourse" ? "Couple interaction mode: consensual anal intercourse" : "",
+    `${sceneType === "female-female" ? "Two-woman action" : sceneType === "male-female" ? "Couple action" : "Adult woman's action"}: ${cleanSentence(event.action)}`,
     `Adult woman's expression: ${cleanSentence(event.expression)}`,
     event.adultToy && event.adultToy !== "no adult toy" ? `Adult woman's toy: ${cleanSentence(event.adultToy)}` : "",
     `Captured at ${cleanSentence(event.aperture)} with ${cleanSentence(event.depthOfField)}`,
@@ -69,6 +81,9 @@ export function generateH3Prompt(state: PromptSnapshot): string {
     subject += ` A ${cleanSentence(basic.maleBodyType)}, ${cleanSentence(basic.maleAgeFeel)} Japanese man`;
     subject += basic.maleFaceVisible ? "." : ", with his face kept out of clear view.";
   }
+  if (basic.sceneType === "female-female") {
+    subject += ` A second consenting adult Japanese woman, ${cleanSentence(basic.femalePartnerBodyType)}, ${cleanSentence(basic.femalePartnerBustSize)}, ${cleanSentence(basic.femalePartnerHair)}, with a clearly distinct identity from the first woman.`;
+  }
 
   const device = CAPTURE_DEVICE_DESCRIPTIONS[basic.captureDevice] ?? cleanSentence(basic.captureDevice);
   const capture = `Capture profile: ${cleanSentence(device)}. Lens: ${cleanSentence(basic.focalLength)}. Camera-to-subject distance: ${cleanSentence(basic.subjectDistance)}. ${basic.handheldShake
@@ -80,9 +95,9 @@ export function generateH3Prompt(state: PromptSnapshot): string {
     ? shotNumbers.map((shotNumber, index) => {
       const shotEvents = sortedEvents.filter((event) => (event.shotNumber || 1) === shotNumber);
       const transition = index > 0 ? ` Transition: ${cleanSentence(shotEvents[0]?.transition || "hard cut")}.` : "";
-      return `${index > 0 ? ` [Shot ${shotNumber}]${transition}` : ""} ${shotEvents.map((event) => buildTimelineSegment(event, basic.maleActor)).join(" ")}`;
+      return `${index > 0 ? ` [Shot ${shotNumber}]${transition}` : ""} ${shotEvents.map((event) => buildTimelineSegment(event, basic.sceneType)).join(" ")}`;
     }).join("")
-    : ` [0-${basic.duration}s] Medium shot. She is ${cleanSentence(clothing)} in a ${cleanSentence(situation)}. ${basic.maleActor ? "A consenting adult couple shares a sensual intimate moment" : "She performs a sensual solo scene"}.`;
+    : ` [0-${basic.duration}s] Medium shot. She is ${cleanSentence(clothing)} in a ${cleanSentence(situation)}. ${basic.sceneType === "female-female" ? "Two consenting adult women share a sensual intimate moment" : basic.sceneType === "male-female" ? "A consenting adult couple shares a sensual intimate moment" : "She performs a sensual solo scene"}.`;
 
   const notes = customNotes.trim() ? ` ${cleanSentence(customNotes)}.` : "";
   const integrated = `[Shot 1] ${subject} ${capture} ${continuityText(basic)} Location: ${cleanSentence(situation)}.${shots}${notes}`;
@@ -153,7 +168,7 @@ export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
   events.forEach((event, index) => {
     if ((event.cameraCommands?.length || 0) > 3) diagnostics.push({ severity: "error", message: `Event ${index + 1} uses more than three simultaneous camera commands.` });
     const explicitPose = event.pose && event.pose !== AUTO_POSE;
-    const likelyConflict = explicitPose && basic.maleActor && event.position && (
+    const likelyConflict = explicitPose && basic.sceneType !== "solo" && event.position && (
       (/standing|M-shaped|deep squat/i.test(event.pose) && /missionary|cowgirl|spooning|prone|oral|sitting/i.test(event.position))
       || (/lying on her back/i.test(event.pose) && /standing|rear-entry/i.test(event.position))
     );

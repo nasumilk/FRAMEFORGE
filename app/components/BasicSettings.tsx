@@ -46,16 +46,26 @@ export function BasicSettings() {
       <SelectField label={t.skin} value={basic.skin} options={master.skinOptions} onChange={(skin) => setBasic({ skin })} />
 
       <div className="section-rule" />
-      <label className="switch-row">
-        <span><UsersRound size={16} /> {t.includeMaleActor}</span>
-        <input type="checkbox" checked={basic.maleActor} onChange={(event) => setBasic({ maleActor: event.target.checked })} />
-      </label>
+      <div className="field-label"><span><UsersRound size={16} /> {language === "JAP" ? "出演者構成" : "Scene cast"}</span></div>
+      <div className="segmented compact" aria-label={language === "JAP" ? "出演者構成" : "Scene cast"}>
+        <button className={basic.sceneType === "solo" ? "active" : ""} onClick={() => setBasic({ sceneType: "solo" })}>{language === "JAP" ? "ソロ" : "Solo"}</button>
+        <button className={basic.sceneType === "male-female" ? "active" : ""} onClick={() => setBasic({ sceneType: "male-female" })}>{language === "JAP" ? "男女" : "M + W"}</button>
+        <button className={basic.sceneType === "female-female" ? "active" : ""} onClick={() => setBasic({ sceneType: "female-female" })}>{language === "JAP" ? "女性同士" : "W + W"}</button>
+      </div>
 
-      {basic.maleActor && (
+      {basic.sceneType === "male-female" && (
         <div className="nested-settings">
           <SelectField label={t.build} value={basic.maleBodyType} options={master.maleBodyTypes} onChange={(maleBodyType) => setBasic({ maleBodyType })} />
           <SelectField label={t.ageFeel} value={basic.maleAgeFeel} options={master.maleAgeFeels} onChange={(maleAgeFeel) => setBasic({ maleAgeFeel })} />
           <label className="check-row"><input type="checkbox" checked={basic.maleFaceVisible} onChange={(event) => setBasic({ maleFaceVisible: event.target.checked })} /> {t.faceVisible}</label>
+        </div>
+      )}
+
+      {basic.sceneType === "female-female" && (
+        <div className="nested-settings">
+          <SelectField label={language === "JAP" ? "2人目の女性の体型" : "Second woman's body type"} value={basic.femalePartnerBodyType} options={master.bodyTypes} onChange={(femalePartnerBodyType) => setBasic({ femalePartnerBodyType })} />
+          <SelectField label={language === "JAP" ? "2人目の女性の胸" : "Second woman's bust"} value={basic.femalePartnerBustSize} options={master.bustSizes} onChange={(femalePartnerBustSize) => setBasic({ femalePartnerBustSize })} />
+          <SelectField label={language === "JAP" ? "2人目の女性の髪" : "Second woman's hair"} value={basic.femalePartnerHair} options={master.hairStyles} onChange={(femalePartnerHair) => setBasic({ femalePartnerHair })} />
         </div>
       )}
 

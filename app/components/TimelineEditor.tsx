@@ -80,7 +80,7 @@ export function TimelineEditor() {
           <SortableContext items={events.map((event) => event.id)} strategy={verticalListSortingStrategy}>
             <div className="event-list">
               {events.map((event, index) => (
-                <EventCard key={event.id} event={event} index={index} duration={basic.duration} maleActor={basic.maleActor} onUpdate={(data) => updateEvent(event.id, data)} onRemove={() => removeEvent(event.id)} />
+                <EventCard key={event.id} event={event} index={index} duration={basic.duration} sceneType={basic.sceneType} onUpdate={(data) => updateEvent(event.id, data)} onRemove={() => removeEvent(event.id)} />
               ))}
             </div>
           </SortableContext>

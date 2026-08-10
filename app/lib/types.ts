@@ -1,5 +1,6 @@
 export type Mode = "T2V" | "I2V" | "FLF" | "S2V";
 export type UiLanguage = "ENG" | "JAP";
+export type SceneType = "solo" | "male-female" | "female-female";
 
 export type AgeValue =
   | { kind: "exact"; value: number }
@@ -13,10 +14,14 @@ export interface BasicSettings {
   hair: string;
   eyes: string;
   skin: string;
+  sceneType: SceneType;
   maleActor: boolean;
   maleBodyType: string;
   maleAgeFeel: string;
   maleFaceVisible: boolean;
+  femalePartnerBodyType: string;
+  femalePartnerBustSize: string;
+  femalePartnerHair: string;
   duration: number;
   style: string;
   lighting: string;
@@ -52,6 +57,7 @@ export interface TimelineEvent {
   pose: string;
   expression: string;
   adultToy: string;
+  partnerHandAction: string;
   intimacyMode: "standard intimate contact" | "consensual anal intercourse";
   additionalDetails: string;
   shotNumber: number;
@@ -97,6 +103,9 @@ export interface MasterData {
   clothings: MasterItem[];
   positions: MasterItem[];
   partnerActions: MasterItem[];
+  lesbianPositions: MasterItem[];
+  lesbianActions: MasterItem[];
+  partnerHandActions: MasterItem[];
   soloActions: MasterItem[];
   cameras: MasterItem[];
   expressions: MasterItem[];
