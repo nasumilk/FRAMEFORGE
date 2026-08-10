@@ -1,4 +1,4 @@
-export type Mode = "T2V" | "I2V";
+export type Mode = "T2V" | "I2V" | "FLF" | "S2V";
 export type UiLanguage = "ENG" | "JAP";
 
 export type AgeValue =
@@ -24,6 +24,20 @@ export interface BasicSettings {
   subjectDistance: string;
   handheldShake: boolean;
   handheldStyle: string;
+  model: string;
+  resolution: "512P" | "768P" | "1080P";
+  promptOptimizer: boolean;
+  fastPretreatment: boolean;
+  firstFrameImage: string;
+  lastFrameImage: string;
+  subjectReferenceImage: string;
+  preserveIdentity: boolean;
+  preserveWardrobe: boolean;
+  stabilizeAnatomy: boolean;
+  stabilizeBackground: boolean;
+  preserveLighting: boolean;
+  preventCameraTeleport: boolean;
+  continuousTake: boolean;
 }
 
 export interface TimelineEvent {
@@ -38,6 +52,15 @@ export interface TimelineEvent {
   expression: string;
   intimacyMode: "standard intimate contact" | "consensual anal intercourse";
   additionalDetails: string;
+  shotNumber: number;
+  transition: string;
+  cameraCommands: string[];
+  aperture: string;
+  depthOfField: string;
+  focusTarget: string;
+  focusBehavior: string;
+  frameRate: string;
+  shutterAngle: string;
 }
 
 export interface PromptSnapshot {
@@ -85,6 +108,13 @@ export interface MasterData {
   focalLengths: MasterItem[];
   subjectDistances: MasterItem[];
   handheldStyles: MasterItem[];
+  apertures: MasterItem[];
+  depthOfFieldOptions: MasterItem[];
+  focusTargets: MasterItem[];
+  focusBehaviors: MasterItem[];
+  frameRates: MasterItem[];
+  shutterAngles: MasterItem[];
+  shotTransitions: MasterItem[];
 }
 
 export type MasterCategory = keyof MasterData;

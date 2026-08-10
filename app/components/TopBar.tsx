@@ -31,6 +31,8 @@ export function TopBar() {
         <div className="segmented">
           <button className={mode === "T2V" ? "active" : ""} onClick={() => setBasic({ mode: "T2V" })}>T2V</button>
           <button className={mode === "I2V" ? "active" : ""} onClick={() => setBasic({ mode: "I2V" })}>I2V</button>
+          <button className={mode === "FLF" ? "active" : ""} onClick={() => setBasic({ mode: "FLF" })} title="First & last frame">FLF</button>
+          <button className={mode === "S2V" ? "active" : ""} onClick={() => setBasic({ mode: "S2V" })} title="Subject reference">S2V</button>
         </div>
         <div className="segmented language-toggle" aria-label="Interface language">
           <button className={language === "ENG" ? "active" : ""} onClick={() => setUiLanguage("ENG")}>ENG</button>

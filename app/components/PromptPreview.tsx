@@ -1,24 +1,32 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, ChevronDown, Copy, Save, Trash2 } from "lucide-react";
+import { AlertTriangle, Braces, Check, ChevronDown, Copy, Info, Save, Trash2 } from "lucide-react";
 import { usePromptStore } from "../store/usePromptStore";
-import { generateH3Prompt } from "../lib/promptGenerator";
+import { diagnosePrompt, generateApiPayload, generateH3Prompt } from "../lib/promptGenerator";
 import { UI_COPY } from "../lib/localization";
 
 export function PromptPreview() {
   const state = usePromptStore();
   const [copied, setCopied] = useState(false);
+  const [jsonCopied, setJsonCopied] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [presetName, setPresetName] = useState("");
   const language = usePromptStore((store) => store.uiLanguage);
   const t = UI_COPY[language];
   const prompt = useMemo(() => generateH3Prompt(state), [state]);
+  const diagnostics = useMemo(() => diagnosePrompt(state), [state]);
 
   const copy = async () => {
     await navigator.clipboard.writeText(prompt);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
+  };
+
+  const copyJson = async () => {
+    await navigator.clipboard.writeText(JSON.stringify(generateApiPayload(state), null, 2));
+    setJsonCopied(true);
+    window.setTimeout(() => setJsonCopied(false), 1600);
   };
 
   const save = () => {
@@ -36,12 +44,19 @@ export function PromptPreview() {
         </div>
         <div className="preview-actions">
           <span>{prompt.length.toLocaleString()} {t.chars}</span>
+          <button className="secondary-button" onClick={copyJson}>{jsonCopied ? <Check size={15} /> : <Braces size={15} />}{jsonCopied ? t.copied : "API JSON"}</button>
           <button className="secondary-button" onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? t.copied : t.copy}</button>
           <button className="icon-button" onClick={() => setCollapsed((value) => !value)} aria-label={t.togglePreview}><ChevronDown size={17} /></button>
         </div>
       </div>
       {!collapsed && (
         <>
+          <div className={`diagnostic-strip ${diagnostics.some((item) => item.severity === "error") ? "has-error" : ""}`}>
+            <div><strong>{language === "JAP" ? "プロンプト診断" : "PROMPT DIAGNOSTICS"}</strong><span>{diagnostics.length ? `${diagnostics.length} ${language === "JAP" ? "件" : "issues"}` : language === "JAP" ? "問題なし" : "Ready"}</span></div>
+            <div className="diagnostic-items">
+              {diagnostics.slice(0, 3).map((item, index) => <span className={item.severity} key={`${item.message}-${index}`}>{item.severity === "info" ? <Info size={11} /> : <AlertTriangle size={11} />}{item.message}</span>)}
+            </div>
+          </div>
           <pre>{prompt}</pre>
           <div className="preset-bar">
             <div className="preset-save">

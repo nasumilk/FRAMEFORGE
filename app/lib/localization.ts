@@ -53,6 +53,13 @@ const JP_OPTIONS: Record<string, string> = {
   "18mm ultra-wide": "18mm 超広角", "24mm wide-angle": "24mm 広角", "35mm natural wide": "35mm 自然な広角", "50mm standard": "50mm 標準", "85mm portrait": "85mm ポートレート", "120mm telephoto": "120mm 望遠",
   "0.3m extreme close distance": "被写体から0.3mの極近距離", "0.6m close distance": "被写体から0.6mの近距離", "1.5m medium distance": "被写体から1.5mの中距離", "3m full-body distance": "被写体から3mの全身距離", "5m or more distant view": "被写体から5m以上の遠景",
   "subtle micro-shake": "ごく微細な手振れ", "natural documentary shake": "自然なドキュメンタリー調の手振れ", "pronounced handheld shake": "はっきりした手持ちカメラの揺れ",
+  "f/1.4": "f/1.4（非常に明るい）", "f/2": "f/2（明るい）", "f/2.8": "f/2.8", "f/4": "f/4", "f/5.6": "f/5.6", "f/8": "f/8", "f/11": "f/11（深いピント）",
+  "very shallow depth of field": "非常に浅い被写界深度", "shallow depth of field": "浅い被写界深度", "moderate depth of field": "中程度の被写界深度", "deep depth of field": "深い被写界深度",
+  "eyes": "目", "face": "顔", "hands": "手", "upper body": "上半身", "full body": "全身", "nearest subject": "最も近い被写体", "background detail": "背景の細部",
+  "locked manual focus": "固定マニュアルフォーカス", "continuous subject-tracking autofocus": "被写体追従オートフォーカス", "natural rack focus": "自然なラックフォーカス", "subtle focus breathing": "微細なフォーカスブリージング", "brief realistic focus hunting": "短く自然なピント迷い",
+  "24 fps cinematic motion": "24fpsの映画的な動き", "30 fps natural video motion": "30fpsの自然な映像", "60 fps crisp fluid motion": "60fpsの滑らかで鮮明な動き",
+  "90-degree shutter": "90度シャッター", "180-degree shutter": "180度シャッター", "270-degree shutter": "270度シャッター", "360-degree shutter": "360度シャッター",
+  "continuous cut-free movement": "カットなしの連続移動", "hard cut": "ハードカット", "match cut": "マッチカット", "soft dissolve": "ソフトディゾルブ", "whip-pan transition": "ウィップパン・トランジション",
 };
 
 export const japaneseOption = (option: string) => JP_OPTIONS[option] ?? "日本語訳は未登録です";

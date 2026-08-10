@@ -11,9 +11,9 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { AlertTriangle, Plus, Sparkles } from "lucide-react";
+import { AlertTriangle, Clapperboard, Plus, Sparkles } from "lucide-react";
 import { usePromptStore } from "../store/usePromptStore";
-import { validateTimeline } from "../lib/promptGenerator";
+import { supportedDurations, validateTimeline } from "../lib/promptGenerator";
 import { EventCard } from "./EventCard";
 import { UI_COPY } from "../lib/localization";
 
@@ -21,6 +21,7 @@ export function TimelineEditor() {
   const basic = usePromptStore((state) => state.basic);
   const events = usePromptStore((state) => state.events);
   const addEvent = usePromptStore((state) => state.addEvent);
+  const addShot = usePromptStore((state) => state.addShot);
   const updateEvent = usePromptStore((state) => state.updateEvent);
   const removeEvent = usePromptStore((state) => state.removeEvent);
   const reorderEvents = usePromptStore((state) => state.reorderEvents);
@@ -32,6 +33,7 @@ export function TimelineEditor() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
   const issues = useMemo(() => validateTimeline(events, basic.duration), [events, basic.duration]);
+  const durationOptions = supportedDurations(basic);
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return;
@@ -51,7 +53,9 @@ export function TimelineEditor() {
         <div className="duration-control">
           <span>{t.duration}</span>
           <strong>{basic.duration}s</strong>
-          <input aria-label={t.durationControl} type="range" min={4} max={15} step={1} value={basic.duration} onChange={(event) => usePromptStore.getState().setBasic({ duration: Number(event.target.value) })} />
+          <select aria-label={t.durationControl} value={basic.duration} onChange={(event) => usePromptStore.getState().setBasic({ duration: Number(event.target.value) })}>
+            {durationOptions.map((duration) => <option key={duration} value={duration}>{duration} seconds</option>)}
+          </select>
         </div>
       </div>
 
@@ -89,7 +93,10 @@ export function TimelineEditor() {
         </button>
       )}
 
-      {events.length > 0 && <button className="add-event" onClick={addEvent}><Plus size={17} /> {t.addEvent}</button>}
+      {events.length > 0 && <div className="timeline-add-actions">
+        <button className="add-event" onClick={addEvent}><Plus size={17} /> {t.addEvent}</button>
+        <button className="add-event add-shot" onClick={addShot}><Clapperboard size={17} /> {language === "JAP" ? "新しいショット" : "Add shot"}</button>
+      </div>}
     </main>
   );
 }

@@ -192,6 +192,21 @@ export const FOCAL_LENGTHS = ["18mm ultra-wide", "24mm wide-angle", "35mm natura
 export const SUBJECT_DISTANCES = ["0.3m extreme close distance", "0.6m close distance", "1.5m medium distance", "3m full-body distance", "5m or more distant view"];
 export const HANDHELD_STYLES = ["subtle micro-shake", "natural documentary shake", "pronounced handheld shake"];
 
+export const VIDEO_MODELS = ["MiniMax-Hailuo-2.3", "MiniMax-Hailuo-2.3-Fast", "MiniMax-Hailuo-02", "S2V-01"];
+export const RESOLUTIONS = ["512P", "768P", "1080P"] as const;
+export const OFFICIAL_CAMERA_COMMANDS = [
+  "Truck left", "Truck right", "Pan left", "Pan right", "Push in", "Pull out",
+  "Pedestal up", "Pedestal down", "Tilt up", "Tilt down", "Zoom in", "Zoom out",
+  "Shake", "Tracking shot", "Static shot",
+];
+export const APERTURES = ["f/1.4", "f/2", "f/2.8", "f/4", "f/5.6", "f/8", "f/11"];
+export const DEPTH_OF_FIELD_OPTIONS = ["very shallow depth of field", "shallow depth of field", "moderate depth of field", "deep depth of field"];
+export const FOCUS_TARGETS = ["eyes", "face", "hands", "upper body", "full body", "nearest subject", "background detail"];
+export const FOCUS_BEHAVIORS = ["locked manual focus", "continuous subject-tracking autofocus", "natural rack focus", "subtle focus breathing", "brief realistic focus hunting"];
+export const FRAME_RATES = ["24 fps cinematic motion", "30 fps natural video motion", "60 fps crisp fluid motion"];
+export const SHUTTER_ANGLES = ["90-degree shutter", "180-degree shutter", "270-degree shutter", "360-degree shutter"];
+export const SHOT_TRANSITIONS = ["continuous cut-free movement", "hard cut", "match cut", "soft dissolve", "whip-pan transition"];
+
 export const CAPTURE_DEVICE_DESCRIPTIONS: Record<string, string> = {
   "consumer camcorder": "consumer-grade digital camcorder footage with modest dynamic range, visible electronic sharpening, responsive auto-exposure, slight white-balance drift, and practical home-video clarity",
   "iPhone camera": "modern iPhone video with computational HDR, crisp micro-detail, controlled highlights, smartphone color science, mild digital sharpening, and stabilized rolling-shutter motion",
@@ -223,4 +238,11 @@ export const DEFAULT_MASTER_DATA: MasterData = {
   focalLengths: asMasterItems(FOCAL_LENGTHS),
   subjectDistances: asMasterItems(SUBJECT_DISTANCES),
   handheldStyles: asMasterItems(HANDHELD_STYLES),
+  apertures: asMasterItems(APERTURES),
+  depthOfFieldOptions: asMasterItems(DEPTH_OF_FIELD_OPTIONS),
+  focusTargets: asMasterItems(FOCUS_TARGETS),
+  focusBehaviors: asMasterItems(FOCUS_BEHAVIORS),
+  frameRates: asMasterItems(FRAME_RATES),
+  shutterAngles: asMasterItems(SHUTTER_ANGLES),
+  shotTransitions: asMasterItems(SHOT_TRANSITIONS),
 };

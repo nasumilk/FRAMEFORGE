@@ -19,6 +19,7 @@ interface PromptState extends PromptSnapshot {
   setCustomNotes: (value: string) => void;
   setUiLanguage: (language: UiLanguage) => void;
   addEvent: () => void;
+  addShot: () => void;
   updateEvent: (id: string, data: Partial<TimelineEvent>) => void;
   removeEvent: (id: string) => void;
   reorderEvents: (oldIndex: number, newIndex: number) => void;
@@ -44,7 +45,7 @@ export const defaultBasic: BasicSettings = {
   maleBodyType: "muscular",
   maleAgeFeel: "late 20s",
   maleFaceVisible: true,
-  duration: 8,
+  duration: 6,
   style: STYLE_PRESETS[0],
   lighting: "soft warm bedside lighting",
   captureDevice: "professional cinema camera",
@@ -52,6 +53,20 @@ export const defaultBasic: BasicSettings = {
   subjectDistance: "1.5m medium distance",
   handheldShake: true,
   handheldStyle: "natural documentary shake",
+  model: "MiniMax-Hailuo-2.3",
+  resolution: "1080P",
+  promptOptimizer: false,
+  fastPretreatment: false,
+  firstFrameImage: "",
+  lastFrameImage: "",
+  subjectReferenceImage: "",
+  preserveIdentity: true,
+  preserveWardrobe: true,
+  stabilizeAnatomy: true,
+  stabilizeBackground: true,
+  preserveLighting: true,
+  preventCameraTeleport: true,
+  continuousTake: false,
 };
 
 const initialSnapshot: PromptSnapshot = {
@@ -114,7 +129,34 @@ const normalizeEvent = (event: TimelineEvent): TimelineEvent => ({
   ...event,
   pose: event.pose || "standing in a relaxed pose",
   intimacyMode: event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "standard intimate contact",
+  shotNumber: Math.max(1, event.shotNumber || 1),
+  transition: event.transition || "continuous cut-free movement",
+  cameraCommands: Array.isArray(event.cameraCommands) ? event.cameraCommands.slice(0, 3) : [],
+  aperture: event.aperture || "f/2.8",
+  depthOfField: event.depthOfField || "shallow depth of field",
+  focusTarget: event.focusTarget || "face",
+  focusBehavior: event.focusBehavior || "continuous subject-tracking autofocus",
+  frameRate: event.frameRate || "24 fps cinematic motion",
+  shutterAngle: event.shutterAngle || "180-degree shutter",
 });
+
+const normalizeBasic = (candidate: BasicSettings): BasicSettings => {
+  const basic = { ...defaultBasic, ...candidate, age: clampAge(candidate.age) };
+  if (basic.mode === "FLF") {
+    basic.model = "MiniMax-Hailuo-02";
+    if (basic.resolution === "512P") basic.resolution = "768P";
+  } else if (basic.mode === "S2V") {
+    basic.model = "S2V-01";
+    basic.resolution = "1080P";
+  } else {
+    if (basic.model === "S2V-01") basic.model = "MiniMax-Hailuo-2.3";
+    if (basic.model === "MiniMax-Hailuo-2.3-Fast" && basic.mode !== "I2V") basic.model = "MiniMax-Hailuo-2.3";
+    if (basic.resolution === "512P" && basic.model !== "MiniMax-Hailuo-02") basic.resolution = "768P";
+  }
+  if (basic.resolution === "1080P" || basic.mode === "S2V") basic.duration = 6;
+  else basic.duration = basic.duration >= 8 ? 10 : 6;
+  return basic;
+};
 
 export const usePromptStore = create<PromptState>()(
   persist(
@@ -124,10 +166,10 @@ export const usePromptStore = create<PromptState>()(
       savedPresets: [],
       masterData: structuredClone(DEFAULT_MASTER_DATA),
       setBasic: (partial) => set((state) => {
-        const nextBasic = { ...state.basic, ...partial, age: clampAge(partial.age ?? state.basic.age) };
+        const nextBasic = normalizeBasic({ ...state.basic, ...partial, age: partial.age ?? state.basic.age });
         let nextEvents = state.events;
-        if (partial.duration !== undefined && partial.duration !== state.basic.duration) {
-          nextEvents = fitEvents(state.events, partial.duration);
+        if (nextBasic.duration !== state.basic.duration) {
+          nextEvents = fitEvents(state.events, nextBasic.duration);
         }
         if (partial.maleActor === false) {
           nextEvents = nextEvents.map((event, index) => ({
@@ -160,8 +202,41 @@ export const usePromptStore = create<PromptState>()(
           expression: "flushed cheeks, slightly open mouth, eyes half-closed",
           intimacyMode: "standard intimate contact",
           additionalDetails: "",
+          shotNumber: Math.max(1, ...state.events.map((event) => event.shotNumber || 1)),
+          transition: "continuous cut-free movement",
+          cameraCommands: [],
+          aperture: "f/2.8",
+          depthOfField: "shallow depth of field",
+          focusTarget: "face",
+          focusBehavior: "continuous subject-tracking autofocus",
+          frameRate: "24 fps cinematic motion",
+          shutterAngle: "180-degree shutter",
         };
         return { events: fitEvents([...state.events, newEvent], state.basic.duration).slice(0, count) };
+      }),
+      addShot: () => set((state) => {
+        const nextShot = Math.max(0, ...state.events.map((event) => event.shotNumber || 1)) + 1;
+        const template = state.events[state.events.length - 1];
+        const newEvent = normalizeEvent({
+          id: uuidv4(), start: 0, end: state.basic.duration,
+          position: state.basic.maleActor ? (template?.position || "missionary position") : "",
+          action: template?.action || (state.basic.maleActor ? state.masterData.partnerActions[0].value : state.masterData.soloActions[0].value),
+          clothingState: template?.clothingState || state.clothing,
+          camera: template?.camera || "medium shot",
+          pose: template?.pose || "standing in a relaxed pose",
+          expression: template?.expression || "flushed cheeks, slightly open mouth, eyes half-closed",
+          intimacyMode: template?.intimacyMode || "standard intimate contact",
+          additionalDetails: "",
+          shotNumber: nextShot,
+          transition: nextShot === 1 ? "continuous cut-free movement" : "hard cut",
+          cameraCommands: [], aperture: template?.aperture || "f/2.8",
+          depthOfField: template?.depthOfField || "shallow depth of field",
+          focusTarget: template?.focusTarget || "face",
+          focusBehavior: template?.focusBehavior || "continuous subject-tracking autofocus",
+          frameRate: template?.frameRate || "24 fps cinematic motion",
+          shutterAngle: template?.shutterAngle || "180-degree shutter",
+        });
+        return { events: fitEvents([...state.events, newEvent], state.basic.duration) };
       }),
       updateEvent: (id, data) => set((state) => ({
         events: state.events.map((event) => event.id === id ? { ...event, ...data } : event),
@@ -183,7 +258,7 @@ export const usePromptStore = create<PromptState>()(
         const preset = state.savedPresets.find((item) => item.id === id);
         return preset ? {
           ...structuredClone(preset.snapshot),
-          basic: { ...defaultBasic, ...preset.snapshot.basic, age: clampAge(preset.snapshot.basic.age) },
+          basic: normalizeBasic({ ...defaultBasic, ...preset.snapshot.basic }),
           events: preset.snapshot.events.map(normalizeEvent),
         } : {};
       }),
@@ -212,7 +287,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 6,
+      version: 7,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);
@@ -221,7 +296,7 @@ export const usePromptStore = create<PromptState>()(
         }
         return {
           ...persisted,
-          basic: persisted.basic ? { ...defaultBasic, ...persisted.basic, age: clampAge(persisted.basic.age) } : defaultBasic,
+          basic: persisted.basic ? normalizeBasic({ ...defaultBasic, ...persisted.basic }) : defaultBasic,
           masterData,
           events: persisted.events?.map(normalizeEvent),
         };
