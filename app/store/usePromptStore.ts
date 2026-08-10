@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 import type { AgeValue, BasicSettings, MasterCategory, MasterData, MasterItem, PromptSnapshot, SavedPreset, TimelineEvent, UiLanguage } from "../lib/types";
-import { DEFAULT_MASTER_DATA, MALE_POV_CAMERA, STYLE_PRESETS } from "../lib/constants";
+import { AUTO_POSE, DEFAULT_MASTER_DATA, MALE_POV_CAMERA, STYLE_PRESETS } from "../lib/constants";
 import { japaneseOption } from "../lib/localization";
 
 interface PromptState extends PromptSnapshot {
@@ -142,6 +142,11 @@ const normalizeEvent = (event: TimelineEvent): TimelineEvent => ({
   shutterAngle: event.shutterAngle || "180-degree shutter",
 });
 
+const normalizeEventForRole = (event: TimelineEvent, maleActor: boolean): TimelineEvent => normalizeEvent({
+  ...event,
+  pose: maleActor && event.position && (!event.pose || event.pose === "standing in a relaxed pose") ? AUTO_POSE : event.pose,
+});
+
 const normalizeBasic = (candidate: BasicSettings): BasicSettings => {
   const basic = { ...defaultBasic, ...candidate, age: clampAge(candidate.age) };
   if (basic.mode === "FLF") {
@@ -182,6 +187,14 @@ export const usePromptStore = create<PromptState>()(
             action: state.masterData.soloActions[Math.min(index, state.masterData.soloActions.length - 1)].value,
           }));
         }
+        if (partial.maleActor === true) {
+          nextEvents = nextEvents.map((event, index) => ({
+            ...event,
+            position: event.position || "missionary position",
+            pose: event.pose === "standing in a relaxed pose" ? AUTO_POSE : event.pose,
+            action: state.masterData.partnerActions[Math.min(index, state.masterData.partnerActions.length - 1)].value,
+          }));
+        }
         return { basic: nextBasic, events: nextEvents };
       }),
       setSituation: (situation) => set({ situation }),
@@ -200,7 +213,7 @@ export const usePromptStore = create<PromptState>()(
           action: state.basic.maleActor ? (state.masterData.partnerActions[3] ?? state.masterData.partnerActions[0]).value : state.masterData.soloActions[0].value,
           clothingState: state.clothing,
           camera: "medium shot",
-          pose: "standing in a relaxed pose",
+          pose: state.basic.maleActor ? AUTO_POSE : "standing in a relaxed pose",
           expression: "flushed cheeks, slightly open mouth, eyes half-closed",
           adultToy: "no adult toy",
           intimacyMode: "standard intimate contact",
@@ -226,7 +239,9 @@ export const usePromptStore = create<PromptState>()(
           action: template?.action || (state.basic.maleActor ? state.masterData.partnerActions[0].value : state.masterData.soloActions[0].value),
           clothingState: template?.clothingState || state.clothing,
           camera: template?.camera || "medium shot",
-          pose: template?.pose || "standing in a relaxed pose",
+          pose: state.basic.maleActor
+            ? (!template?.pose || template.pose === "standing in a relaxed pose" ? AUTO_POSE : template.pose)
+            : (template?.pose || "standing in a relaxed pose"),
           expression: template?.expression || "flushed cheeks, slightly open mouth, eyes half-closed",
           adultToy: template?.adultToy || "no adult toy",
           intimacyMode: template?.intimacyMode || "standard intimate contact",
@@ -260,11 +275,10 @@ export const usePromptStore = create<PromptState>()(
       })),
       loadPreset: (id) => set((state) => {
         const preset = state.savedPresets.find((item) => item.id === id);
-        return preset ? {
-          ...structuredClone(preset.snapshot),
-          basic: normalizeBasic({ ...defaultBasic, ...preset.snapshot.basic }),
-          events: preset.snapshot.events.map(normalizeEvent),
-        } : {};
+        if (!preset) return {};
+        const snapshot = structuredClone(preset.snapshot);
+        const basic = normalizeBasic({ ...defaultBasic, ...snapshot.basic });
+        return { ...snapshot, basic, events: snapshot.events.map((event) => normalizeEventForRole(event, basic.maleActor)) };
       }),
       deletePreset: (id) => set((state) => ({ savedPresets: state.savedPresets.filter((item) => item.id !== id) })),
       addMasterItem: (category, item) => set((state) => {
@@ -291,18 +305,22 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 9,
+      version: 10,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);
         if (version < 4 && !masterData.cameras.some((item) => item.value === MALE_POV_CAMERA)) {
           masterData.cameras.push({ value: MALE_POV_CAMERA, japanese: japaneseOption(MALE_POV_CAMERA) });
         }
+        if (version < 10 && !masterData.poses.some((item) => item.value === AUTO_POSE)) {
+          masterData.poses.unshift({ value: AUTO_POSE, japanese: japaneseOption(AUTO_POSE) });
+        }
+        const basic = persisted.basic ? normalizeBasic({ ...defaultBasic, ...persisted.basic }) : defaultBasic;
         return {
           ...persisted,
-          basic: persisted.basic ? normalizeBasic({ ...defaultBasic, ...persisted.basic }) : defaultBasic,
+          basic,
           masterData,
-          events: persisted.events?.map(normalizeEvent),
+          events: persisted.events?.map((event) => normalizeEventForRole(event, basic.maleActor)),
         };
       },
     },

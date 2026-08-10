@@ -51,9 +51,9 @@ export function EventCard({ event, index, duration, maleActor, onUpdate, onRemov
       <section className="track-panel subject-track">
         <div className="track-title"><UserRound size={14} /><span>{label("SUBJECT TRACK", "被写体トラック")}</span></div>
         <div className="event-grid">
-          <SelectField label={t.pose} value={event.pose} options={master.poses} onChange={(pose) => onUpdate({ pose })} />
+          <SelectField label={label("Woman pose (Auto recommended)", "女性ポーズ（自動推奨）")} value={event.pose} options={master.poses} onChange={(pose) => onUpdate({ pose })} />
           <SelectField label={t.clothingState} value={event.clothingState} options={master.clothings} onChange={(clothingState) => onUpdate({ clothingState })} />
-          {maleActor && <SelectField label={t.position} value={event.position} options={master.positions} onChange={(position) => onUpdate({ position })} />}
+          {maleActor && <SelectField label={label("Couple position", "カップルの体位")} value={event.position} options={master.positions} onChange={(position) => onUpdate({ position })} />}
           {maleActor && <SelectField label={label("Intimacy mode", "接触モード")} value={event.intimacyMode} options={INTIMACY_OPTIONS} onChange={(intimacyMode) => onUpdate({ intimacyMode: intimacyMode as TimelineEvent["intimacyMode"] })} />}
           <SelectField label={t.action} value={event.action} options={actions} onChange={(action) => onUpdate({ action })} />
           <SelectField label={t.expression} value={event.expression} options={master.expressions} onChange={(expression) => onUpdate({ expression })} />

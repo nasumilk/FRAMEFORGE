@@ -1,5 +1,5 @@
 import type { AgeValue, BasicSettings, PromptSnapshot, TimelineEvent } from "./types";
-import { CAPTURE_DEVICE_DESCRIPTIONS } from "./constants";
+import { AUTO_POSE, CAPTURE_DEVICE_DESCRIPTIONS } from "./constants";
 
 const cleanSentence = (value = "") => value.trim().replace(/[.\s]+$/, "");
 
@@ -16,16 +16,27 @@ export function supportedDurations(basic: Pick<BasicSettings, "mode" | "resoluti
 const commandText = (commands: string[]) => commands.length ? `[${commands.slice(0, 3).join(",")}]` : "";
 
 export function buildTimelineSegment(event: TimelineEvent, maleActor: boolean): string {
+  const roleDetails = maleActor && event.position
+    ? [
+      `Couple position: ${cleanSentence(event.position)}`,
+      event.pose === AUTO_POSE
+        ? "The adult woman's body pose is derived from her role in the selected couple position"
+        : `Adult woman-only pose modifier within this position: ${cleanSentence(event.pose)}`,
+      "The adult male partner adopts the complementary role-specific posture required by the couple position; he must not mirror or copy the woman's pose or limb placement",
+    ]
+    : [
+      event.pose === AUTO_POSE ? "Adult woman's full-body pose: standing in a relaxed pose" : `Adult woman's full-body pose: ${cleanSentence(event.pose)}`,
+      "solo scene",
+    ];
   const details = [
     commandText(event.cameraCommands || []),
     cleanSentence(event.camera),
-    `Subject pose: ${cleanSentence(event.pose)}`,
-    `She is ${cleanSentence(event.clothingState)}`,
-    maleActor && event.position ? cleanSentence(event.position) : "solo scene",
-    maleActor && event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "",
-    cleanSentence(event.action),
-    cleanSentence(event.expression),
-    event.adultToy && event.adultToy !== "no adult toy" ? `Adult toy: ${cleanSentence(event.adultToy)}` : "",
+    ...roleDetails,
+    `The adult woman wears ${cleanSentence(event.clothingState)}`,
+    maleActor && event.intimacyMode === "consensual anal intercourse" ? "Couple interaction mode: consensual anal intercourse" : "",
+    `${maleActor ? "Couple action" : "Adult woman's action"}: ${cleanSentence(event.action)}`,
+    `Adult woman's expression: ${cleanSentence(event.expression)}`,
+    event.adultToy && event.adultToy !== "no adult toy" ? `Adult woman's toy: ${cleanSentence(event.adultToy)}` : "",
     `Captured at ${cleanSentence(event.aperture)} with ${cleanSentence(event.depthOfField)}`,
     `Focus stays on ${cleanSentence(event.focusTarget)} using ${cleanSentence(event.focusBehavior)}`,
     `${cleanSentence(event.frameRate)}, ${cleanSentence(event.shutterAngle)}`,
@@ -141,6 +152,12 @@ export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
   if (basic.mode === "S2V" && !basic.subjectReferenceImage) diagnostics.push({ severity: "warning", message: "Add a subject-reference image URL before using the API JSON." });
   events.forEach((event, index) => {
     if ((event.cameraCommands?.length || 0) > 3) diagnostics.push({ severity: "error", message: `Event ${index + 1} uses more than three simultaneous camera commands.` });
+    const explicitPose = event.pose && event.pose !== AUTO_POSE;
+    const likelyConflict = explicitPose && basic.maleActor && event.position && (
+      (/standing|M-shaped|deep squat/i.test(event.pose) && /missionary|cowgirl|spooning|prone|oral|sitting/i.test(event.position))
+      || (/lying on her back/i.test(event.pose) && /standing|rear-entry/i.test(event.position))
+    );
+    if (likelyConflict) diagnostics.push({ severity: "warning", message: `Event ${index + 1} combines a woman-only pose with a conflicting couple position; use Auto pose or change one selection.` });
   });
   if (basic.focalLength.startsWith("120mm") && basic.subjectDistance.startsWith("0.3m")) diagnostics.push({ severity: "warning", message: "120mm at 0.3m is likely too close to focus naturally." });
   if (!events.length) diagnostics.push({ severity: "info", message: "Add timeline events for precise shot and focus control." });

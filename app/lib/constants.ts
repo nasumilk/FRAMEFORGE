@@ -182,7 +182,10 @@ export const LIGHTING_OPTIONS = [
 export const MALE_BODY_TYPES = ["lean", "athletic", "muscular", "broad-shouldered"];
 export const MALE_AGE_FEELS = ["early 20s adult", "late 20s", "early 30s", "mature 40s"];
 
+export const AUTO_POSE = "automatically derived from the selected couple position";
+
 export const POSES = [
+  AUTO_POSE,
   "standing in a relaxed pose",
   "kneeling upright",
   "lying on her back",
