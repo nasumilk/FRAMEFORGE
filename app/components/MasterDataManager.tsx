@@ -8,6 +8,7 @@ import { UI_COPY } from "../lib/localization";
 
 const CATEGORY_LABELS: Array<{ key: MasterCategory; label: [string, string]; group: [string, string] }> = [
   { key: "bodyTypes", label: ["Body types", "体型"], group: ["Character", "人物"] },
+  { key: "bustSizes", label: ["Bust sizes", "胸のサイズ"], group: ["Character", "人物"] },
   { key: "hairStyles", label: ["Hair", "髪型"], group: ["Character", "人物"] },
   { key: "eyeStyles", label: ["Eyes", "目元"], group: ["Character", "人物"] },
   { key: "skinOptions", label: ["Skin", "肌"], group: ["Character", "人物"] },

@@ -9,6 +9,7 @@ export interface BasicSettings {
   mode: Mode;
   age: AgeValue;
   bodyType: string;
+  bustSize: string;
   hair: string;
   eyes: string;
   skin: string;
@@ -87,6 +88,7 @@ export interface MasterItem {
 
 export interface MasterData {
   bodyTypes: MasterItem[];
+  bustSizes: MasterItem[];
   hairStyles: MasterItem[];
   eyeStyles: MasterItem[];
   skinOptions: MasterItem[];

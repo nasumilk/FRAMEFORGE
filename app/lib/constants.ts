@@ -11,6 +11,18 @@ export const BODY_TYPES = [
   "slim with wide hips",
 ];
 
+export const BUST_SIZES = [
+  "A-cup breasts",
+  "B-cup breasts",
+  "C-cup breasts",
+  "D-cup breasts",
+  "E-cup breasts",
+  "F-cup breasts",
+  "G-cup breasts",
+  "H-cup breasts",
+  "I-cup breasts",
+];
+
 export const HAIR_STYLES = [
   "long straight black hair",
   "long wavy black hair",
@@ -217,6 +229,7 @@ const asMasterItems = (values: string[]) => values.map((value) => ({ value, japa
 
 export const DEFAULT_MASTER_DATA: MasterData = {
   bodyTypes: asMasterItems(BODY_TYPES),
+  bustSizes: asMasterItems(BUST_SIZES),
   hairStyles: asMasterItems(HAIR_STYLES),
   eyeStyles: asMasterItems(EYE_STYLES),
   skinOptions: asMasterItems(SKIN_OPTIONS),

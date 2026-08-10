@@ -40,6 +40,7 @@ export function BasicSettings() {
       )}
 
       <SelectField label={t.bodyType} value={basic.bodyType} options={master.bodyTypes} onChange={(bodyType) => setBasic({ bodyType })} />
+      <SelectField label={t.bustSize} value={basic.bustSize} options={master.bustSizes} onChange={(bustSize) => setBasic({ bustSize })} />
       <SelectField label={t.hair} value={basic.hair} options={master.hairStyles} onChange={(hair) => setBasic({ hair })} />
       <SelectField label={t.eyes} value={basic.eyes} options={master.eyeStyles} onChange={(eyes) => setBasic({ eyes })} />
       <SelectField label={t.skin} value={basic.skin} options={master.skinOptions} onChange={(skin) => setBasic({ skin })} />

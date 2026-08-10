@@ -52,7 +52,7 @@ export function generateH3Prompt(state: PromptSnapshot): string {
 
   let subject = `${cleanSentence(basic.style)}, ${cleanSentence(basic.lighting)}. `;
   subject += "All depicted performers are consenting adults aged 18 or older. ";
-  subject += `A ${formatAge(basic.age)} Japanese woman, ${cleanSentence(basic.bodyType)}, ${cleanSentence(basic.hair)}, ${cleanSentence(basic.eyes)}, ${cleanSentence(basic.skin)}.`;
+  subject += `A ${formatAge(basic.age)} Japanese woman, ${cleanSentence(basic.bodyType)}, ${cleanSentence(basic.bustSize)}, ${cleanSentence(basic.hair)}, ${cleanSentence(basic.eyes)}, ${cleanSentence(basic.skin)}.`;
   if (basic.maleActor) {
     subject += ` A ${cleanSentence(basic.maleBodyType)}, ${cleanSentence(basic.maleAgeFeel)} Japanese man`;
     subject += basic.maleFaceVisible ? "." : ", with his face kept out of clear view.";

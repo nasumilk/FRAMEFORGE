@@ -39,6 +39,7 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(constants, /OFFICIAL_CAMERA_COMMANDS/);
   assert.match(generator, /generateApiPayload/);
   assert.match(generator, /2,000-character limit/);
-  assert.match(store, /version: 7/);
+  assert.match(store, /version: 8/);
   assert.match(generator, /consenting adults aged 18 or older/);
+  assert.match(generator, /basic\.bustSize/);
 });

@@ -38,6 +38,7 @@ export const defaultBasic: BasicSettings = {
   mode: "T2V",
   age: { kind: "exact", value: 26 },
   bodyType: "glamorous",
+  bustSize: "C-cup breasts",
   hair: "long straight black hair",
   eyes: "large brown eyes",
   skin: "fair Japanese skin with realistic texture",
@@ -287,7 +288,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 7,
+      version: 8,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);
