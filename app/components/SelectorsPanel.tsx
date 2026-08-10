@@ -1,6 +1,6 @@
 "use client";
 
-import { AudioLines, MapPin, Shirt } from "lucide-react";
+import { AudioLines, Camera, MapPin, Shirt } from "lucide-react";
 import { Field, SelectField } from "./Field";
 import { usePromptStore } from "../store/usePromptStore";
 import { UI_COPY } from "../lib/localization";
@@ -12,11 +12,13 @@ export function SelectorsPanel() {
   const soundscape = usePromptStore((state) => state.soundscape);
   const music = usePromptStore((state) => state.music);
   const customNotes = usePromptStore((state) => state.customNotes);
+  const basic = usePromptStore((state) => state.basic);
   const setSituation = usePromptStore((state) => state.setSituation);
   const setClothing = usePromptStore((state) => state.setClothing);
   const setSoundscape = usePromptStore((state) => state.setSoundscape);
   const setMusic = usePromptStore((state) => state.setMusic);
   const setCustomNotes = usePromptStore((state) => state.setCustomNotes);
+  const setBasic = usePromptStore((state) => state.setBasic);
   const language = usePromptStore((state) => state.uiLanguage);
   const t = UI_COPY[language];
 
@@ -33,6 +35,16 @@ export function SelectorsPanel() {
 
       <div className="section-label"><Shirt size={14} /> {t.wardrobe}</div>
       <SelectField label={t.startingClothing} value={clothing} options={master.clothings} onChange={setClothing} />
+
+      <div className="section-label"><Camera size={14} /> {t.captureSetup}</div>
+      <SelectField label={t.cameraDevice} value={basic.captureDevice} options={master.captureDevices} onChange={(captureDevice) => setBasic({ captureDevice })} />
+      <SelectField label={t.focalLength} value={basic.focalLength} options={master.focalLengths} onChange={(focalLength) => setBasic({ focalLength })} />
+      <SelectField label={t.subjectDistance} value={basic.subjectDistance} options={master.subjectDistances} onChange={(subjectDistance) => setBasic({ subjectDistance })} />
+      <label className="switch-row capture-switch">
+        <span>{t.naturalHandheld}</span>
+        <input type="checkbox" checked={basic.handheldShake} onChange={(event) => setBasic({ handheldShake: event.target.checked })} />
+      </label>
+      {basic.handheldShake && <SelectField label={t.shakeStyle} value={basic.handheldStyle} options={master.handheldStyles} onChange={(handheldStyle) => setBasic({ handheldStyle })} />}
 
       <div className="section-label"><AudioLines size={14} /> {t.soundDesign}</div>
       <SelectField label={t.soundPreset} value={soundscape} options={master.soundPresets} onChange={setSoundscape} />

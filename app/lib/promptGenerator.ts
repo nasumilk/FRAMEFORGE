@@ -1,4 +1,5 @@
 import type { AgeValue, PromptSnapshot, TimelineEvent } from "./types";
+import { CAPTURE_DEVICE_DESCRIPTIONS } from "./constants";
 
 const cleanSentence = (value: string) => value.trim().replace(/[.\s]+$/, "");
 
@@ -15,6 +16,7 @@ export function buildTimelineSegment(
 ): string {
   const details = [
     cleanSentence(event.camera),
+    `Subject pose: ${cleanSentence(event.pose)}`,
     `She is ${cleanSentence(event.clothingState)}`,
     maleActor && event.position ? cleanSentence(event.position) : "solo scene",
     maleActor && event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "",
@@ -39,12 +41,17 @@ export function generateH3Prompt(state: PromptSnapshot): string {
     subject += basic.maleFaceVisible ? "." : ", with his face kept out of clear view.";
   }
 
+  const captureDevice = CAPTURE_DEVICE_DESCRIPTIONS[basic.captureDevice] ?? cleanSentence(basic.captureDevice);
+  const capture = `Capture profile: ${cleanSentence(captureDevice)}. Lens: ${cleanSentence(basic.focalLength)}. Camera-to-subject distance: ${cleanSentence(basic.subjectDistance)}. ${basic.handheldShake
+    ? `${cleanSentence(basic.handheldStyle)} with physically plausible operator drift and breathing-induced micro-movement, without synthetic jitter`
+    : "Stable camera support with no handheld shake"}.`;
+
   const timeline = sortedEvents.length
     ? sortedEvents.map((event) => buildTimelineSegment(event, basic.maleActor)).join(" ")
     : `[0-${basic.duration}s] Medium shot. She is ${cleanSentence(clothing)} in a ${cleanSentence(situation)}. ${basic.maleActor ? "A consenting adult couple shares a sensual intimate moment" : "She performs a sensual solo scene"}.`;
 
   const notes = customNotes.trim() ? ` ${cleanSentence(customNotes)}.` : "";
-  const integrated = `[Shot 1] ${subject} Location: ${cleanSentence(situation)}. ${timeline}${notes}`;
+  const integrated = `[Shot 1] ${subject} ${capture} Location: ${cleanSentence(situation)}. ${timeline}${notes}`;
   const i2vPrefix = basic.mode === "I2V"
     ? "For the target video, at 0.00 seconds into the target video, <Picture 1> is fully referenced as the starting appearance and identity of the Japanese woman.\n\n"
     : "";

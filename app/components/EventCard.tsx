@@ -53,6 +53,7 @@ export function EventCard({
       </div>
 
       <div className="event-grid">
+        <SelectField label={t.pose} value={event.pose} options={master.poses} onChange={(pose) => onUpdate({ pose })} />
         <SelectField label={t.clothingState} value={event.clothingState} options={master.clothings} onChange={(clothingState) => onUpdate({ clothingState })} />
         {maleActor && <SelectField label={t.position} value={event.position} options={master.positions} onChange={(position) => onUpdate({ position })} />}
         {maleActor && <SelectField label={language === "JAP" ? "接触モード" : "Intimacy mode"} value={event.intimacyMode} options={INTIMACY_OPTIONS} onChange={(intimacyMode) => onUpdate({ intimacyMode: intimacyMode as TimelineEvent["intimacyMode"] })} />}

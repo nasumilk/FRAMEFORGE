@@ -86,6 +86,7 @@ select { cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: 
 .switch-row, .check-row { display: flex; align-items: center; justify-content: space-between; color: #cbc7d0; font-size: 11px; }
 .switch-row span { display: flex; align-items: center; gap: 7px; }
 .switch-row input, .check-row input { width: auto; accent-color: var(--violet-strong); }
+.capture-switch { margin-bottom: 14px; }
 .nested-settings { margin: 15px 0 0 8px; border-left: 1px solid #36323f; padding-left: 13px; }
 .check-row { justify-content: flex-start; gap: 7px; }
 

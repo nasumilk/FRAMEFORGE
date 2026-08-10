@@ -19,6 +19,11 @@ export interface BasicSettings {
   duration: number;
   style: string;
   lighting: string;
+  captureDevice: string;
+  focalLength: string;
+  subjectDistance: string;
+  handheldShake: boolean;
+  handheldStyle: string;
 }
 
 export interface TimelineEvent {
@@ -29,6 +34,7 @@ export interface TimelineEvent {
   action: string;
   clothingState: string;
   camera: string;
+  pose: string;
   expression: string;
   intimacyMode: "standard intimate contact" | "consensual anal intercourse";
   additionalDetails: string;
@@ -74,6 +80,11 @@ export interface MasterData {
   lightingOptions: MasterItem[];
   maleBodyTypes: MasterItem[];
   maleAgeFeels: MasterItem[];
+  poses: MasterItem[];
+  captureDevices: MasterItem[];
+  focalLengths: MasterItem[];
+  subjectDistances: MasterItem[];
+  handheldStyles: MasterItem[];
 }
 
 export type MasterCategory = keyof MasterData;

@@ -47,6 +47,11 @@ export const defaultBasic: BasicSettings = {
   duration: 8,
   style: STYLE_PRESETS[0],
   lighting: "soft warm bedside lighting",
+  captureDevice: "professional cinema camera",
+  focalLength: "50mm standard",
+  subjectDistance: "1.5m medium distance",
+  handheldShake: true,
+  handheldStyle: "natural documentary shake",
 };
 
 const initialSnapshot: PromptSnapshot = {
@@ -105,8 +110,9 @@ const fitEvents = (events: TimelineEvent[], duration: number): TimelineEvent[] =
   }));
 };
 
-const normalizeIntimacyMode = (event: TimelineEvent): TimelineEvent => ({
+const normalizeEvent = (event: TimelineEvent): TimelineEvent => ({
   ...event,
+  pose: event.pose || "standing in a relaxed pose",
   intimacyMode: event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "standard intimate contact",
 });
 
@@ -150,6 +156,7 @@ export const usePromptStore = create<PromptState>()(
           action: state.basic.maleActor ? (state.masterData.partnerActions[3] ?? state.masterData.partnerActions[0]).value : state.masterData.soloActions[0].value,
           clothingState: state.clothing,
           camera: "medium shot",
+          pose: "standing in a relaxed pose",
           expression: "flushed cheeks, slightly open mouth, eyes half-closed",
           intimacyMode: "standard intimate contact",
           additionalDetails: "",
@@ -174,7 +181,11 @@ export const usePromptStore = create<PromptState>()(
       })),
       loadPreset: (id) => set((state) => {
         const preset = state.savedPresets.find((item) => item.id === id);
-        return preset ? { ...structuredClone(preset.snapshot), events: preset.snapshot.events.map(normalizeIntimacyMode) } : {};
+        return preset ? {
+          ...structuredClone(preset.snapshot),
+          basic: { ...defaultBasic, ...preset.snapshot.basic, age: clampAge(preset.snapshot.basic.age) },
+          events: preset.snapshot.events.map(normalizeEvent),
+        } : {};
       }),
       deletePreset: (id) => set((state) => ({ savedPresets: state.savedPresets.filter((item) => item.id !== id) })),
       addMasterItem: (category, item) => set((state) => {
@@ -201,7 +212,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 5,
+      version: 6,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);
@@ -210,9 +221,9 @@ export const usePromptStore = create<PromptState>()(
         }
         return {
           ...persisted,
-          basic: persisted.basic ? { ...persisted.basic, age: clampAge(persisted.basic.age) } : defaultBasic,
+          basic: persisted.basic ? { ...defaultBasic, ...persisted.basic, age: clampAge(persisted.basic.age) } : defaultBasic,
           masterData,
-          events: persisted.events?.map(normalizeIntimacyMode),
+          events: persisted.events?.map(normalizeEvent),
         };
       },
     },

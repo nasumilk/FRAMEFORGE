@@ -169,6 +169,35 @@ export const LIGHTING_OPTIONS = [
 
 export const MALE_BODY_TYPES = ["lean", "athletic", "muscular", "broad-shouldered"];
 export const MALE_AGE_FEELS = ["early 20s adult", "late 20s", "early 30s", "mature 40s"];
+
+export const POSES = [
+  "standing in a relaxed pose",
+  "kneeling upright",
+  "lying on her back",
+  "lying on her side",
+  "seated with legs crossed",
+  "leaning forward naturally",
+  "arching her back",
+  "hands raised above her head",
+];
+
+export const CAPTURE_DEVICES = [
+  "consumer camcorder",
+  "iPhone camera",
+  "professional cinema camera",
+  "compact CCD camera",
+];
+
+export const FOCAL_LENGTHS = ["18mm ultra-wide", "24mm wide-angle", "35mm natural wide", "50mm standard", "85mm portrait", "120mm telephoto"];
+export const SUBJECT_DISTANCES = ["0.3m extreme close distance", "0.6m close distance", "1.5m medium distance", "3m full-body distance", "5m or more distant view"];
+export const HANDHELD_STYLES = ["subtle micro-shake", "natural documentary shake", "pronounced handheld shake"];
+
+export const CAPTURE_DEVICE_DESCRIPTIONS: Record<string, string> = {
+  "consumer camcorder": "consumer-grade digital camcorder footage with modest dynamic range, visible electronic sharpening, responsive auto-exposure, slight white-balance drift, and practical home-video clarity",
+  "iPhone camera": "modern iPhone video with computational HDR, crisp micro-detail, controlled highlights, smartphone color science, mild digital sharpening, and stabilized rolling-shutter motion",
+  "professional cinema camera": "professional cinema-camera footage with high dynamic range, organic highlight roll-off, rich color depth, clean low-light detail, natural skin tones, and cinematic motion rendering",
+  "compact CCD camera": "compact CCD-camera footage with lower resolution, direct contrast, slight color bleed, pronounced luminance noise, harder highlights, and an authentic small-sensor electronic-video texture",
+};
 const asMasterItems = (values: string[]) => values.map((value) => ({ value, japanese: japaneseOption(value) }));
 
 export const DEFAULT_MASTER_DATA: MasterData = {
@@ -189,4 +218,9 @@ export const DEFAULT_MASTER_DATA: MasterData = {
   lightingOptions: asMasterItems(LIGHTING_OPTIONS),
   maleBodyTypes: asMasterItems(MALE_BODY_TYPES),
   maleAgeFeels: asMasterItems(MALE_AGE_FEELS),
+  poses: asMasterItems(POSES),
+  captureDevices: asMasterItems(CAPTURE_DEVICES),
+  focalLengths: asMasterItems(FOCAL_LENGTHS),
+  subjectDistances: asMasterItems(SUBJECT_DISTANCES),
+  handheldStyles: asMasterItems(HANDHELD_STYLES),
 };
