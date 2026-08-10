@@ -51,6 +51,7 @@ export interface TimelineEvent {
   camera: string;
   pose: string;
   expression: string;
+  adultToy: string;
   intimacyMode: "standard intimate contact" | "consensual anal intercourse";
   additionalDetails: string;
   shotNumber: number;
@@ -99,6 +100,7 @@ export interface MasterData {
   soloActions: MasterItem[];
   cameras: MasterItem[];
   expressions: MasterItem[];
+  adultToys: MasterItem[];
   soundPresets: MasterItem[];
   musicOptions: MasterItem[];
   stylePresets: MasterItem[];

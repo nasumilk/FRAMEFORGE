@@ -57,6 +57,7 @@ export function EventCard({ event, index, duration, maleActor, onUpdate, onRemov
           {maleActor && <SelectField label={label("Intimacy mode", "接触モード")} value={event.intimacyMode} options={INTIMACY_OPTIONS} onChange={(intimacyMode) => onUpdate({ intimacyMode: intimacyMode as TimelineEvent["intimacyMode"] })} />}
           <SelectField label={t.action} value={event.action} options={actions} onChange={(action) => onUpdate({ action })} />
           <SelectField label={t.expression} value={event.expression} options={master.expressions} onChange={(expression) => onUpdate({ expression })} />
+          <SelectField label={label("Adult toy", "大人向けトイ")} value={event.adultToy} options={master.adultToys} onChange={(adultToy) => onUpdate({ adultToy })} />
         </div>
       </section>
 

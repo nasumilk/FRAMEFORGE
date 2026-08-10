@@ -37,9 +37,11 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(eventCard, /SUBJECT TRACK/);
   assert.match(eventCard, /CAMERA TRACK/);
   assert.match(constants, /OFFICIAL_CAMERA_COMMANDS/);
+  assert.match(constants, /seated M-shaped leg-spread pose/);
+  assert.match(constants, /suction-cup mounted dildo/);
   assert.match(generator, /generateApiPayload/);
   assert.match(generator, /2,000-character limit/);
-  assert.match(store, /version: 8/);
+  assert.match(store, /version: 9/);
   assert.match(generator, /consenting adults aged 18 or older/);
   assert.match(generator, /basic\.bustSize/);
 });

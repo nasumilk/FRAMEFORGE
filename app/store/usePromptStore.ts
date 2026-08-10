@@ -129,6 +129,7 @@ const fitEvents = (events: TimelineEvent[], duration: number): TimelineEvent[] =
 const normalizeEvent = (event: TimelineEvent): TimelineEvent => ({
   ...event,
   pose: event.pose || "standing in a relaxed pose",
+  adultToy: event.adultToy || "no adult toy",
   intimacyMode: event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "standard intimate contact",
   shotNumber: Math.max(1, event.shotNumber || 1),
   transition: event.transition || "continuous cut-free movement",
@@ -201,6 +202,7 @@ export const usePromptStore = create<PromptState>()(
           camera: "medium shot",
           pose: "standing in a relaxed pose",
           expression: "flushed cheeks, slightly open mouth, eyes half-closed",
+          adultToy: "no adult toy",
           intimacyMode: "standard intimate contact",
           additionalDetails: "",
           shotNumber: Math.max(1, ...state.events.map((event) => event.shotNumber || 1)),
@@ -226,6 +228,7 @@ export const usePromptStore = create<PromptState>()(
           camera: template?.camera || "medium shot",
           pose: template?.pose || "standing in a relaxed pose",
           expression: template?.expression || "flushed cheeks, slightly open mouth, eyes half-closed",
+          adultToy: template?.adultToy || "no adult toy",
           intimacyMode: template?.intimacyMode || "standard intimate contact",
           additionalDetails: "",
           shotNumber: nextShot,
@@ -288,7 +291,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 8,
+      version: 9,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);

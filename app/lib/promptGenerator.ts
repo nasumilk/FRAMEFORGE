@@ -25,6 +25,7 @@ export function buildTimelineSegment(event: TimelineEvent, maleActor: boolean): 
     maleActor && event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "",
     cleanSentence(event.action),
     cleanSentence(event.expression),
+    event.adultToy && event.adultToy !== "no adult toy" ? `Adult toy: ${cleanSentence(event.adultToy)}` : "",
     `Captured at ${cleanSentence(event.aperture)} with ${cleanSentence(event.depthOfField)}`,
     `Focus stays on ${cleanSentence(event.focusTarget)} using ${cleanSentence(event.focusBehavior)}`,
     `${cleanSentence(event.frameRate)}, ${cleanSentence(event.shutterAngle)}`,

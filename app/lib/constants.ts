@@ -191,6 +191,30 @@ export const POSES = [
   "leaning forward naturally",
   "arching her back",
   "hands raised above her head",
+  "seated M-shaped leg-spread pose",
+  "kneeling with thighs spread apart",
+  "reclining with both legs raised",
+  "lying prone with hips elevated",
+  "on all fours with an arched back",
+  "bent forward while supported by a stable surface",
+  "standing with one leg raised and supported",
+  "deep squat with knees spread apart",
+  "seated on the edge of the bed with legs apart",
+  "side-lying with the upper leg raised",
+  "standing against a wall with arms raised",
+  "facing away while looking back over her shoulder",
+  "kneeling while sitting back on her heels",
+  "reclining with knees drawn toward her chest",
+];
+
+export const ADULT_TOYS = [
+  "no adult toy",
+  "small handheld vibrator",
+  "full-size wand vibrator",
+  "smooth insertable dildo",
+  "suction-cup mounted dildo fixed securely to a stable surface",
+  "remote-controlled wearable vibrator",
+  "compact thrusting machine with a secured dildo attachment",
 ];
 
 export const CAPTURE_DEVICES = [
@@ -240,6 +264,7 @@ export const DEFAULT_MASTER_DATA: MasterData = {
   soloActions: asMasterItems(SOLO_ACTIONS),
   cameras: asMasterItems(CAMERAS),
   expressions: asMasterItems(EXPRESSIONS),
+  adultToys: asMasterItems(ADULT_TOYS),
   soundPresets: asMasterItems(SOUND_PRESETS),
   musicOptions: asMasterItems(MUSIC_OPTIONS),
   stylePresets: asMasterItems(STYLE_PRESETS),
