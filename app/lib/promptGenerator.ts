@@ -43,12 +43,14 @@ const cameraMotionText = (event: TimelineEvent, basic: BasicSettings) => {
 
 export function buildTimelineSegment(event: TimelineEvent, basic: BasicSettings): string {
   const sceneType: SceneType = basic.sceneType;
+  const primaryWoman = `${formatAge(basic.age)} Japanese woman`;
+  const secondWoman = `${formatAge(basic.femalePartnerAge)} Japanese woman`;
   const roleDetails = sceneType === "male-female" && event.position
     ? [
       `Couple position: ${cleanSentence(event.position)}`,
       event.pose === AUTO_POSE
-        ? "The adult woman's body pose is derived from her role in the selected couple position"
-        : `Adult woman-only pose modifier within this position: ${cleanSentence(event.pose)}`,
+        ? `The ${primaryWoman}'s body pose is derived from her role in the selected couple position`
+        : `Pose modifier for the ${primaryWoman} within this position: ${cleanSentence(event.pose)}`,
       "The adult male partner adopts the complementary role-specific posture required by the couple position; he must not mirror or copy the woman's pose or limb placement",
       `Male partner hand action: ${cleanSentence(event.partnerHandAction)}`,
       "Both of the male partner's hands remain visibly accounted for in this action with stable wrists, natural finger placement, and no idle or duplicated hands",
@@ -57,32 +59,33 @@ export function buildTimelineSegment(event: TimelineEvent, basic: BasicSettings)
       ? [
         `Two-woman position: ${cleanSentence(event.position)}`,
         event.pose === AUTO_POSE
-          ? "The first adult woman's body pose is derived from her role in the selected two-woman position"
-          : `First adult woman-only pose modifier within this position: ${cleanSentence(event.pose)}`,
-        "The second adult woman adopts the complementary role-specific posture without mirroring or copying the first woman's limb placement",
-        `Second adult woman's hand action: ${cleanSentence(event.partnerHandAction)}`,
-        "Both hands of the second adult woman remain visibly accounted for with stable wrists, natural finger placement, and no idle or duplicated hands",
+          ? `The primary ${primaryWoman}'s body pose is derived from her role in the selected two-woman position`
+          : `Pose modifier for the primary ${primaryWoman} within this position: ${cleanSentence(event.pose)}`,
+        `The second ${secondWoman} adopts the complementary role-specific posture without mirroring or copying the primary woman's limb placement`,
+        `Second ${secondWoman}'s hand action: ${cleanSentence(event.partnerHandAction)}`,
+        `Both hands of the second ${secondWoman} remain visibly accounted for with stable wrists, natural finger placement, and no idle or duplicated hands`,
       ]
     : [
-      event.pose === AUTO_POSE ? "Adult woman's full-body pose: standing in a relaxed pose" : `Adult woman's full-body pose: ${cleanSentence(event.pose)}`,
-      "Exactly one adult woman appears in this solo scene; no partner, second woman, duplicate person, or other human is visible or implied",
+      event.pose === AUTO_POSE ? `The ${primaryWoman}'s full-body pose: standing in a relaxed pose` : `The ${primaryWoman}'s full-body pose: ${cleanSentence(event.pose)}`,
+      `Exactly one ${primaryWoman} appears in this solo scene; no partner, second woman, duplicate person, or other human is visible or implied`,
     ];
   const clothingDirection = /fully nude/i.test(event.clothingState)
-    ? "The adult woman is fully nude"
-    : `The adult woman wears ${cleanSentence(event.clothingState)}`;
+    ? `The ${primaryWoman} is fully nude`
+    : `The ${primaryWoman} wears ${cleanSentence(event.clothingState)}`;
   const details = [
     `Shot size and framing: ${cleanSentence(event.shotSize)}`,
     `Visual result: ${cleanSentence(event.visualResult)}`,
     `Camera angle: ${cleanSentence(event.camera)}`,
     cameraMotionText(event, basic),
+    `Body orientation for the primary ${primaryWoman}: ${cleanSentence(event.bodyOrientation)}. She holds the selected pose while keeping this orientation relative to the camera`,
     ...roleDetails,
     clothingDirection,
     sceneType === "male-female" && event.intimacyMode === "consensual anal intercourse" ? "Couple interaction mode: consensual anal intercourse" : "",
-    `${sceneType === "female-female" ? "Two-woman action" : sceneType === "male-female" ? "Couple action" : "Adult woman's action"}: ${sceneType === "solo" ? soloActionText(event) : cleanSentence(event.action)}`,
-    `Adult woman's expression: ${cleanSentence(event.expression)}`,
-    `Adult woman's performance direction: ${cleanSentence(event.performanceTone)}`,
+    `${sceneType === "female-female" ? `Two-woman action led by the primary ${primaryWoman}` : sceneType === "male-female" ? `Couple action involving the ${primaryWoman}` : `The ${primaryWoman}'s action`}: ${sceneType === "solo" ? soloActionText(event) : cleanSentence(event.action)}`,
+    `The ${primaryWoman}'s expression: ${cleanSentence(event.expression)}`,
+    `The ${primaryWoman}'s performance direction: ${cleanSentence(event.performanceTone)}`,
     sceneType !== "solo" ? `Consent direction: ${cleanSentence(event.consentDirection)}; all reactions and body language must remain clearly consensual` : "",
-    event.adultToy && event.adultToy !== "no adult toy" ? `Adult woman's toy: ${cleanSentence(event.adultToy)}` : "",
+    event.adultToy && event.adultToy !== "no adult toy" ? `The ${primaryWoman}'s toy: ${cleanSentence(event.adultToy)}` : "",
     `Depth of field: ${cleanSentence(event.depthOfField)}`,
     `Focus stays on ${cleanSentence(event.focusTarget)} using ${cleanSentence(event.focusBehavior)}`,
     `Motion rendering: ${cleanSentence(event.frameRate)}`,
@@ -107,10 +110,11 @@ const continuityText = (basic: BasicSettings) => {
 export function generateH3Prompt(state: PromptSnapshot): string {
   const { basic, situation, clothing, events, soundscape, music, customNotes } = state;
   const sortedEvents = [...events].sort((a, b) => (a.shotNumber || 1) - (b.shotNumber || 1) || a.start - b.start);
+  const primaryWoman = `${formatAge(basic.age)} Japanese woman`;
 
   let subject = `${cleanSentence(basic.style)}, ${cleanSentence(basic.lighting)}. `;
   if (basic.sceneType === "solo") {
-    subject += "Exactly one consenting adult woman is present throughout the entire video. She is the sole performer. No other person is visible or implied. Do not introduce a partner, second woman, duplicate person, extra body, or extra limbs. ";
+    subject += `Exactly one consenting adult ${primaryWoman} is present throughout the entire video. She is the sole performer. No other person is visible or implied. Do not introduce a partner, second woman, duplicate person, extra body, or extra limbs. `;
   } else {
     subject += "All depicted performers are consenting adults aged 18 or older. ";
   }
@@ -143,10 +147,10 @@ export function generateH3Prompt(state: PromptSnapshot): string {
   const integrated = `[Shot 1] ${subject} ${capture} ${continuityText(basic)} Location: ${cleanSentence(situation)}.${shots}${notes}${referenceVideoNote}`;
   let referencePrefix = "";
   if (basic.mode === "I2V" || basic.mode === "FLF") {
-    referencePrefix += "For the target video, at 0.00 seconds into the target video, <Picture 1> is fully referenced as the starting appearance and identity of the Japanese woman.\n";
+    referencePrefix += `For the target video, at 0.00 seconds into the target video, <Picture 1> is fully referenced as the starting appearance and identity of the ${primaryWoman}.\n`;
   }
   if (basic.mode === "FLF") referencePrefix += "The final target frame fully references <Picture 2> as the ending composition, pose, and camera destination.\n";
-  if (basic.mode === "S2V") referencePrefix += "<Picture 1> is fully referenced as the adult Japanese woman's facial identity throughout the target video.\n";
+  if (basic.mode === "S2V") referencePrefix += `<Picture 1> is fully referenced as the ${primaryWoman}'s facial identity throughout the target video.\n`;
   if (referencePrefix) referencePrefix += "\n";
 
   const finalSoundscape = basic.sceneType === "solo" ? soloSoundscape(soundscape) : cleanSentence(soundscape);
@@ -216,6 +220,7 @@ export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
     if (likelyConflict) diagnostics.push({ severity: "warning", message: `Event ${index + 1} combines a woman-only pose with a conflicting couple position; use Auto pose or change one selection.` });
     if (basic.sceneType === "solo" && /second woman|two women|both women|partner|couple|mutual|each other|male/i.test(event.additionalDetails)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} additional direction may imply another person in Solo mode.` });
     if (basic.sceneType === "solo" && /fully nude/i.test(event.clothingState) && /undress|clothes|clothing/i.test(event.action)) diagnostics.push({ severity: "info", message: `Event ${index + 1} says fully nude and undressing; Solo output automatically converts this to self-caressing.` });
+    if (/^front-facing/i.test(event.bodyOrientation) && /side profile/i.test(event.camera)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} requests a front-facing body with a side-profile camera angle; change one setting to avoid conflicting directions.` });
   });
   if (basic.sceneType === "solo" && /second woman|two women|both women|partner|couple|mutual|each other|male/i.test(customNotes)) diagnostics.push({ severity: "warning", message: "Global notes may imply another person in Solo mode." });
   if (basic.sceneType === "solo" && /male|partner|two women|both women/i.test(soundscape)) diagnostics.push({ severity: "info", message: "Partner-like audio is automatically converted to a Solo-only soundscape." });

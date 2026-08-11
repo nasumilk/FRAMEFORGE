@@ -299,6 +299,16 @@ export const POSES = [
   "reclining with knees drawn toward her chest",
 ];
 
+export const BODY_ORIENTATIONS = [
+  "front-facing toward the camera with shoulders and hips squared to the lens",
+  "front-facing toward the camera with a slight natural torso twist",
+  "three-quarter view toward the camera",
+  "facing the camera while the head and eyes look directly into the lens",
+  "facing the partner while keeping the torso open toward the camera",
+  "side profile to the camera",
+  "back facing the camera while looking over her shoulder",
+];
+
 export const ADULT_TOYS = [
   "no adult toy",
   "small handheld vibrator",
@@ -391,6 +401,7 @@ export const DEFAULT_MASTER_DATA: MasterData = {
   maleBodyTypes: asMasterItems(MALE_BODY_TYPES),
   maleAgeFeels: asMasterItems(MALE_AGE_FEELS),
   poses: asMasterItems(POSES),
+  bodyOrientations: asMasterItems(BODY_ORIENTATIONS),
   captureDevices: asMasterItems(CAPTURE_DEVICES),
   focalLengths: asMasterItems(FOCAL_LENGTHS),
   subjectDistances: asMasterItems(SUBJECT_DISTANCES),

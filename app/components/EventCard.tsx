@@ -49,6 +49,7 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
         <div className="track-title"><UserRound size={14} /><span>{label("SUBJECT TRACK", "被写体トラック")}</span></div>
         <div className="event-grid">
           <SelectField label={label("Woman pose (Auto recommended)", "女性ポーズ（自動推奨）")} value={event.pose} options={master.poses} onChange={(pose) => onUpdate({ pose })} />
+          <SelectField label={label("Main woman's body orientation", "メイン女性の体の向き")} value={event.bodyOrientation} options={master.bodyOrientations} onChange={(bodyOrientation) => onUpdate({ bodyOrientation })} />
           <SelectField label={t.clothingState} value={event.clothingState} options={master.clothings} onChange={(clothingState) => onUpdate({ clothingState })} />
           {partnered && <SelectField label={sceneType === "female-female" ? label("Women-couple position", "女性同士の体位") : label("Couple position", "カップルの体位")} value={event.position} options={positions} onChange={(position) => onUpdate({ position })} />}
           {sceneType === "male-female" && <SelectField label={label("Intimacy mode", "接触モード")} value={event.intimacyMode} options={INTIMACY_OPTIONS} onChange={(intimacyMode) => onUpdate({ intimacyMode: intimacyMode as TimelineEvent["intimacyMode"] })} />}

@@ -160,6 +160,7 @@ const normalizeEvent = (event: TimelineEvent): TimelineEvent => {
   return ({
   ...event,
   camera: legacy.cameraAngle,
+  bodyOrientation: event.bodyOrientation || "front-facing toward the camera with shoulders and hips squared to the lens",
   shotSize: event.shotSize || legacy.shotSize,
   visualResult: event.visualResult || "natural perspective with a balanced relationship between subject and environment",
   cameraMotion: event.cameraMotion || legacy.cameraMotion,
@@ -277,6 +278,7 @@ export const usePromptStore = create<PromptState>()(
           action: state.basic.sceneType === "female-female" ? state.masterData.lesbianActions[0].value : state.basic.sceneType === "male-female" ? (state.masterData.partnerActions[3] ?? state.masterData.partnerActions[0]).value : state.masterData.soloActions[0].value,
           clothingState: state.clothing,
           camera: "eye-level angle",
+          bodyOrientation: "front-facing toward the camera with shoulders and hips squared to the lens",
           shotSize: "medium shot from the waist up",
           visualResult: "natural perspective with a balanced relationship between subject and environment",
           cameraMotion: "locked-off static",
@@ -311,6 +313,7 @@ export const usePromptStore = create<PromptState>()(
           action: template?.action || (state.basic.sceneType === "female-female" ? state.masterData.lesbianActions[0].value : state.basic.sceneType === "male-female" ? state.masterData.partnerActions[0].value : state.masterData.soloActions[0].value),
           clothingState: template?.clothingState || state.clothing,
           camera: template?.camera || "medium shot",
+          bodyOrientation: template?.bodyOrientation || "front-facing toward the camera with shoulders and hips squared to the lens",
           shotSize: template?.shotSize || "medium shot from the waist up",
           visualResult: template?.visualResult || "natural perspective with a balanced relationship between subject and environment",
           cameraMotion: template?.cameraMotion || "locked-off static",
@@ -385,7 +388,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 14,
+      version: 15,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);

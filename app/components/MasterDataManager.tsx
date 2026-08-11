@@ -33,6 +33,7 @@ const CATEGORY_LABELS: Array<{ key: MasterCategory; label: [string, string]; gro
   { key: "shutterAngles", label: ["Shutter angles", "シャッター角度"], group: ["Capture", "撮影"] },
   { key: "shotTransitions", label: ["Transitions", "トランジション"], group: ["Timeline", "タイムライン"] },
   { key: "poses", label: ["Subject poses", "被写体ポーズ"], group: ["Timeline", "タイムライン"] },
+  { key: "bodyOrientations", label: ["Body orientations", "体の向き"], group: ["Timeline", "タイムライン"] },
   { key: "adultToys", label: ["Adult toys", "大人向けトイ"], group: ["Timeline", "タイムライン"] },
   { key: "positions", label: ["Positions", "体位"], group: ["Timeline", "タイムライン"] },
   { key: "partnerActions", label: ["Partner actions", "相手ありのアクション"], group: ["Timeline", "タイムライン"] },
