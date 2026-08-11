@@ -60,8 +60,19 @@ export function SelectorsPanel() {
 
       <div className="section-label"><Camera size={14} /> {t.captureSetup}</div>
       <SelectField label={t.cameraDevice} value={basic.captureDevice} options={master.captureDevices} onChange={(captureDevice) => setBasic({ captureDevice })} />
-      <SelectField label={t.focalLength} value={basic.focalLength} options={master.focalLengths} onChange={(focalLength) => setBasic({ focalLength })} />
-      <SelectField label={t.subjectDistance} value={basic.subjectDistance} options={master.subjectDistances} onChange={(subjectDistance) => setBasic({ subjectDistance })} />
+      <label className="switch-row capture-switch">
+        <span>{label("Convert optional numeric camera hints", "数値カメラ指定を視覚表現へ変換")}</span>
+        <input type="checkbox" checked={basic.useNumericCameraHints} onChange={(event) => setBasic({ useNumericCameraHints: event.target.checked })} />
+      </label>
+      {basic.useNumericCameraHints && <>
+        <span className="field-hint">{label("Numbers are not emitted; they are translated into visual framing and lens-look descriptions.", "数値は出力せず、構図とレンズの見え方を表す文章へ変換します。")}</span>
+        <SelectField label={label("Optional lens-look hint", "補助的なレンズ表現")} value={basic.focalLength} options={master.focalLengths} onChange={(focalLength) => setBasic({ focalLength })} />
+        <SelectField label={label("Optional framing-distance hint", "補助的な距離・構図表現")} value={basic.subjectDistance} options={master.subjectDistances} onChange={(subjectDistance) => setBasic({ subjectDistance })} />
+      </>}
+      <label className="switch-row capture-switch">
+        <span>{label("Recommend Reference Video for precise camera work", "正確なカメラワークにはReference Videoを推奨")}</span>
+        <input type="checkbox" checked={basic.includeReferenceVideoNote} onChange={(event) => setBasic({ includeReferenceVideoNote: event.target.checked })} />
+      </label>
       <label className="switch-row capture-switch">
         <span>{t.naturalHandheld}</span>
         <input type="checkbox" checked={basic.handheldShake} onChange={(event) => setBasic({ handheldShake: event.target.checked })} />

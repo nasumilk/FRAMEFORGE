@@ -1,5 +1,5 @@
 import type { AgeValue, BasicSettings, PromptSnapshot, SceneType, TimelineEvent } from "./types";
-import { AUTO_POSE, CAPTURE_DEVICE_DESCRIPTIONS } from "./constants";
+import { AUTO_POSE, CAPTURE_DEVICE_DESCRIPTIONS, FOCAL_LENGTH_VISUAL_RESULTS, SUBJECT_DISTANCE_VISUAL_RESULTS } from "./constants";
 
 const cleanSentence = (value = "") => value.trim().replace(/[.\s]+$/, "");
 
@@ -13,9 +13,18 @@ export function supportedDurations(basic: Pick<BasicSettings, "mode" | "resoluti
   return [6, 10];
 }
 
-const commandText = (commands: string[]) => commands.length ? `[${commands.slice(0, 3).join(",")}]` : "";
+const cameraMotionText = (event: TimelineEvent, basic: BasicSettings) => {
+  if (event.cameraMotion === "locked-off static") {
+    return `Locked-off static ${cleanSentence(event.shotSize)}. No push, no zoom, no dolly, no pan, no tilt, no reframing. The frame never moves`;
+  }
+  const handheld = basic.handheldShake
+    ? `. Natural handheld character: ${cleanSentence(basic.handheldStyle)} with physically plausible operator drift and breathing-induced micro-movement, without synthetic jitter`
+    : ". No additional handheld shake";
+  return `Camera motion: the camera ${cleanSentence(event.cameraMotion)} at ${cleanSentence(event.motionSpeed)} with ${cleanSentence(event.motionAmplitude)}${handheld}`;
+};
 
-export function buildTimelineSegment(event: TimelineEvent, sceneType: SceneType): string {
+export function buildTimelineSegment(event: TimelineEvent, basic: BasicSettings): string {
+  const sceneType: SceneType = basic.sceneType;
   const roleDetails = sceneType === "male-female" && event.position
     ? [
       `Couple position: ${cleanSentence(event.position)}`,
@@ -41,17 +50,19 @@ export function buildTimelineSegment(event: TimelineEvent, sceneType: SceneType)
       "solo scene",
     ];
   const details = [
-    commandText(event.cameraCommands || []),
-    cleanSentence(event.camera),
+    `Shot size and framing: ${cleanSentence(event.shotSize)}`,
+    `Visual result: ${cleanSentence(event.visualResult)}`,
+    `Camera angle: ${cleanSentence(event.camera)}`,
+    cameraMotionText(event, basic),
     ...roleDetails,
     `The adult woman wears ${cleanSentence(event.clothingState)}`,
     sceneType === "male-female" && event.intimacyMode === "consensual anal intercourse" ? "Couple interaction mode: consensual anal intercourse" : "",
     `${sceneType === "female-female" ? "Two-woman action" : sceneType === "male-female" ? "Couple action" : "Adult woman's action"}: ${cleanSentence(event.action)}`,
     `Adult woman's expression: ${cleanSentence(event.expression)}`,
     event.adultToy && event.adultToy !== "no adult toy" ? `Adult woman's toy: ${cleanSentence(event.adultToy)}` : "",
-    `Captured at ${cleanSentence(event.aperture)} with ${cleanSentence(event.depthOfField)}`,
+    `Depth of field: ${cleanSentence(event.depthOfField)}`,
     `Focus stays on ${cleanSentence(event.focusTarget)} using ${cleanSentence(event.focusBehavior)}`,
-    `${cleanSentence(event.frameRate)}, ${cleanSentence(event.shutterAngle)}`,
+    `Motion rendering: ${cleanSentence(event.frameRate)}`,
     event.additionalDetails ? cleanSentence(event.additionalDetails) : "",
   ].filter(Boolean);
   return `[${event.start}-${event.end}s] ${details.join(". ")}.`;
@@ -86,21 +97,23 @@ export function generateH3Prompt(state: PromptSnapshot): string {
   }
 
   const device = CAPTURE_DEVICE_DESCRIPTIONS[basic.captureDevice] ?? cleanSentence(basic.captureDevice);
-  const capture = `Capture profile: ${cleanSentence(device)}. Lens: ${cleanSentence(basic.focalLength)}. Camera-to-subject distance: ${cleanSentence(basic.subjectDistance)}. ${basic.handheldShake
-    ? `${cleanSentence(basic.handheldStyle)} with physically plausible operator drift and breathing-induced micro-movement, without synthetic jitter`
-    : "Stable camera support with no handheld shake"}.`;
+  const hintText = basic.useNumericCameraHints
+    ? ` Optional visual look converted from numeric hints: ${cleanSentence(FOCAL_LENGTH_VISUAL_RESULTS[basic.focalLength] ?? basic.focalLength)}; ${cleanSentence(SUBJECT_DISTANCE_VISUAL_RESULTS[basic.subjectDistance] ?? basic.subjectDistance)}.`
+    : "";
+  const capture = `Capture profile: ${cleanSentence(device)}.${hintText}`;
 
   const shotNumbers = [...new Set(sortedEvents.map((event) => event.shotNumber || 1))];
   const shots = shotNumbers.length
     ? shotNumbers.map((shotNumber, index) => {
       const shotEvents = sortedEvents.filter((event) => (event.shotNumber || 1) === shotNumber);
       const transition = index > 0 ? ` Transition: ${cleanSentence(shotEvents[0]?.transition || "hard cut")}.` : "";
-      return `${index > 0 ? ` [Shot ${shotNumber}]${transition}` : ""} ${shotEvents.map((event) => buildTimelineSegment(event, basic.sceneType)).join(" ")}`;
+      return `${index > 0 ? ` [Shot ${shotNumber}]${transition}` : ""} ${shotEvents.map((event) => buildTimelineSegment(event, basic)).join(" ")}`;
     }).join("")
     : ` [0-${basic.duration}s] Medium shot. She is ${cleanSentence(clothing)} in a ${cleanSentence(situation)}. ${basic.sceneType === "female-female" ? "Two consenting adult women share a sensual intimate moment" : basic.sceneType === "male-female" ? "A consenting adult couple shares a sensual intimate moment" : "She performs a sensual solo scene"}.`;
 
   const notes = customNotes.trim() ? ` ${cleanSentence(customNotes)}.` : "";
-  const integrated = `[Shot 1] ${subject} ${capture} ${continuityText(basic)} Location: ${cleanSentence(situation)}.${shots}${notes}`;
+  const referenceVideoNote = basic.includeReferenceVideoNote ? " For more precise camera choreography, use a Reference Video to guide camera motion." : "";
+  const integrated = `[Shot 1] ${subject} ${capture} ${continuityText(basic)} Location: ${cleanSentence(situation)}.${shots}${notes}${referenceVideoNote}`;
   let referencePrefix = "";
   if (basic.mode === "I2V" || basic.mode === "FLF") {
     referencePrefix += "For the target video, at 0.00 seconds into the target video, <Picture 1> is fully referenced as the starting appearance and identity of the Japanese woman.\n";
@@ -166,7 +179,7 @@ export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
   if (basic.mode === "FLF" && (!basic.firstFrameImage || !basic.lastFrameImage)) diagnostics.push({ severity: "warning", message: "First/last-frame mode needs both image URLs." });
   if (basic.mode === "S2V" && !basic.subjectReferenceImage) diagnostics.push({ severity: "warning", message: "Add a subject-reference image URL before using the API JSON." });
   events.forEach((event, index) => {
-    if ((event.cameraCommands?.length || 0) > 3) diagnostics.push({ severity: "error", message: `Event ${index + 1} uses more than three simultaneous camera commands.` });
+    if ((event.cameraCommands?.length || 0) > 1) diagnostics.push({ severity: "warning", message: `Event ${index + 1} contains legacy camera commands; only one camera motion is used per shot.` });
     const explicitPose = event.pose && event.pose !== AUTO_POSE;
     const likelyConflict = explicitPose && basic.sceneType !== "solo" && event.position && (
       (/standing|M-shaped|deep squat/i.test(event.pose) && /missionary|cowgirl|spooning|prone|oral|sitting/i.test(event.position))
@@ -174,7 +187,6 @@ export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
     );
     if (likelyConflict) diagnostics.push({ severity: "warning", message: `Event ${index + 1} combines a woman-only pose with a conflicting couple position; use Auto pose or change one selection.` });
   });
-  if (basic.focalLength.startsWith("120mm") && basic.subjectDistance.startsWith("0.3m")) diagnostics.push({ severity: "warning", message: "120mm at 0.3m is likely too close to focus naturally." });
   if (!events.length) diagnostics.push({ severity: "info", message: "Add timeline events for precise shot and focus control." });
   return diagnostics;
 }

@@ -57,6 +57,8 @@ export const defaultBasic: BasicSettings = {
   captureDevice: "professional cinema camera",
   focalLength: "50mm standard",
   subjectDistance: "1.5m medium distance",
+  useNumericCameraHints: false,
+  includeReferenceVideoNote: false,
   handheldShake: true,
   handheldStyle: "natural documentary shake",
   model: "MiniMax-Hailuo-2.3",
@@ -131,22 +133,53 @@ const fitEvents = (events: TimelineEvent[], duration: number): TimelineEvent[] =
   }));
 };
 
-const normalizeEvent = (event: TimelineEvent): TimelineEvent => ({
+const legacyCameraSettings = (event: TimelineEvent) => {
+  const camera = event.camera || "";
+  const command = event.cameraCommands?.[0] || "";
+  const shotSize = camera === "extreme close-up" ? "extreme close-up of the face, facial details fill the frame"
+    : camera === "close-up on face" ? "close-up of the face and shoulders"
+      : camera === "medium close-up" ? "medium close-up from the chest up"
+        : "medium shot from the waist up";
+  const commandMotion: Record<string, string> = {
+    "Push in": "pushes in toward the subject", "Zoom in": "pushes in toward the subject",
+    "Pull out": "pulls back from the subject", "Zoom out": "pulls back from the subject",
+    "Pan left": "pans left", "Pan right": "pans right", "Tracking shot": "tracks beside the subject",
+    "Tilt up": "tilts up", "Tilt down": "tilts down", "Static shot": "locked-off static",
+  };
+  const cameraMotion = camera === "static shot" ? "locked-off static"
+    : camera === "slow push-in" ? "pushes in toward the subject"
+      : camera === "gentle tracking shot" ? "tracks beside the subject"
+        : commandMotion[command] || "locked-off static";
+  const cameraAngle = ["medium shot", "medium close-up", "close-up on face", "extreme close-up", "slow push-in", "static shot", "gentle tracking shot"].includes(camera)
+    ? "eye-level angle" : camera || "eye-level angle";
+  return { shotSize, cameraMotion, cameraAngle };
+};
+
+const normalizeEvent = (event: TimelineEvent): TimelineEvent => {
+  const legacy = legacyCameraSettings(event);
+  return ({
   ...event,
+  camera: legacy.cameraAngle,
+  shotSize: event.shotSize || legacy.shotSize,
+  visualResult: event.visualResult || "natural perspective with a balanced relationship between subject and environment",
+  cameraMotion: event.cameraMotion || legacy.cameraMotion,
+  motionAmplitude: event.motionAmplitude || "small amplitude",
+  motionSpeed: event.motionSpeed || "slow speed",
   pose: event.pose || "standing in a relaxed pose",
   adultToy: event.adultToy || "no adult toy",
   partnerHandAction: event.partnerHandAction || "both hands firmly supporting the adult woman's hips",
   intimacyMode: event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "standard intimate contact",
   shotNumber: Math.max(1, event.shotNumber || 1),
   transition: event.transition || "continuous cut-free movement",
-  cameraCommands: Array.isArray(event.cameraCommands) ? event.cameraCommands.slice(0, 3) : [],
+  cameraCommands: Array.isArray(event.cameraCommands) ? event.cameraCommands.slice(0, 1) : [],
   aperture: event.aperture || "f/2.8",
   depthOfField: event.depthOfField || "shallow depth of field",
   focusTarget: event.focusTarget || "face",
   focusBehavior: event.focusBehavior || "continuous subject-tracking autofocus",
   frameRate: event.frameRate || "24 fps cinematic motion",
   shutterAngle: event.shutterAngle || "180-degree shutter",
-});
+  });
+};
 
 const normalizeEventForRole = (event: TimelineEvent, sceneType: SceneType): TimelineEvent => normalizeEvent({
   ...event,
@@ -241,7 +274,12 @@ export const usePromptStore = create<PromptState>()(
           position: state.basic.sceneType === "female-female" ? state.masterData.lesbianPositions[0].value : state.basic.sceneType === "male-female" ? "missionary position" : "",
           action: state.basic.sceneType === "female-female" ? state.masterData.lesbianActions[0].value : state.basic.sceneType === "male-female" ? (state.masterData.partnerActions[3] ?? state.masterData.partnerActions[0]).value : state.masterData.soloActions[0].value,
           clothingState: state.clothing,
-          camera: "medium shot",
+          camera: "eye-level angle",
+          shotSize: "medium shot from the waist up",
+          visualResult: "natural perspective with a balanced relationship between subject and environment",
+          cameraMotion: "locked-off static",
+          motionAmplitude: "small amplitude",
+          motionSpeed: "slow speed",
           pose: state.basic.sceneType !== "solo" ? AUTO_POSE : "standing in a relaxed pose",
           expression: "flushed cheeks, slightly open mouth, eyes half-closed",
           adultToy: "no adult toy",
@@ -269,6 +307,11 @@ export const usePromptStore = create<PromptState>()(
           action: template?.action || (state.basic.sceneType === "female-female" ? state.masterData.lesbianActions[0].value : state.basic.sceneType === "male-female" ? state.masterData.partnerActions[0].value : state.masterData.soloActions[0].value),
           clothingState: template?.clothingState || state.clothing,
           camera: template?.camera || "medium shot",
+          shotSize: template?.shotSize || "medium shot from the waist up",
+          visualResult: template?.visualResult || "natural perspective with a balanced relationship between subject and environment",
+          cameraMotion: template?.cameraMotion || "locked-off static",
+          motionAmplitude: template?.motionAmplitude || "small amplitude",
+          motionSpeed: template?.motionSpeed || "slow speed",
           pose: state.basic.sceneType !== "solo"
             ? (!template?.pose || template.pose === "standing in a relaxed pose" ? AUTO_POSE : template.pose)
             : (template?.pose || "standing in a relaxed pose"),
@@ -336,7 +379,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 12,
+      version: 13,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);

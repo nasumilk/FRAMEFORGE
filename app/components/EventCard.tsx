@@ -2,12 +2,12 @@
 
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
-import { Aperture, GripVertical, UserRound, Video, Trash2 } from "lucide-react";
+import { GripVertical, UserRound, Video, Trash2 } from "lucide-react";
 import type { MasterItem, SceneType, TimelineEvent } from "../lib/types";
 import { Field, SelectField } from "./Field";
 import { usePromptStore } from "../store/usePromptStore";
 import { UI_COPY } from "../lib/localization";
-import { MALE_POV_CAMERA, OFFICIAL_CAMERA_COMMANDS } from "../lib/constants";
+import { MALE_POV_CAMERA } from "../lib/constants";
 
 const INTIMACY_OPTIONS: MasterItem[] = [
   { value: "standard intimate contact", japanese: "通常の親密な接触" },
@@ -29,11 +29,6 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
   const cameraOptions = sceneType === "male-female" ? master.cameras : master.cameras.filter((camera) => camera.value !== MALE_POV_CAMERA);
   const invalid = event.start < 0 || event.end > duration || event.end <= event.start;
   const label = (eng: string, jap: string) => language === "JAP" ? jap : eng;
-  const toggleCommand = (command: string) => {
-    const selected = event.cameraCommands || [];
-    if (selected.includes(command)) onUpdate({ cameraCommands: selected.filter((item) => item !== command) });
-    else if (selected.length < 3) onUpdate({ cameraCommands: [...selected, command] });
-  };
 
   return (
     <article ref={setNodeRef} style={style} className={`event-card ${isDragging ? "dragging" : ""} ${invalid ? "invalid" : ""}`}>
@@ -67,22 +62,18 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
       <section className="track-panel camera-track">
         <div className="track-title"><Video size={14} /><span>{label("CAMERA TRACK", "カメラトラック")}</span></div>
         <div className="event-grid">
-          <SelectField label={t.camera} value={event.camera} options={cameraOptions} onChange={(camera) => onUpdate({ camera })} />
-          <SelectField label={label("Aperture", "絞り")} value={event.aperture} options={master.apertures} onChange={(aperture) => onUpdate({ aperture })} />
+          <SelectField label={label("1. Shot size / framing", "1. ショットサイズ・構図")} value={event.shotSize} options={master.shotSizes} onChange={(shotSize) => onUpdate({ shotSize })} />
+          <SelectField label={label("2. Visual result", "2. 視覚的な見え方")} value={event.visualResult} options={master.visualResults} onChange={(visualResult) => onUpdate({ visualResult })} />
+          <SelectField label={label("3. Camera angle", "3. カメラ角度")} value={event.camera} options={cameraOptions} onChange={(camera) => onUpdate({ camera })} />
+          <SelectField label={label("4. Camera motion (one only)", "4. カメラの動き（1つのみ）")} value={event.cameraMotion} options={master.cameraMotions} onChange={(cameraMotion) => onUpdate({ cameraMotion, cameraCommands: [] })} />
+          {event.cameraMotion !== "locked-off static" && <SelectField label={label("5. Motion amplitude", "5. 動きの振幅")} value={event.motionAmplitude} options={master.motionAmplitudes} onChange={(motionAmplitude) => onUpdate({ motionAmplitude })} />}
+          {event.cameraMotion !== "locked-off static" && <SelectField label={label("6. Motion speed", "6. 動きの速度")} value={event.motionSpeed} options={master.motionSpeeds} onChange={(motionSpeed) => onUpdate({ motionSpeed })} />}
           <SelectField label={label("Depth of field", "被写界深度")} value={event.depthOfField} options={master.depthOfFieldOptions} onChange={(depthOfField) => onUpdate({ depthOfField })} />
           <SelectField label={label("Focus target", "フォーカス対象")} value={event.focusTarget} options={master.focusTargets} onChange={(focusTarget) => onUpdate({ focusTarget })} />
           <SelectField label={label("Focus behavior", "フォーカス動作")} value={event.focusBehavior} options={master.focusBehaviors} onChange={(focusBehavior) => onUpdate({ focusBehavior })} />
           <SelectField label={label("Frame rate", "フレームレート")} value={event.frameRate} options={master.frameRates} onChange={(frameRate) => onUpdate({ frameRate })} />
-          <SelectField label={label("Shutter", "シャッター角度")} value={event.shutterAngle} options={master.shutterAngles} onChange={(shutterAngle) => onUpdate({ shutterAngle })} />
         </div>
-        <div className="camera-command-head"><span><Aperture size={13} />{label("Official camera commands", "公式カメラコマンド")}</span><small>{(event.cameraCommands || []).length}/3</small></div>
-        <div className="command-grid">
-          {OFFICIAL_CAMERA_COMMANDS.map((command) => {
-            const active = (event.cameraCommands || []).includes(command);
-            const disabled = !active && (event.cameraCommands || []).length >= 3;
-            return <button type="button" key={command} className={active ? "active" : ""} disabled={disabled} onClick={() => toggleCommand(command)}>{command}</button>;
-          })}
-        </div>
+        {event.cameraMotion === "locked-off static" && <span className="field-hint">{label("Static mode automatically forbids push, zoom, dolly, pan, tilt, reframing, and handheld shake.", "固定モードではプッシュ、ズーム、ドリー、パン、チルト、リフレーミング、手振れを自動的に禁止します。")}</span>}
       </section>
 
       <Field label={t.additionalDirection}><input value={event.additionalDetails} onChange={(e) => onUpdate({ additionalDetails: e.target.value })} placeholder={t.directionPlaceholder} /></Field>

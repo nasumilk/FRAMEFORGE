@@ -167,19 +167,47 @@ export const SOLO_ACTIONS = [
 export const MALE_POV_CAMERA = "male performer POV, first-person perspective";
 
 export const CAMERAS = [
-  "medium shot",
-  "medium close-up",
-  "close-up on face",
-  "extreme close-up",
+  "eye-level angle",
   "low angle",
   "slight high angle",
   "side profile",
   "over-the-shoulder",
-  "slow push-in",
-  "static shot",
-  "gentle tracking shot",
   MALE_POV_CAMERA,
 ];
+
+export const SHOT_SIZES = [
+  "extreme close-up of the face, facial details fill the frame",
+  "close-up of the face and shoulders",
+  "medium close-up from the chest up",
+  "medium shot from the waist up",
+  "medium full shot from the knees up",
+  "wide shot, full body visible with generous space around the subject",
+  "wide establishing shot, full body visible with lots of environment",
+];
+
+export const VISUAL_RESULTS = [
+  "natural perspective with a balanced relationship between subject and environment",
+  "shallow depth of field with a softly blurred background",
+  "background heavily blurred, isolating the subject",
+  "long-lens look, background compressed and appearing close to the subject",
+  "wide-angle look with generous environmental space and mild perspective expansion",
+  "intimate close framing with the face and hands visually dominant",
+];
+
+export const CAMERA_MOTIONS = [
+  "locked-off static",
+  "pushes in toward the subject",
+  "pulls back from the subject",
+  "pans left",
+  "pans right",
+  "tracks beside the subject",
+  "arcs around the subject",
+  "tilts up",
+  "tilts down",
+];
+
+export const MOTION_AMPLITUDES = ["small amplitude", "medium amplitude", "large amplitude"];
+export const MOTION_SPEEDS = ["very slow speed", "slow speed", "medium speed", "fast speed"];
 
 export const EXPRESSIONS = [
   "flushed cheeks, slightly open mouth, eyes half-closed",
@@ -291,6 +319,23 @@ export const CAPTURE_DEVICE_DESCRIPTIONS: Record<string, string> = {
   "professional cinema camera": "professional cinema-camera footage with high dynamic range, organic highlight roll-off, rich color depth, clean low-light detail, natural skin tones, and cinematic motion rendering",
   "compact CCD camera": "compact CCD-camera footage with lower resolution, direct contrast, slight color bleed, pronounced luminance noise, harder highlights, and an authentic small-sensor electronic-video texture",
 };
+
+export const FOCAL_LENGTH_VISUAL_RESULTS: Record<string, string> = {
+  "18mm ultra-wide": "very wide-angle look with strong environmental presence and noticeable perspective expansion",
+  "24mm wide-angle": "wide-angle look with the full body visible and generous space around the subject",
+  "35mm natural wide": "natural wide view balancing the subject with the surrounding environment",
+  "50mm standard": "natural perspective with balanced proportions and minimal visual distortion",
+  "85mm portrait": "tight portrait look with shallow depth of field and a strongly blurred background",
+  "120mm telephoto": "long-lens look with a compressed background appearing close to the subject",
+};
+
+export const SUBJECT_DISTANCE_VISUAL_RESULTS: Record<string, string> = {
+  "0.3m extreme close distance": "extreme close framing with facial details filling most of the frame",
+  "0.6m close distance": "intimate close framing focused on the face and upper body",
+  "1.5m medium distance": "medium framing showing the subject from approximately the waist up",
+  "3m full-body distance": "wide framing with the full body visible and clear space around the subject",
+  "5m or more distant view": "wide establishing composition with extensive environment visible",
+};
 const asMasterItems = (values: string[]) => values.map((value) => ({ value, japanese: japaneseOption(value) }));
 
 export const DEFAULT_MASTER_DATA: MasterData = {
@@ -308,6 +353,11 @@ export const DEFAULT_MASTER_DATA: MasterData = {
   partnerHandActions: asMasterItems(PARTNER_HAND_ACTIONS),
   soloActions: asMasterItems(SOLO_ACTIONS),
   cameras: asMasterItems(CAMERAS),
+  shotSizes: asMasterItems(SHOT_SIZES),
+  visualResults: asMasterItems(VISUAL_RESULTS),
+  cameraMotions: asMasterItems(CAMERA_MOTIONS),
+  motionAmplitudes: asMasterItems(MOTION_AMPLITUDES),
+  motionSpeeds: asMasterItems(MOTION_SPEEDS),
   expressions: asMasterItems(EXPRESSIONS),
   adultToys: asMasterItems(ADULT_TOYS),
   soundPresets: asMasterItems(SOUND_PRESETS),

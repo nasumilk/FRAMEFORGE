@@ -29,6 +29,8 @@ export interface BasicSettings {
   captureDevice: string;
   focalLength: string;
   subjectDistance: string;
+  useNumericCameraHints: boolean;
+  includeReferenceVideoNote: boolean;
   handheldShake: boolean;
   handheldStyle: string;
   model: string;
@@ -55,6 +57,11 @@ export interface TimelineEvent {
   action: string;
   clothingState: string;
   camera: string;
+  shotSize: string;
+  visualResult: string;
+  cameraMotion: string;
+  motionAmplitude: string;
+  motionSpeed: string;
   pose: string;
   expression: string;
   adultToy: string;
@@ -109,6 +116,11 @@ export interface MasterData {
   partnerHandActions: MasterItem[];
   soloActions: MasterItem[];
   cameras: MasterItem[];
+  shotSizes: MasterItem[];
+  visualResults: MasterItem[];
+  cameraMotions: MasterItem[];
+  motionAmplitudes: MasterItem[];
+  motionSpeeds: MasterItem[];
   expressions: MasterItem[];
   adultToys: MasterItem[];
   soundPresets: MasterItem[];
