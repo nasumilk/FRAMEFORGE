@@ -41,7 +41,7 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(constants, /suction-cup mounted dildo/);
   assert.match(generator, /generateApiPayload/);
   assert.match(generator, /2,000-character limit/);
-  assert.match(store, /version: 13/);
+  assert.match(store, /version: 14/);
   assert.match(generator, /consenting adults aged 18 or older/);
   assert.match(generator, /must not mirror or copy the woman's pose/);
   assert.match(generator, /Both of the male partner's hands remain visibly accounted for/);
@@ -54,5 +54,9 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(eventCard, /Camera motion \(one only\)/);
   assert.match(generator, /No push, no zoom, no dolly, no pan, no tilt, no reframing/);
   assert.match(generator, /Optional visual look converted from numeric hints/);
+  assert.match(generator, /Adult woman's performance direction/);
+  assert.match(generator, /all reactions and body language must remain clearly consensual/);
+  assert.match(constants, /PERFORMANCE_TONES/);
+  assert.match(constants, /CONSENT_DIRECTIONS/);
   assert.match(generator, /basic\.bustSize/);
 });

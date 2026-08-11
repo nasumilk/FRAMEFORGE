@@ -59,6 +59,8 @@ export function buildTimelineSegment(event: TimelineEvent, basic: BasicSettings)
     sceneType === "male-female" && event.intimacyMode === "consensual anal intercourse" ? "Couple interaction mode: consensual anal intercourse" : "",
     `${sceneType === "female-female" ? "Two-woman action" : sceneType === "male-female" ? "Couple action" : "Adult woman's action"}: ${cleanSentence(event.action)}`,
     `Adult woman's expression: ${cleanSentence(event.expression)}`,
+    `Adult woman's performance direction: ${cleanSentence(event.performanceTone)}`,
+    sceneType !== "solo" ? `Consent direction: ${cleanSentence(event.consentDirection)}; all reactions and body language must remain clearly consensual` : "",
     event.adultToy && event.adultToy !== "no adult toy" ? `Adult woman's toy: ${cleanSentence(event.adultToy)}` : "",
     `Depth of field: ${cleanSentence(event.depthOfField)}`,
     `Focus stays on ${cleanSentence(event.focusTarget)} using ${cleanSentence(event.focusBehavior)}`,

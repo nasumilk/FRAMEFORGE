@@ -168,6 +168,8 @@ const normalizeEvent = (event: TimelineEvent): TimelineEvent => {
   pose: event.pose || "standing in a relaxed pose",
   adultToy: event.adultToy || "no adult toy",
   partnerHandAction: event.partnerHandAction || "both hands firmly supporting the adult woman's hips",
+  performanceTone: event.performanceTone || "openly enthusiastic, actively participating, and clearly enjoying every moment",
+  consentDirection: event.consentDirection || "continuous enthusiastic verbal and physical consent from both adult performers",
   intimacyMode: event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "standard intimate contact",
   shotNumber: Math.max(1, event.shotNumber || 1),
   transition: event.transition || "continuous cut-free movement",
@@ -282,6 +284,8 @@ export const usePromptStore = create<PromptState>()(
           motionSpeed: "slow speed",
           pose: state.basic.sceneType !== "solo" ? AUTO_POSE : "standing in a relaxed pose",
           expression: "flushed cheeks, slightly open mouth, eyes half-closed",
+          performanceTone: state.masterData.performanceTones[0].value,
+          consentDirection: state.masterData.consentDirections[0].value,
           adultToy: "no adult toy",
           partnerHandAction: state.masterData.partnerHandActions[0].value,
           intimacyMode: "standard intimate contact",
@@ -316,6 +320,8 @@ export const usePromptStore = create<PromptState>()(
             ? (!template?.pose || template.pose === "standing in a relaxed pose" ? AUTO_POSE : template.pose)
             : (template?.pose || "standing in a relaxed pose"),
           expression: template?.expression || "flushed cheeks, slightly open mouth, eyes half-closed",
+          performanceTone: template?.performanceTone || state.masterData.performanceTones[0].value,
+          consentDirection: template?.consentDirection || state.masterData.consentDirections[0].value,
           adultToy: template?.adultToy || "no adult toy",
           partnerHandAction: template?.partnerHandAction || state.masterData.partnerHandActions[0].value,
           intimacyMode: template?.intimacyMode || "standard intimate contact",
@@ -379,7 +385,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 13,
+      version: 14,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);

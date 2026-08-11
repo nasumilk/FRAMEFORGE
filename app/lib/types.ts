@@ -64,6 +64,8 @@ export interface TimelineEvent {
   motionSpeed: string;
   pose: string;
   expression: string;
+  performanceTone: string;
+  consentDirection: string;
   adultToy: string;
   partnerHandAction: string;
   intimacyMode: "standard intimate contact" | "consensual anal intercourse";
@@ -122,6 +124,8 @@ export interface MasterData {
   motionAmplitudes: MasterItem[];
   motionSpeeds: MasterItem[];
   expressions: MasterItem[];
+  performanceTones: MasterItem[];
+  consentDirections: MasterItem[];
   adultToys: MasterItem[];
   soundPresets: MasterItem[];
   musicOptions: MasterItem[];

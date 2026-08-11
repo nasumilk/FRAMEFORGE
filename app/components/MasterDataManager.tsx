@@ -39,6 +39,8 @@ const CATEGORY_LABELS: Array<{ key: MasterCategory; label: [string, string]; gro
   { key: "lesbianPositions", label: ["Women-couple positions", "女性同士の体位"], group: ["Timeline", "タイムライン"] },
   { key: "lesbianActions", label: ["Women-couple actions", "女性同士のアクション"], group: ["Timeline", "タイムライン"] },
   { key: "partnerHandActions", label: ["Partner hand actions", "相手の手の動作"], group: ["Timeline", "タイムライン"] },
+  { key: "performanceTones", label: ["Performance tones", "女性の演技トーン"], group: ["Timeline", "タイムライン"] },
+  { key: "consentDirections", label: ["Consent directions", "同意の演出"], group: ["Timeline", "タイムライン"] },
   { key: "soloActions", label: ["Solo actions", "ソロアクション"], group: ["Timeline", "タイムライン"] },
   { key: "cameras", label: ["Cameras", "カメラ"], group: ["Timeline", "タイムライン"] },
   { key: "expressions", label: ["Expressions", "表情"], group: ["Timeline", "タイムライン"] },

@@ -55,6 +55,8 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
           <SelectField label={t.action} value={event.action} options={actions} onChange={(action) => onUpdate({ action })} />
           {partnered && <SelectField label={sceneType === "female-female" ? label("Second woman's hand action", "2人目の女性の手の動作") : label("Male partner hand action", "男優の手の動作")} value={event.partnerHandAction} options={master.partnerHandActions} onChange={(partnerHandAction) => onUpdate({ partnerHandAction })} />}
           <SelectField label={t.expression} value={event.expression} options={master.expressions} onChange={(expression) => onUpdate({ expression })} />
+          <SelectField label={label("Woman's performance tone", "女性の演技トーン")} value={event.performanceTone} options={master.performanceTones} onChange={(performanceTone) => onUpdate({ performanceTone })} />
+          {partnered && <SelectField label={label("Consent direction", "同意の演出")} value={event.consentDirection} options={master.consentDirections} onChange={(consentDirection) => onUpdate({ consentDirection })} />}
           <SelectField label={label("Adult toy", "大人向けトイ")} value={event.adultToy} options={master.adultToys} onChange={(adultToy) => onUpdate({ adultToy })} />
         </div>
       </section>

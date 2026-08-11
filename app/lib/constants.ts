@@ -218,6 +218,28 @@ export const EXPRESSIONS = [
   "moaning with her mouth open",
 ];
 
+export const PERFORMANCE_TONES = [
+  "openly enthusiastic, actively participating, and clearly enjoying every moment",
+  "affectionate and emotionally connected with warm reciprocal reactions",
+  "playful and teasing with confident eye contact and inviting body language",
+  "confident and assertive while directing the pace of the encounter",
+  "shy but clearly consenting, gradually becoming more expressive and engaged",
+  "initially nervous but clearly consenting, relaxing after a reassuring check-in",
+  "intensely submissive within mutually agreed boundaries while remaining responsive",
+  "consensually dominant, confidently guiding her partner within agreed boundaries",
+  "emotionally overwhelmed by pleasure while continuing clear affirmative participation",
+  "quiet and sensual with subtle but unmistakably positive responses",
+];
+
+export const CONSENT_DIRECTIONS = [
+  "continuous enthusiastic verbal and physical consent from both adult performers",
+  "clear affirmative consent before each escalation in intensity",
+  "the partner checks her comfort and she gives an unmistakably positive confirmation",
+  "mutually agreed power-play with established boundaries and a safeword",
+  "slow escalation only after explicit permission and positive reciprocal movement",
+  "either adult performer can pause at any moment and the partner responds immediately",
+];
+
 export const SOUND_PRESETS = [
   "heavy breathing, intimate movement sounds, soft Japanese moans, rhythmic skin contact, and quiet bed creaking",
   "intense movement sounds, rhythmic skin contact, rising moans and gasps, and low male grunts",
@@ -359,6 +381,8 @@ export const DEFAULT_MASTER_DATA: MasterData = {
   motionAmplitudes: asMasterItems(MOTION_AMPLITUDES),
   motionSpeeds: asMasterItems(MOTION_SPEEDS),
   expressions: asMasterItems(EXPRESSIONS),
+  performanceTones: asMasterItems(PERFORMANCE_TONES),
+  consentDirections: asMasterItems(CONSENT_DIRECTIONS),
   adultToys: asMasterItems(ADULT_TOYS),
   soundPresets: asMasterItems(SOUND_PRESETS),
   musicOptions: asMasterItems(MUSIC_OPTIONS),
