@@ -58,5 +58,9 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(generator, /all reactions and body language must remain clearly consensual/);
   assert.match(constants, /PERFORMANCE_TONES/);
   assert.match(constants, /CONSENT_DIRECTIONS/);
+  assert.match(generator, /Exactly one consenting adult woman is present throughout the entire video/);
+  assert.match(generator, /no partner, second woman, duplicate person/);
+  assert.match(generator, /Only her breathing, voice, and solo body movement are audible/);
+  assert.match(generator, /automatically converts this to self-caressing/);
   assert.match(generator, /basic\.bustSize/);
 });

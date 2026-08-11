@@ -3,6 +3,24 @@ import { AUTO_POSE, CAPTURE_DEVICE_DESCRIPTIONS, FOCAL_LENGTH_VISUAL_RESULTS, SU
 
 const cleanSentence = (value = "") => value.trim().replace(/[.\s]+$/, "");
 
+const soloActionText = (event: TimelineEvent) => {
+  if (/fully nude/i.test(event.clothingState) && /undress|clothes|clothing/i.test(event.action)) {
+    return "slowly caresses her own body with both hands, with anatomically stable fingers and no assistance from another person";
+  }
+  return cleanSentence(event.action);
+};
+
+const soloSoundscape = (soundscape: string) => {
+  const cleaned = cleanSentence(soundscape)
+    .replace(/intimate movement sounds/gi, "solo body movement against the bedding")
+    .replace(/rhythmic skin contact/gi, "subtle movement against the bedding")
+    .replace(/low male grunts/gi, "")
+    .replace(/,\s*,/g, ",")
+    .replace(/,\s*and\s*,?/gi, ",")
+    .replace(/\s{2,}/g, " ");
+  return `${cleanSentence(cleaned)}. Only her breathing, voice, and solo body movement are audible; no other human voice, partner, skin-to-skin contact, or male sound`;
+};
+
 export function formatAge(age: AgeValue): string {
   if (age.kind === "range") return `${Math.max(18, age.min)} to ${Math.max(18, age.max)}-year-old`;
   return `${Math.max(18, age.value)}-year-old`;
@@ -47,17 +65,20 @@ export function buildTimelineSegment(event: TimelineEvent, basic: BasicSettings)
       ]
     : [
       event.pose === AUTO_POSE ? "Adult woman's full-body pose: standing in a relaxed pose" : `Adult woman's full-body pose: ${cleanSentence(event.pose)}`,
-      "solo scene",
+      "Exactly one adult woman appears in this solo scene; no partner, second woman, duplicate person, or other human is visible or implied",
     ];
+  const clothingDirection = /fully nude/i.test(event.clothingState)
+    ? "The adult woman is fully nude"
+    : `The adult woman wears ${cleanSentence(event.clothingState)}`;
   const details = [
     `Shot size and framing: ${cleanSentence(event.shotSize)}`,
     `Visual result: ${cleanSentence(event.visualResult)}`,
     `Camera angle: ${cleanSentence(event.camera)}`,
     cameraMotionText(event, basic),
     ...roleDetails,
-    `The adult woman wears ${cleanSentence(event.clothingState)}`,
+    clothingDirection,
     sceneType === "male-female" && event.intimacyMode === "consensual anal intercourse" ? "Couple interaction mode: consensual anal intercourse" : "",
-    `${sceneType === "female-female" ? "Two-woman action" : sceneType === "male-female" ? "Couple action" : "Adult woman's action"}: ${cleanSentence(event.action)}`,
+    `${sceneType === "female-female" ? "Two-woman action" : sceneType === "male-female" ? "Couple action" : "Adult woman's action"}: ${sceneType === "solo" ? soloActionText(event) : cleanSentence(event.action)}`,
     `Adult woman's expression: ${cleanSentence(event.expression)}`,
     `Adult woman's performance direction: ${cleanSentence(event.performanceTone)}`,
     sceneType !== "solo" ? `Consent direction: ${cleanSentence(event.consentDirection)}; all reactions and body language must remain clearly consensual` : "",
@@ -88,8 +109,12 @@ export function generateH3Prompt(state: PromptSnapshot): string {
   const sortedEvents = [...events].sort((a, b) => (a.shotNumber || 1) - (b.shotNumber || 1) || a.start - b.start);
 
   let subject = `${cleanSentence(basic.style)}, ${cleanSentence(basic.lighting)}. `;
-  subject += "All depicted performers are consenting adults aged 18 or older. ";
-  subject += `A ${formatAge(basic.age)} Japanese woman, ${cleanSentence(basic.bodyType)}, ${cleanSentence(basic.bustSize)}, ${cleanSentence(basic.hair)}, ${cleanSentence(basic.eyes)}, ${cleanSentence(basic.skin)}.`;
+  if (basic.sceneType === "solo") {
+    subject += "Exactly one consenting adult woman is present throughout the entire video. She is the sole performer. No other person is visible or implied. Do not introduce a partner, second woman, duplicate person, extra body, or extra limbs. ";
+  } else {
+    subject += "All depicted performers are consenting adults aged 18 or older. ";
+  }
+  subject += `The primary performer is a ${formatAge(basic.age)} Japanese woman, ${cleanSentence(basic.bodyType)}, ${cleanSentence(basic.bustSize)}, ${cleanSentence(basic.hair)}, ${cleanSentence(basic.eyes)}, ${cleanSentence(basic.skin)}.`;
   if (basic.maleActor) {
     subject += ` A ${cleanSentence(basic.maleBodyType)}, ${cleanSentence(basic.maleAgeFeel)} Japanese man`;
     subject += basic.maleFaceVisible ? "." : ", with his face kept out of clear view.";
@@ -124,7 +149,8 @@ export function generateH3Prompt(state: PromptSnapshot): string {
   if (basic.mode === "S2V") referencePrefix += "<Picture 1> is fully referenced as the adult Japanese woman's facial identity throughout the target video.\n";
   if (referencePrefix) referencePrefix += "\n";
 
-  return `${referencePrefix}integrated_multimodal_description: ${integrated}\n\noverall_soundscape: ${cleanSentence(soundscape)}\n\nnon_diegetic_music: ${music || "N/A"}`;
+  const finalSoundscape = basic.sceneType === "solo" ? soloSoundscape(soundscape) : cleanSentence(soundscape);
+  return `${referencePrefix}integrated_multimodal_description: ${integrated}\n\noverall_soundscape: ${finalSoundscape}\n\nnon_diegetic_music: ${music || "N/A"}`;
 }
 
 export function generateApiPayload(state: PromptSnapshot) {
@@ -169,7 +195,7 @@ export function validateTimeline(events: TimelineEvent[], duration: number): Tim
 export interface PromptDiagnostic { severity: "error" | "warning" | "info"; message: string }
 
 export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
-  const { basic, events } = state;
+  const { basic, events, customNotes, soundscape } = state;
   const diagnostics: PromptDiagnostic[] = [];
   const prompt = generateH3Prompt(state);
   if (prompt.length > 2000) diagnostics.push({ severity: "error", message: `Prompt is ${prompt.length - 2000} characters over the official 2,000-character limit.` });
@@ -188,7 +214,11 @@ export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
       || (/lying on her back/i.test(event.pose) && /standing|rear-entry/i.test(event.position))
     );
     if (likelyConflict) diagnostics.push({ severity: "warning", message: `Event ${index + 1} combines a woman-only pose with a conflicting couple position; use Auto pose or change one selection.` });
+    if (basic.sceneType === "solo" && /second woman|two women|both women|partner|couple|mutual|each other|male/i.test(event.additionalDetails)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} additional direction may imply another person in Solo mode.` });
+    if (basic.sceneType === "solo" && /fully nude/i.test(event.clothingState) && /undress|clothes|clothing/i.test(event.action)) diagnostics.push({ severity: "info", message: `Event ${index + 1} says fully nude and undressing; Solo output automatically converts this to self-caressing.` });
   });
+  if (basic.sceneType === "solo" && /second woman|two women|both women|partner|couple|mutual|each other|male/i.test(customNotes)) diagnostics.push({ severity: "warning", message: "Global notes may imply another person in Solo mode." });
+  if (basic.sceneType === "solo" && /male|partner|two women|both women/i.test(soundscape)) diagnostics.push({ severity: "info", message: "Partner-like audio is automatically converted to a Solo-only soundscape." });
   if (!events.length) diagnostics.push({ severity: "info", message: "Add timeline events for precise shot and focus control." });
   return diagnostics;
 }
