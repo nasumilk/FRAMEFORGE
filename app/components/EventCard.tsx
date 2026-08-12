@@ -60,6 +60,9 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
           <SelectField label={t.expression} value={event.expression} options={master.expressions} onChange={(expression) => onUpdate({ expression })} />
           <SelectField label={label("Woman's performance tone", "女性の演技トーン")} value={event.performanceTone} options={master.performanceTones} onChange={(performanceTone) => onUpdate({ performanceTone })} />
           {partnered && <SelectField label={label("Consent direction", "同意の演出")} value={event.consentDirection} options={master.consentDirections} onChange={(consentDirection) => onUpdate({ consentDirection })} />}
+          <SelectField label={label("Perspiration", "汗の表現")} value={event.perspirationEffect} options={master.perspirationEffects} onChange={(perspirationEffect) => onUpdate({ perspirationEffect })} />
+          <SelectField label={label("Lotion", "ローションの表現")} value={event.lotionEffect} options={master.lotionEffects} onChange={(lotionEffect) => onUpdate({ lotionEffect })} />
+          <SelectField label={label("Lactation", "母乳の表現")} value={event.lactationEffect} options={master.lactationEffects} onChange={(lactationEffect) => onUpdate({ lactationEffect })} />
           <SelectField label={label("Adult toy", "大人向けトイ")} value={event.adultToy} options={master.adultToys} onChange={(adultToy) => onUpdate({ adultToy })} />
         </div>
       </section>

@@ -174,6 +174,9 @@ const normalizeEvent = (event: TimelineEvent): TimelineEvent => {
   partnerHandAction: event.partnerHandAction || "both hands firmly supporting the adult woman's hips",
   performanceTone: event.performanceTone || "openly enthusiastic, actively participating, and clearly enjoying every moment",
   consentDirection: event.consentDirection || "continuous enthusiastic verbal and physical consent from both adult performers",
+  perspirationEffect: event.perspirationEffect || "no visible perspiration",
+  lotionEffect: event.lotionEffect || "no visible lotion",
+  lactationEffect: event.lactationEffect || "no visible lactation",
   intimacyMode: event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "standard intimate contact",
   shotNumber: Math.max(1, event.shotNumber || 1),
   transition: event.transition || "continuous cut-free movement",
@@ -294,6 +297,9 @@ export const usePromptStore = create<PromptState>()(
           expression: "flushed cheeks, slightly open mouth, eyes half-closed",
           performanceTone: state.masterData.performanceTones[0].value,
           consentDirection: state.masterData.consentDirections[0].value,
+          perspirationEffect: state.masterData.perspirationEffects[0].value,
+          lotionEffect: state.masterData.lotionEffects[0].value,
+          lactationEffect: state.masterData.lactationEffects[0].value,
           adultToy: "no adult toy",
           partnerHandAction: state.masterData.partnerHandActions[0].value,
           intimacyMode: "standard intimate contact",
@@ -334,6 +340,9 @@ export const usePromptStore = create<PromptState>()(
           expression: template?.expression || "flushed cheeks, slightly open mouth, eyes half-closed",
           performanceTone: template?.performanceTone || state.masterData.performanceTones[0].value,
           consentDirection: template?.consentDirection || state.masterData.consentDirections[0].value,
+          perspirationEffect: template?.perspirationEffect || state.masterData.perspirationEffects[0].value,
+          lotionEffect: template?.lotionEffect || state.masterData.lotionEffects[0].value,
+          lactationEffect: template?.lactationEffect || state.masterData.lactationEffects[0].value,
           adultToy: template?.adultToy || "no adult toy",
           partnerHandAction: template?.partnerHandAction || state.masterData.partnerHandActions[0].value,
           intimacyMode: template?.intimacyMode || "standard intimate contact",
@@ -397,7 +406,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 16,
+      version: 17,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);

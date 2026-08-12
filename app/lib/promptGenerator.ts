@@ -88,6 +88,9 @@ export function buildTimelineSegment(event: TimelineEvent, basic: BasicSettings)
     `The ${primaryWoman}'s expression: ${cleanSentence(event.expression)}`,
     `The ${primaryWoman}'s performance direction: ${cleanSentence(event.performanceTone)}`,
     sceneType !== "solo" ? `Consent direction: ${cleanSentence(event.consentDirection)}; all reactions and body language must remain clearly consensual` : "",
+    event.perspirationEffect && event.perspirationEffect !== "no visible perspiration" ? `Perspiration on the ${primaryWoman}: ${cleanSentence(event.perspirationEffect)}; droplets follow gravity and body movement naturally` : "",
+    event.lotionEffect && event.lotionEffect !== "no visible lotion" ? `Lotion on the ${primaryWoman}: ${cleanSentence(event.lotionEffect)}; preserve clear viscosity, coherent highlights, and physically plausible flow across the skin` : "",
+    event.lactationEffect && event.lactationEffect !== "no visible lactation" ? `Lactation effect for the ${primaryWoman}: ${cleanSentence(event.lactationEffect)}; keep the fluid localized to her breasts with realistic gravity and continuity` : "",
     event.adultToy && event.adultToy !== "no adult toy" ? `The ${primaryWoman}'s toy: ${cleanSentence(event.adultToy)}` : "",
     `Depth of field: ${cleanSentence(event.depthOfField)}`,
     `Focus stays on ${cleanSentence(event.focusTarget)} using ${cleanSentence(event.focusBehavior)}`,
@@ -226,6 +229,7 @@ export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
     if (/^front-facing/i.test(event.bodyOrientation) && /side profile/i.test(event.camera)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} requests a front-facing body with a side-profile camera angle; change one setting to avoid conflicting directions.` });
     if (/rear-entry/i.test(event.position) && /directly in front/i.test(event.cameraPlacement) && /hips squared toward the camera/i.test(event.hipOrientation)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} places the camera in front for rear-entry but points the hips toward the camera; direct the hips toward the partner behind her.` });
     if (/rear-entry/i.test(event.position) && /on all fours/i.test(event.pose) && !/partner behind|follow the selected pose/i.test(event.hipOrientation)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} rear-entry pose may need the hips directed toward the partner behind her.` });
+    if (event.lactationEffect !== "no visible lactation" && !/nude|open|shifted|lingerie/i.test(event.clothingState)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} enables lactation, but the selected clothing may hide the chest.` });
   });
   if (basic.sceneType === "solo" && /second woman|two women|both women|partner|couple|mutual|each other|male/i.test(customNotes)) diagnostics.push({ severity: "warning", message: "Global notes may imply another person in Solo mode." });
   if (basic.sceneType === "solo" && /male|partner|two women|both women/i.test(soundscape)) diagnostics.push({ severity: "info", message: "Partner-like audio is automatically converted to a Solo-only soundscape." });

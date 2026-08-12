@@ -240,6 +240,31 @@ export const CONSENT_DIRECTIONS = [
   "either adult performer can pause at any moment and the partner responds immediately",
 ];
 
+export const PERSPIRATION_EFFECTS = [
+  "no visible perspiration",
+  "a subtle natural sweat sheen on her skin",
+  "fine beads of perspiration on her forehead, neck, and upper chest",
+  "moderate realistic perspiration glistening across her face and body",
+  "heavy realistic perspiration with visible droplets running naturally along her skin",
+];
+
+export const LOTION_EFFECTS = [
+  "no visible lotion",
+  "a light transparent lotion sheen on selected areas of her skin",
+  "a moderate layer of clear glossy lotion spread naturally across her body",
+  "a generous coating of clear viscous lotion with realistic highlights and slow movement",
+  "clear lotion applied mainly to her chest and upper body",
+  "clear lotion applied mainly to her hips, thighs, and lower body",
+];
+
+export const LACTATION_EFFECTS = [
+  "no visible lactation",
+  "a subtle small amount of breast milk visible at her nipples",
+  "small realistic droplets of breast milk forming at her nipples",
+  "a moderate natural flow of breast milk from her nipples",
+  "visible breast milk tracing naturally down the skin of her chest",
+];
+
 export const SOUND_PRESETS = [
   "heavy breathing, intimate movement sounds, soft Japanese moans, rhythmic skin contact, and quiet bed creaking",
   "intense movement sounds, rhythmic skin contact, rising moans and gasps, and low male grunts",
@@ -417,6 +442,9 @@ export const DEFAULT_MASTER_DATA: MasterData = {
   expressions: asMasterItems(EXPRESSIONS),
   performanceTones: asMasterItems(PERFORMANCE_TONES),
   consentDirections: asMasterItems(CONSENT_DIRECTIONS),
+  perspirationEffects: asMasterItems(PERSPIRATION_EFFECTS),
+  lotionEffects: asMasterItems(LOTION_EFFECTS),
+  lactationEffects: asMasterItems(LACTATION_EFFECTS),
   adultToys: asMasterItems(ADULT_TOYS),
   soundPresets: asMasterItems(SOUND_PRESETS),
   musicOptions: asMasterItems(MUSIC_OPTIONS),
