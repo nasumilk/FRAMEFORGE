@@ -63,6 +63,13 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
           <SelectField label={label("Perspiration", "汗の表現")} value={event.perspirationEffect} options={master.perspirationEffects} onChange={(perspirationEffect) => onUpdate({ perspirationEffect })} />
           <SelectField label={label("Lotion", "ローションの表現")} value={event.lotionEffect} options={master.lotionEffects} onChange={(lotionEffect) => onUpdate({ lotionEffect })} />
           <SelectField label={label("Lactation", "母乳の表現")} value={event.lactationEffect} options={master.lactationEffects} onChange={(lactationEffect) => onUpdate({ lactationEffect })} />
+          <Field
+            label={label("Exact Japanese dialogue (optional)", "日本語のセリフ（任意・入力文のみ発話）")}
+            hint={label("Leave blank for breathing, gasps, and moans only.", "空欄の場合は吐息・息をのむ声・喘ぎ声だけになります。")}
+          >
+            <input value={event.dialogueText} onChange={(e) => onUpdate({ dialogueText: e.target.value })} placeholder={label("Enter the exact line to be spoken", "発話させるセリフをそのまま入力")} />
+          </Field>
+          {event.dialogueText.trim() && <SelectField label={label("Dialogue delivery", "セリフの話し方")} value={event.dialogueDelivery} options={master.dialogueDeliveries} onChange={(dialogueDelivery) => onUpdate({ dialogueDelivery })} />}
           <SelectField label={label("Adult toy", "大人向けトイ")} value={event.adultToy} options={master.adultToys} onChange={(adultToy) => onUpdate({ adultToy })} />
         </div>
       </section>

@@ -73,6 +73,8 @@ export interface TimelineEvent {
   perspirationEffect: string;
   lotionEffect: string;
   lactationEffect: string;
+  dialogueText: string;
+  dialogueDelivery: string;
   adultToy: string;
   partnerHandAction: string;
   intimacyMode: "standard intimate contact" | "consensual anal intercourse";
@@ -136,6 +138,7 @@ export interface MasterData {
   perspirationEffects: MasterItem[];
   lotionEffects: MasterItem[];
   lactationEffects: MasterItem[];
+  dialogueDeliveries: MasterItem[];
   adultToys: MasterItem[];
   soundPresets: MasterItem[];
   musicOptions: MasterItem[];

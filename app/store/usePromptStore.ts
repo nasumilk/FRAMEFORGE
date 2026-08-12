@@ -177,6 +177,8 @@ const normalizeEvent = (event: TimelineEvent): TimelineEvent => {
   perspirationEffect: event.perspirationEffect || "no visible perspiration",
   lotionEffect: event.lotionEffect || "no visible lotion",
   lactationEffect: event.lactationEffect || "no visible lactation",
+  dialogueText: event.dialogueText || "",
+  dialogueDelivery: event.dialogueDelivery || "softly whispered in Japanese between breaths",
   intimacyMode: event.intimacyMode === "consensual anal intercourse" ? "consensual anal intercourse" : "standard intimate contact",
   shotNumber: Math.max(1, event.shotNumber || 1),
   transition: event.transition || "continuous cut-free movement",
@@ -300,6 +302,8 @@ export const usePromptStore = create<PromptState>()(
           perspirationEffect: state.masterData.perspirationEffects[0].value,
           lotionEffect: state.masterData.lotionEffects[0].value,
           lactationEffect: state.masterData.lactationEffects[0].value,
+          dialogueText: "",
+          dialogueDelivery: state.masterData.dialogueDeliveries[0].value,
           adultToy: "no adult toy",
           partnerHandAction: state.masterData.partnerHandActions[0].value,
           intimacyMode: "standard intimate contact",
@@ -343,6 +347,8 @@ export const usePromptStore = create<PromptState>()(
           perspirationEffect: template?.perspirationEffect || state.masterData.perspirationEffects[0].value,
           lotionEffect: template?.lotionEffect || state.masterData.lotionEffects[0].value,
           lactationEffect: template?.lactationEffect || state.masterData.lactationEffects[0].value,
+          dialogueText: "",
+          dialogueDelivery: template?.dialogueDelivery || state.masterData.dialogueDeliveries[0].value,
           adultToy: template?.adultToy || "no adult toy",
           partnerHandAction: template?.partnerHandAction || state.masterData.partnerHandActions[0].value,
           intimacyMode: template?.intimacyMode || "standard intimate contact",
@@ -406,7 +412,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 17,
+      version: 18,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);

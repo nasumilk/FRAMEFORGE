@@ -265,6 +265,15 @@ export const LACTATION_EFFECTS = [
   "visible breast milk tracing naturally down the skin of her chest",
 ];
 
+export const DIALOGUE_DELIVERIES = [
+  "softly whispered in Japanese between breaths",
+  "spoken clearly in natural Japanese",
+  "breathlessly spoken in Japanese with short pauses",
+  "playfully spoken in Japanese",
+  "quietly murmured in Japanese",
+  "spoken in Japanese with an affectionate tone",
+];
+
 export const SOUND_PRESETS = [
   "heavy breathing, intimate movement sounds, soft Japanese moans, rhythmic skin contact, and quiet bed creaking",
   "intense movement sounds, rhythmic skin contact, rising moans and gasps, and low male grunts",
@@ -445,6 +454,7 @@ export const DEFAULT_MASTER_DATA: MasterData = {
   perspirationEffects: asMasterItems(PERSPIRATION_EFFECTS),
   lotionEffects: asMasterItems(LOTION_EFFECTS),
   lactationEffects: asMasterItems(LACTATION_EFFECTS),
+  dialogueDeliveries: asMasterItems(DIALOGUE_DELIVERIES),
   adultToys: asMasterItems(ADULT_TOYS),
   soundPresets: asMasterItems(SOUND_PRESETS),
   musicOptions: asMasterItems(MUSIC_OPTIONS),

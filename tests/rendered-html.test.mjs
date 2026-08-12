@@ -41,7 +41,7 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(constants, /suction-cup mounted dildo/);
   assert.match(generator, /generateApiPayload/);
   assert.match(generator, /2,000-character limit/);
-  assert.match(store, /version: 17/);
+  assert.match(store, /version: 18/);
   assert.match(generator, /consenting adults aged 18 or older/);
   assert.match(generator, /must not mirror or copy the woman's pose/);
   assert.match(generator, /Both of the male partner's hands remain visibly accounted for/);
@@ -60,7 +60,7 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(constants, /CONSENT_DIRECTIONS/);
   assert.match(generator, /Exactly one consenting adult \$\{primaryWoman\} is present throughout the entire video/);
   assert.match(generator, /no partner, second woman, duplicate person/);
-  assert.match(generator, /Only her breathing, voice, and solo body movement are audible/);
+  assert.match(generator, /Only her breathing, gasps, nonverbal moans, solo body movement/);
   assert.match(generator, /automatically converts this to self-caressing/);
   assert.match(generator, /Body orientation for the primary \$\{primaryWoman\}/);
   assert.match(generator, /front-facing body with a side-profile camera angle/);
@@ -74,5 +74,9 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(constants, /LOTION_EFFECTS/);
   assert.match(constants, /LACTATION_EFFECTS/);
   assert.match(generator, /Lactation effect for the \$\{primaryWoman\}/);
+  assert.match(constants, /DIALOGUE_DELIVERIES/);
+  assert.match(eventCard, /Exact Japanese dialogue \(optional\)/);
+  assert.match(generator, /No spoken words or intelligible dialogue in any language/);
+  assert.match(generator, /Speak this exact quoted line only/);
   assert.match(generator, /basic\.bustSize/);
 });

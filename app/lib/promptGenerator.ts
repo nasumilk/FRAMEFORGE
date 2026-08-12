@@ -2,6 +2,11 @@ import type { AgeValue, BasicSettings, PromptSnapshot, SceneType, TimelineEvent 
 import { AUTO_POSE, CAPTURE_DEVICE_DESCRIPTIONS, FOCAL_LENGTH_VISUAL_RESULTS, SUBJECT_DISTANCE_VISUAL_RESULTS } from "./constants";
 
 const cleanSentence = (value = "") => value.trim().replace(/[.\s]+$/, "");
+const exactQuote = (value: string) => JSON.stringify(value.trim());
+
+const vocalizationDirection = (event: TimelineEvent) => event.dialogueText.trim()
+  ? `Exact Japanese spoken dialogue: ${exactQuote(event.dialogueText)}. Delivery: ${cleanSentence(event.dialogueDelivery)}. Speak this exact quoted line only; do not improvise, paraphrase, translate, or add words`
+  : "Vocalization: breathing, gasps, and nonverbal moans only. No spoken words, intelligible dialogue, phrases, or improvised Japanese speech";
 
 const soloActionText = (event: TimelineEvent) => {
   if (/fully nude/i.test(event.clothingState) && /undress|clothes|clothing/i.test(event.action)) {
@@ -18,8 +23,12 @@ const soloSoundscape = (soundscape: string) => {
     .replace(/,\s*,/g, ",")
     .replace(/,\s*and\s*,?/gi, ",")
     .replace(/\s{2,}/g, " ");
-  return `${cleanSentence(cleaned)}. Only her breathing, voice, and solo body movement are audible; no other human voice, partner, skin-to-skin contact, or male sound`;
+  return `${cleanSentence(cleaned)}. Only her breathing, gasps, nonverbal moans, solo body movement, and any exact timeline dialogue are audible; no other human voice, partner, skin-to-skin contact, or male sound`;
 };
+
+const dialogueSoundDirection = (events: TimelineEvent[]) => events.some((event) => event.dialogueText.trim())
+  ? "Spoken dialogue is limited strictly to the exact quoted lines specified in timeline events. Do not improvise, paraphrase, translate, or add any other words or conversation"
+  : "No spoken words or intelligible dialogue in any language. Use only breathing, gasps, sighs, and nonverbal moans";
 
 export function formatAge(age: AgeValue): string {
   if (age.kind === "range") return `${Math.max(18, age.min)} to ${Math.max(18, age.max)}-year-old`;
@@ -87,6 +96,7 @@ export function buildTimelineSegment(event: TimelineEvent, basic: BasicSettings)
     `${sceneType === "female-female" ? `Two-woman action led by the primary ${primaryWoman}` : sceneType === "male-female" ? `Couple action involving the ${primaryWoman}` : `The ${primaryWoman}'s action`}: ${sceneType === "solo" ? soloActionText(event) : cleanSentence(event.action)}`,
     `The ${primaryWoman}'s expression: ${cleanSentence(event.expression)}`,
     `The ${primaryWoman}'s performance direction: ${cleanSentence(event.performanceTone)}`,
+    vocalizationDirection(event),
     sceneType !== "solo" ? `Consent direction: ${cleanSentence(event.consentDirection)}; all reactions and body language must remain clearly consensual` : "",
     event.perspirationEffect && event.perspirationEffect !== "no visible perspiration" ? `Perspiration on the ${primaryWoman}: ${cleanSentence(event.perspirationEffect)}; droplets follow gravity and body movement naturally` : "",
     event.lotionEffect && event.lotionEffect !== "no visible lotion" ? `Lotion on the ${primaryWoman}: ${cleanSentence(event.lotionEffect)}; preserve clear viscosity, coherent highlights, and physically plausible flow across the skin` : "",
@@ -159,7 +169,8 @@ export function generateH3Prompt(state: PromptSnapshot): string {
   if (basic.mode === "S2V") referencePrefix += `<Picture 1> is fully referenced as the ${primaryWoman}'s facial identity throughout the target video.\n`;
   if (referencePrefix) referencePrefix += "\n";
 
-  const finalSoundscape = basic.sceneType === "solo" ? soloSoundscape(soundscape) : cleanSentence(soundscape);
+  const baseSoundscape = basic.sceneType === "solo" ? soloSoundscape(soundscape) : cleanSentence(soundscape);
+  const finalSoundscape = `${baseSoundscape}. ${dialogueSoundDirection(sortedEvents)}`;
   return `${referencePrefix}integrated_multimodal_description: ${integrated}\n\noverall_soundscape: ${finalSoundscape}\n\nnon_diegetic_music: ${music || "N/A"}`;
 }
 
@@ -231,6 +242,7 @@ export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
     if (/rear-entry/i.test(event.position) && /on all fours/i.test(event.pose) && !/partner behind|follow the selected pose/i.test(event.hipOrientation)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} rear-entry pose may need the hips directed toward the partner behind her.` });
     if (event.lactationEffect !== "no visible lactation" && !/nude|open|shifted|lingerie/i.test(event.clothingState)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} enables lactation, but the selected clothing may hide the chest.` });
   });
+  if (!events.some((event) => event.dialogueText.trim()) && /dialogue|speaks?|says?|spoken words?|conversation|セリフ|会話|話す/i.test(soundscape)) diagnostics.push({ severity: "info", message: "Soundscape mentions speech, but no timeline dialogue is specified; output automatically enforces nonverbal breathing and moans only." });
   if (basic.sceneType === "solo" && /second woman|two women|both women|partner|couple|mutual|each other|male/i.test(customNotes)) diagnostics.push({ severity: "warning", message: "Global notes may imply another person in Solo mode." });
   if (basic.sceneType === "solo" && /male|partner|two women|both women/i.test(soundscape)) diagnostics.push({ severity: "info", message: "Partner-like audio is automatically converted to a Solo-only soundscape." });
   if (!events.length) diagnostics.push({ severity: "info", message: "Add timeline events for precise shot and focus control." });

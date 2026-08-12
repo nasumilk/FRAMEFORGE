@@ -48,6 +48,7 @@ const CATEGORY_LABELS: Array<{ key: MasterCategory; label: [string, string]; gro
   { key: "perspirationEffects", label: ["Perspiration effects", "汗の表現"], group: ["Timeline", "タイムライン"] },
   { key: "lotionEffects", label: ["Lotion effects", "ローションの表現"], group: ["Timeline", "タイムライン"] },
   { key: "lactationEffects", label: ["Lactation effects", "母乳の表現"], group: ["Timeline", "タイムライン"] },
+  { key: "dialogueDeliveries", label: ["Dialogue deliveries", "セリフの話し方"], group: ["Timeline", "タイムライン"] },
   { key: "soloActions", label: ["Solo actions", "ソロアクション"], group: ["Timeline", "タイムライン"] },
   { key: "cameras", label: ["Cameras", "カメラ"], group: ["Timeline", "タイムライン"] },
   { key: "expressions", label: ["Expressions", "表情"], group: ["Timeline", "タイムライン"] },
