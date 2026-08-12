@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, Braces, Check, ChevronDown, Copy, Info, Save, Trash2 } from "lucide-react";
+import { AlertTriangle, Braces, Check, ChevronDown, Copy, ExternalLink, Info, Save, Trash2 } from "lucide-react";
 import { usePromptStore } from "../store/usePromptStore";
 import { diagnosePrompt, generateApiPayload, generateH3Prompt } from "../lib/promptGenerator";
 import { UI_COPY } from "../lib/localization";
@@ -29,6 +29,13 @@ export function PromptPreview() {
     window.setTimeout(() => setJsonCopied(false), 1600);
   };
 
+  const openMobileStudio = () => {
+    const localHost = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
+    const studioUrl = localHost ? "http://127.0.0.1:3300" : "https://daichinopc.tail9ad2a3.ts.net:8444";
+    const target = `${studioUrl}/#frameforge_prompt=${encodeURIComponent(prompt)}`;
+    window.open(target, "_blank", "noopener,noreferrer");
+  };
+
   const save = () => {
     const fallback = `${state.basic.mode} · ${new Date().toLocaleDateString()}`;
     state.savePreset(presetName || fallback);
@@ -44,6 +51,7 @@ export function PromptPreview() {
         </div>
         <div className="preview-actions">
           <span>{prompt.length.toLocaleString()} {t.chars}</span>
+          <button className="secondary-button" onClick={openMobileStudio}><ExternalLink size={15} />{language === "JAP" ? "H3 Studioで開く" : "Open in H3 Studio"}</button>
           <button className="secondary-button" onClick={copyJson}>{jsonCopied ? <Check size={15} /> : <Braces size={15} />}{jsonCopied ? t.copied : "API JSON"}</button>
           <button className="secondary-button" onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? t.copied : t.copy}</button>
           <button className="icon-button" onClick={() => setCollapsed((value) => !value)} aria-label={t.togglePreview}><ChevronDown size={17} /></button>

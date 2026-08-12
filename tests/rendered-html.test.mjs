@@ -23,12 +23,13 @@ test("server-renders the Frameforge application shell", async () => {
 });
 
 test("ships advanced H3 controls and API export", async () => {
-  const [topBar, eventCard, generator, constants, store] = await Promise.all([
+  const [topBar, eventCard, generator, constants, store, promptPreview] = await Promise.all([
     readFile(new URL("../app/components/TopBar.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/EventCard.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/promptGenerator.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/constants.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/store/usePromptStore.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/PromptPreview.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(topBar, /T2V/);
   assert.match(topBar, /I2V/);
@@ -76,6 +77,8 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(generator, /Lactation effect for the \$\{primaryWoman\}/);
   assert.match(constants, /DIALOGUE_DELIVERIES/);
   assert.match(eventCard, /Exact Japanese dialogue \(optional\)/);
+  assert.match(promptPreview, /frameforge_prompt/);
+  assert.match(promptPreview, /Open in H3 Studio/);
   assert.match(generator, /No spoken words or intelligible dialogue in any language/);
   assert.match(generator, /Speak this exact quoted line only/);
   assert.match(generator, /basic\.bustSize/);

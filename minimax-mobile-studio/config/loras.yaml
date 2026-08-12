@@ -1,0 +1,12 @@
+loras:
+  - id: minimax_h3_turbo_v4
+    name: MiniMax H3 Turbo V4
+    filename: minimax_h3_turbo_v4_step600_ema.safetensors
+    category: motion
+    default_strength: 0.8
+    min_strength: 0
+    max_strength: 1.5
+    trigger_words: []
+    thumbnail: null
+    enabled: true
+

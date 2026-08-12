@@ -1,0 +1,10 @@
+name: MiniMax H3 Mobile Studio
+comfyui:
+  http_url: http://127.0.0.1:8188
+  websocket_url: ws://127.0.0.1:8188/ws
+workflows:
+  t2v: h3_t2v
+  i2v: h3_i2v
+  reference_image: h3_reference_image
+  reference_video: h3_reference_video
+
