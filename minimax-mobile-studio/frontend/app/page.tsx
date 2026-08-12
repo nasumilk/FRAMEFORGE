@@ -43,6 +43,7 @@ interface Job {
   progress: number;
   stage?: string | null;
   error_message?: string | null;
+  media: { id: string; type: string; filename: string; mime_type?: string | null; size?: number | null }[];
 }
 
 const MODES: { id: Mode; label: string; short: string; media: "none" | "image" | "video" }[] = [
@@ -75,7 +76,8 @@ export default function Home() {
   const [seedMode, setSeedMode] = useState<"random" | "fixed">("random");
   const [seed, setSeed] = useState(42);
   const [duration, setDuration] = useState(6);
-  const [resolution, setResolution] = useState("1280x720");
+  const [aspectRatio, setAspectRatio] = useState("9:16 (Portrait Widescreen)");
+  const [megapixels, setMegapixels] = useState(0.4);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [health, setHealth] = useState<Health | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -124,7 +126,7 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, [activeJob]);
 
-  const dimensions = useMemo(() => resolution.split("x").map(Number), [resolution]);
+  const workflowResolution = useMemo(() => ({ aspect_ratio: aspectRatio, megapixels }), [aspectRatio, megapixels]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -140,8 +142,7 @@ export default function Home() {
           mode,
           prompt,
           seed: seedMode === "random" ? null : seed,
-          width: dimensions[0],
-          height: dimensions[1],
+          ...workflowResolution,
           duration,
         }),
       });
@@ -216,7 +217,7 @@ export default function Home() {
 
               <div className="quick-settings">
                 <label><span>Duration</span><select value={duration} onChange={(event) => setDuration(Number(event.target.value))}><option value={6}>6 seconds</option><option value={10}>10 seconds</option></select></label>
-                <label><span>Resolution</span><select value={resolution} onChange={(event) => setResolution(event.target.value)}><option>1280x720</option><option>1366x768</option><option>1920x1080</option></select></label>
+                <label><span>Aspect ratio</span><select value={aspectRatio} onChange={(event) => setAspectRatio(event.target.value)}><option>9:16 (Portrait Widescreen)</option><option>16:9 (Widescreen)</option><option>1:1 (Square)</option><option>3:4 (Portrait Standard)</option><option>4:3 (Standard)</option><option>21:9 (Ultrawide)</option></select></label>
               </div>
 
               <button type="button" className="advanced-toggle" onClick={() => setAdvancedOpen((value) => !value)}><SlidersHorizontal size={16} /> Advanced settings <ChevronDown size={16} className={advancedOpen ? "rotate" : ""} /></button>
@@ -224,6 +225,7 @@ export default function Home() {
                 <div className="advanced-panel">
                   <div className="segmented"><button type="button" className={seedMode === "random" ? "active" : ""} onClick={() => setSeedMode("random")}>Random seed</button><button type="button" className={seedMode === "fixed" ? "active" : ""} onClick={() => setSeedMode("fixed")}>Fixed seed</button></div>
                   {seedMode === "fixed" && <label><span>Seed</span><input type="number" min={0} value={seed} onChange={(event) => setSeed(Number(event.target.value))} /></label>}
+                  <label><span>Target megapixels</span><input type="number" min={0.1} max={16} step={0.1} value={megapixels} onChange={(event) => setMegapixels(Number(event.target.value))} /></label>
                 </div>
               )}
 
@@ -234,6 +236,12 @@ export default function Home() {
                   <div><LoaderCircle size={17} className={activeJob.status === "running" ? "spin" : ""} /><strong>{activeJob.status}</strong><span>{activeJob.stage}</span></div>
                   <div className="progress-track"><span style={{ width: `${activeJob.progress}%` }} /></div>
                   <button type="button" onClick={cancel}><Square size={13} /> Cancel</button>
+                </div>
+              )}
+              {activeJob?.status === "completed" && activeJob.media?.[0] && (
+                <div className="result-video">
+                  <video controls playsInline preload="metadata" src={`/api/v1/media/${activeJob.media[0].id}`} />
+                  <a href={`/api/v1/media/${activeJob.media[0].id}?download=true`} download>{activeJob.media[0].filename}</a>
                 </div>
               )}
               <button className="generate-button" disabled={!canGenerate || busy}>

@@ -36,6 +36,8 @@ class GenerationService:
             "width": request.width,
             "height": request.height,
             "duration": request.duration,
+            "aspect_ratio": request.aspect_ratio,
+            "megapixels": request.megapixels,
             "image": request.image_id,
             "video": request.video_id,
             **request.advanced,
@@ -66,4 +68,3 @@ class GenerationService:
         job.status = "queued"
         job.stage = "queued in ComfyUI"
         return self.repo.save(job)
-

@@ -6,9 +6,11 @@ MiniMax H3を、iPhone・iPad・PCから操作するためのモバイル優先W
 
 ## 次にやること
 
-現在、アプリ本体とComfyUIの接続は完了しています。次は、普段ComfyUIで正常に生成できているH3のT2V Workflowを「API形式」で1個保存してください。
+公式MiniMax H3 T2V WorkflowのAPI形式ファイルを登録済みです。T2VのPrompt、Seed、秒数、縦横比、解像度規模をMobile Studioから変更できます。
 
-### 操作手順
+次はMobile Studioで安全な成人向けPromptを入力し、T2Vの実生成と完成動画の取得を確認します。その後、I2V、Reference、LoRA対応へ順番に進みます。
+
+### 別のWorkflowへ差し替える場合の操作手順
 
 1. PCでComfyUIを開きます。
 2. 普段T2V生成に使っているMiniMax H3 Workflowを開きます。
@@ -46,7 +48,9 @@ FRAMEFORGEのプロンプト表示欄にある「H3 Studioで開く」ボタン�
 - Windowsログイン後の自動起動
 - Tailscale HTTPS接続
 
-実際の「GENERATE VIDEO」ボタンは、正常動作するAPI形式WorkflowとMappingが登録されるまで意図的に無効化されています。Node IDを推測して誤ったWorkflowをGPUへ投入しないためです。
+T2Vの「GENERATE VIDEO」ボタンは使用可能です。I2VやReference系のボタンは、それぞれの正常動作するAPI形式WorkflowとMappingが登録されるまで意図的に無効化されます。Node IDを推測して誤ったWorkflowをGPUへ投入しないためです。
+
+18歳未満を示す性的・裸体PromptはBackendで拒否されます。Workflowファイルに保存されていたPromptもテンプレート登録時に成人の安全なプレースホルダーへ置換しています。
 
 ## 必要環境
 
@@ -159,4 +163,3 @@ npm run build
 - [ComfyUI公式WebSocket APIサンプル](https://github.com/Comfy-Org/ComfyUI/blob/master/script_examples/websockets_api_example.py)
 - [ComfyUI公式MiniMax Hailuoノード仕様](https://docs.comfy.org/built-in-nodes/MinimaxHailuoVideoNode)
 - [API形式Workflowの公式説明](https://docs.comfy.org/development/cloud/overview)
-

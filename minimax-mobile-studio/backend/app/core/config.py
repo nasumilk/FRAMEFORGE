@@ -26,6 +26,7 @@ class Settings:
     output_dir: Path = _path_env("OUTPUT_DIR", PROJECT_ROOT / "data/outputs")
     thumbnail_dir: Path = _path_env("THUMBNAIL_DIR", PROJECT_ROOT / "data/thumbnails")
     workflow_dir: Path = _path_env("WORKFLOW_DIR", PROJECT_ROOT / "workflows")
+    comfyui_output_dir: Path = _path_env("COMFYUI_OUTPUT_DIR", Path(r"C:\ComfyUI\output"))
     max_upload_mb: int = int(os.getenv("MAX_UPLOAD_MB", "500"))
     allowed_origins: tuple[str, ...] = tuple(
         item.strip()
@@ -42,4 +43,3 @@ class Settings:
 
 
 settings = Settings()
-
