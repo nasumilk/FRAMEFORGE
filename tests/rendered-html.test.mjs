@@ -76,10 +76,17 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(constants, /LACTATION_EFFECTS/);
   assert.match(generator, /Lactation effect for the \$\{primaryWoman\}/);
   assert.match(constants, /DIALOGUE_DELIVERIES/);
+  assert.match(constants, /BUST_PROMPT_DESCRIPTIONS/);
+  assert.match(constants, /very small, petite natural breasts/);
+  assert.match(constants, /massive, very heavy natural breasts/);
   assert.match(eventCard, /Exact Japanese dialogue \(optional\)/);
   assert.match(promptPreview, /frameforge_prompt/);
   assert.match(promptPreview, /Open in H3 Studio/);
   assert.match(generator, /No spoken words or intelligible dialogue in any language/);
   assert.match(generator, /Speak this exact quoted line only/);
   assert.match(generator, /basic\.bustSize/);
+  assert.match(generator, /describeBustForH3/);
+  assert.match(generator, /Breast size and shape/);
+  assert.match(generator, /Preserve this relative breast volume, projection, and shape consistently/);
+  assert.doesNotMatch(generator, /\$\{cleanSentence\(basic\.bustSize\)\}/);
 });

@@ -1,8 +1,14 @@
 import type { AgeValue, BasicSettings, PromptSnapshot, SceneType, TimelineEvent } from "./types";
-import { AUTO_POSE, CAPTURE_DEVICE_DESCRIPTIONS, FOCAL_LENGTH_VISUAL_RESULTS, SUBJECT_DISTANCE_VISUAL_RESULTS } from "./constants";
+import { AUTO_POSE, BUST_PROMPT_DESCRIPTIONS, CAPTURE_DEVICE_DESCRIPTIONS, FOCAL_LENGTH_VISUAL_RESULTS, SUBJECT_DISTANCE_VISUAL_RESULTS } from "./constants";
 
 const cleanSentence = (value = "") => value.trim().replace(/[.\s]+$/, "");
 const exactQuote = (value: string) => JSON.stringify(value.trim());
+
+export const describeBustForH3 = (value: string): string => {
+  const normalized = cleanSentence(value);
+  const cupMatch = normalized.match(/^([A-I])(?:-|\s*)cup(?:\s+breasts?)?$/i);
+  return cupMatch ? BUST_PROMPT_DESCRIPTIONS[cupMatch[1].toUpperCase()] : normalized;
+};
 
 const vocalizationDirection = (event: TimelineEvent) => event.dialogueText.trim()
   ? `Exact Japanese spoken dialogue: ${exactQuote(event.dialogueText)}. Delivery: ${cleanSentence(event.dialogueDelivery)}. Speak this exact quoted line only; do not improvise, paraphrase, translate, or add words`
@@ -134,13 +140,13 @@ export function generateH3Prompt(state: PromptSnapshot): string {
   } else {
     subject += "All depicted performers are consenting adults aged 18 or older. ";
   }
-  subject += `The primary performer is a ${formatAge(basic.age)} Japanese woman, ${cleanSentence(basic.bodyType)}, ${cleanSentence(basic.bustSize)}, ${cleanSentence(basic.hair)}, ${cleanSentence(basic.eyes)}, ${cleanSentence(basic.skin)}.`;
+  subject += `The primary performer is a ${formatAge(basic.age)} Japanese woman with a ${cleanSentence(basic.bodyType)} build, ${cleanSentence(basic.hair)}, ${cleanSentence(basic.eyes)}, and ${cleanSentence(basic.skin)}. Breast size and shape: ${describeBustForH3(basic.bustSize)}. Preserve this relative breast volume, projection, and shape consistently throughout every frame; do not enlarge or reduce it.`;
   if (basic.maleActor) {
     subject += ` A ${cleanSentence(basic.maleBodyType)}, ${cleanSentence(basic.maleAgeFeel)} Japanese man`;
     subject += basic.maleFaceVisible ? "." : ", with his face kept out of clear view.";
   }
   if (basic.sceneType === "female-female") {
-    subject += ` A second consenting ${formatAge(basic.femalePartnerAge)} Japanese woman, ${cleanSentence(basic.femalePartnerBodyType)}, ${cleanSentence(basic.femalePartnerBustSize)}, ${cleanSentence(basic.femalePartnerHair)}, with a clearly distinct identity from the first woman.`;
+    subject += ` A second consenting ${formatAge(basic.femalePartnerAge)} Japanese woman with a ${cleanSentence(basic.femalePartnerBodyType)} build and ${cleanSentence(basic.femalePartnerHair)}, with a clearly distinct identity from the first woman. The second woman's breast size and shape: ${describeBustForH3(basic.femalePartnerBustSize)}; preserve her selected relative breast volume and shape consistently without copying the primary woman's proportions.`;
   }
 
   const device = CAPTURE_DEVICE_DESCRIPTIONS[basic.captureDevice] ?? cleanSentence(basic.captureDevice);

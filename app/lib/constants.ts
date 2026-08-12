@@ -23,6 +23,21 @@ export const BUST_SIZES = [
   "I-cup breasts",
 ];
 
+// H3 tends to respond more reliably to relative visual descriptions than to
+// Japanese cup labels. The UI keeps familiar A-I labels while prompt output
+// uses these explicit size-and-shape descriptions.
+export const BUST_PROMPT_DESCRIPTIONS: Record<string, string> = {
+  A: "very small, petite natural breasts with subtle projection and a gently perky shape",
+  B: "small, perky natural breasts with a compact rounded shape",
+  C: "medium, average-sized natural breasts with a balanced rounded shape",
+  D: "moderately large, full natural breasts with a clearly rounded shape",
+  E: "large, full natural breasts with soft natural weight and a rounded shape",
+  F: "very large, full natural breasts with soft weight and natural movement",
+  G: "very large, heavy natural breasts with pronounced fullness and soft movement",
+  H: "huge, heavy natural breasts with an extremely full rounded shape and soft movement",
+  I: "massive, very heavy natural breasts with maximum fullness and visibly soft movement",
+};
+
 export const HAIR_STYLES = [
   "long straight black hair",
   "long wavy black hair",
