@@ -24,6 +24,7 @@ import {
   WandSparkles,
   X,
 } from "lucide-react";
+import NextImage from "next/image";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 type Mode = "t2v" | "i2v" | "reference_image" | "reference_video";
@@ -101,10 +102,18 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedUploadId, setSelectedUploadId] = useState<string | null>(null);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
 
   const currentMode = MODES.find((item) => item.id === mode)!;
   const workflow = health?.workflows.find((item) => item.name === `h3_${mode}`);
-  const canGenerate = health?.comfyui === "ok" && workflow?.ready && prompt.trim() && (currentMode.media === "none" || selectedFile);
+  const canGenerate = health?.comfyui === "ok" && workflow?.ready && prompt.trim() && (currentMode.media === "none" || selectedFile || selectedUploadId);
+
+  useEffect(() => {
+    return () => {
+      if (localPreview) URL.revokeObjectURL(localPreview);
+    };
+  }, [localPreview]);
 
   const refresh = useCallback(async () => {
     const [healthResponse, jobsResponse] = await Promise.allSettled([
@@ -150,7 +159,7 @@ export default function Home() {
     setBusy(true);
     setNotice("");
     try {
-      let mediaId: string | null = null;
+      let mediaId: string | null = selectedUploadId;
       if (selectedFile && currentMode.media !== "none") {
         setNotice(`Uploading ${currentMode.media}…`);
         const form = new FormData();
@@ -201,6 +210,9 @@ export default function Home() {
     setAspectRatio(String(settings.aspect_ratio ?? "9:16 (Portrait Widescreen)"));
     setMegapixels(Number(settings.megapixels ?? 0.4));
     setSelectedFile(null);
+    setLocalPreview(null);
+    const restoredMediaId = job.generation.mode === "reference_video" ? settings.video_id : settings.image_id;
+    setSelectedUploadId(typeof restoredMediaId === "string" ? restoredMediaId : null);
     setActiveJob(null);
     setView("generate");
     setNotice("Previous prompt, seed, and generation settings restored. Review them before generating again.");
@@ -249,7 +261,7 @@ export default function Home() {
               <div className="section-heading"><div><span>01</span><div><strong>Generation mode</strong><small>Select the workflow family</small></div></div></div>
               <div className="mode-grid">
                 {MODES.map((item) => (
-                  <button type="button" key={item.id} onClick={() => { setMode(item.id); setSelectedFile(null); }} className={mode === item.id ? "active" : ""}>
+                  <button type="button" key={item.id} onClick={() => { setMode(item.id); setSelectedFile(null); setSelectedUploadId(null); setLocalPreview(null); }} className={mode === item.id ? "active" : ""}>
                     {item.media === "image" ? <ImagePlus size={18} /> : item.media === "video" ? <Video size={18} /> : <Sparkles size={18} />}
                     <span>{item.short}</span>
                   </button>
@@ -258,10 +270,12 @@ export default function Home() {
 
               {currentMode.media !== "none" && (
                 <label className="upload-zone">
+                  {(localPreview || selectedUploadId) && currentMode.media === "image" && <NextImage src={localPreview || `/api/v1/uploads/${selectedUploadId}`} alt="Selected reference" width={640} height={360} unoptimized />}
+                  {(localPreview || selectedUploadId) && currentMode.media === "video" && <video src={localPreview || `/api/v1/uploads/${selectedUploadId}`} muted playsInline />}
                   <Upload size={22} />
-                  <strong>{selectedFile ? selectedFile.name : `Choose reference ${currentMode.media}`}</strong>
-                  <span>{selectedFile ? `${(selectedFile.size / 1024 / 1024).toFixed(1)} MB` : "Photos, Files, or Camera"}</span>
-                  <input type="file" accept={currentMode.media === "image" ? "image/*" : "video/*"} onChange={(event) => setSelectedFile(event.target.files?.[0] || null)} />
+                  <strong>{selectedFile ? selectedFile.name : selectedUploadId ? "Saved reference restored" : `Choose reference ${currentMode.media}`}</strong>
+                  <span>{selectedFile ? `${(selectedFile.size / 1024 / 1024).toFixed(1)} MB` : selectedUploadId ? "Tap to replace" : "Photos, Files, or Camera"}</span>
+                  <input type="file" accept={currentMode.media === "image" ? "image/*" : "video/*"} onChange={(event) => { const file = event.target.files?.[0] || null; setSelectedFile(file); setSelectedUploadId(null); setLocalPreview(file ? URL.createObjectURL(file) : null); }} />
                 </label>
               )}
 

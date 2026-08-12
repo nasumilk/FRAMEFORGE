@@ -42,6 +42,7 @@ button { color:inherit; }
 .mode-grid button span { font-size:10px; font-weight:650; }
 .mode-grid button.active { color:var(--lime); border-color:#697428; background:#191d13; box-shadow:inset 0 0 0 1px rgba(233,255,99,.06); }
 .upload-zone { margin-top:14px; min-height:112px; border:1px dashed #3b4049; border-radius:13px; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#8a909a; cursor:pointer; }
+.upload-zone img,.upload-zone video { width:100%; max-height:220px; object-fit:contain; margin-bottom:11px; border-radius:10px; background:#050607; }
 .upload-zone strong { color:#d7dad4; margin-top:8px; font-size:12px; max-width:90%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .upload-zone span { font-size:10px; margin-top:3px; }
 .upload-zone input { display:none; }

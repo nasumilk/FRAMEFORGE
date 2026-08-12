@@ -10,7 +10,9 @@ MiniMax H3を、iPhone・iPad・PCから操作するためのモバイル優先W
 
 T2Vの実生成、ジョブ監視、完成MP4の取得まで確認済みです。History画面では動画、Prompt、Seed、秒数を確認でき、`Use settings`から生成画面へ設定を戻せます。履歴を削除してもComfyUI側の動画ファイルは残ります。
 
-画像・動画アップロードAPIも実装済みです。次はComfyUI公式のMiniMax H3 I2V WorkflowをAPI形式で登録し、画像入力のMappingを作成します。I2VのNode IDや入力名は推測せず、実際に動作しているWorkflowから取得します。
+画像・動画アップロードAPIと、ComfyUI公式MiniMax H3 I2V Workflowも登録済みです。画像アップロードからI2V生成、完成MP4の取得、履歴からの入力画像復元まで確認済みです。
+
+次はReference ImageまたはReference Videoへ進みます。対応するWorkflowはI2Vとはノード構成が異なるため、ComfyUIで実際に動作しているWorkflowを `Save (API Format)` で保存して登録します。
 
 ### 別のWorkflowへ差し替える場合の操作手順
 

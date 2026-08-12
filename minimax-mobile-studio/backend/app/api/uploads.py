@@ -4,6 +4,7 @@ import uuid
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -78,3 +79,18 @@ async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_d
 @router.post("/video", response_model=UploadResponse, status_code=status.HTTP_201_CREATED)
 async def upload_video(file: UploadFile = File(...), db: Session = Depends(get_db)) -> UploadResponse:
     return UploadResponse.model_validate(await _save_upload(file, "video", db))
+
+
+@router.get("/{upload_id}")
+def get_upload(upload_id: str, db: Session = Depends(get_db)) -> FileResponse:
+    upload = db.get(Upload, upload_id)
+    if not upload:
+        raise AppError("MEDIA_NOT_FOUND", "Upload was not found.", 404)
+    path = Path(upload.path).resolve()
+    try:
+        path.relative_to(settings.upload_dir.resolve())
+    except ValueError as exc:
+        raise AppError("MEDIA_NOT_FOUND", "Upload path is outside the allowed directory.", 404) from exc
+    if not path.is_file():
+        raise AppError("MEDIA_NOT_FOUND", "Upload file no longer exists.", 404)
+    return FileResponse(path, media_type=upload.mime_type, filename=upload.original_filename, content_disposition_type="inline")

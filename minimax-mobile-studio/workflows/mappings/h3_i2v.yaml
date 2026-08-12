@@ -1,0 +1,32 @@
+workflow: h3_i2v
+template: h3_i2v.json
+inputs:
+  prompt:
+    node_id: "105:104"
+    input: prompt
+    required: true
+  image:
+    node_id: "114"
+    input: image
+    required: true
+  seed:
+    node_id: "105:15"
+    input: noise_seed
+  duration:
+    node_id: "105:111"
+    input: value
+  aspect_ratio:
+    node_id: "115"
+    input: aspect_ratio
+  megapixels:
+    node_id: "115"
+    input: megapixels
+  image_upscale_megapixels:
+    node_id: "119"
+    input: megapixels
+  steps:
+    node_id: "105:9"
+    input: steps
+  fps:
+    node_id: "105:91"
+    input: fps
