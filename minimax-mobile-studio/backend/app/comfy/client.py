@@ -47,6 +47,9 @@ class ComfyUIClient:
     async def get_queue(self) -> dict[str, Any]:
         return (await self._request("GET", "/queue")).json()
 
+    async def delete_from_queue(self, prompt_id: str) -> None:
+        await self._request("POST", "/queue", json={"delete": [prompt_id]})
+
     async def get_history(self) -> dict[str, Any]:
         return (await self._request("GET", "/history")).json()
 
@@ -73,4 +76,3 @@ class ComfyUIClient:
             params={"filename": filename, "subfolder": subfolder, "type": output_type},
         )
         return response.content
-

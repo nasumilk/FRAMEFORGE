@@ -5,6 +5,7 @@ import {
   ChevronDown,
   Clock3,
   Cpu,
+  Download,
   Film,
   FolderHeart,
   ImagePlus,
@@ -12,10 +13,12 @@ import {
   LoaderCircle,
   Play,
   RefreshCw,
+  RotateCcw,
   Settings,
   SlidersHorizontal,
   Sparkles,
   Square,
+  Trash2,
   Upload,
   Video,
   WandSparkles,
@@ -43,6 +46,19 @@ interface Job {
   progress: number;
   stage?: string | null;
   error_message?: string | null;
+  created_at: string;
+  completed_at?: string | null;
+  generation: {
+    id: string;
+    mode: Mode;
+    prompt: string;
+    negative_prompt?: string | null;
+    seed: number;
+    duration?: number | null;
+    workflow_name: string;
+    settings: Record<string, unknown>;
+    created_at: string;
+  };
   media: { id: string; type: string; filename: string; mime_type?: string | null; size?: number | null }[];
 }
 
@@ -134,7 +150,16 @@ export default function Home() {
     setBusy(true);
     setNotice("");
     try {
-      // Upload endpoints are wired in the next workflow milestone. Until then, media modes remain disabled.
+      let mediaId: string | null = null;
+      if (selectedFile && currentMode.media !== "none") {
+        setNotice(`Uploading ${currentMode.media}…`);
+        const form = new FormData();
+        form.append("file", selectedFile);
+        const uploadResponse = await fetch(`/api/v1/uploads/${currentMode.media}`, { method: "POST", body: form });
+        const uploadPayload = await uploadResponse.json();
+        if (!uploadResponse.ok) throw new Error(uploadPayload.error?.message || "Upload failed.");
+        mediaId = uploadPayload.id;
+      }
       const response = await fetch("/api/v1/generations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -144,6 +169,8 @@ export default function Home() {
           seed: seedMode === "random" ? null : seed,
           ...workflowResolution,
           duration,
+          image_id: currentMode.media === "image" ? mediaId : null,
+          video_id: currentMode.media === "video" ? mediaId : null,
         }),
       });
       const payload = await response.json();
@@ -162,6 +189,36 @@ export default function Home() {
     if (!activeJob) return;
     const response = await fetch(`/api/v1/jobs/${activeJob.id}/cancel`, { method: "POST" });
     if (response.ok) setActiveJob(await response.json());
+  }
+
+  function restoreSettings(job: Job) {
+    const settings = job.generation.settings;
+    setMode(job.generation.mode);
+    setPrompt(job.generation.prompt);
+    setSeedMode("fixed");
+    setSeed(job.generation.seed);
+    setDuration(Number(settings.duration ?? job.generation.duration ?? 6));
+    setAspectRatio(String(settings.aspect_ratio ?? "9:16 (Portrait Widescreen)"));
+    setMegapixels(Number(settings.megapixels ?? 0.4));
+    setSelectedFile(null);
+    setActiveJob(null);
+    setView("generate");
+    setNotice("Previous prompt, seed, and generation settings restored. Review them before generating again.");
+  }
+
+  function openResult(job: Job) {
+    setActiveJob(job);
+    setView("generate");
+    setNotice("Completed generation loaded from history.");
+  }
+
+  async function deleteHistory(job: Job) {
+    if (!window.confirm("Remove this item from Mobile Studio history? The ComfyUI output file will be preserved.")) return;
+    const response = await fetch(`/api/v1/jobs/${job.id}`, { method: "DELETE" });
+    if (response.ok) {
+      if (activeJob?.id === job.id) setActiveJob(null);
+      await refresh();
+    }
   }
 
   return (
@@ -216,7 +273,7 @@ export default function Home() {
               </div>
 
               <div className="quick-settings">
-                <label><span>Duration</span><select value={duration} onChange={(event) => setDuration(Number(event.target.value))}><option value={6}>6 seconds</option><option value={10}>10 seconds</option></select></label>
+                <label><span>Duration</span><select value={duration} onChange={(event) => setDuration(Number(event.target.value))}><option value={5}>5 seconds</option><option value={6}>6 seconds</option><option value={10}>10 seconds</option><option value={15}>15 seconds</option></select></label>
                 <label><span>Aspect ratio</span><select value={aspectRatio} onChange={(event) => setAspectRatio(event.target.value)}><option>9:16 (Portrait Widescreen)</option><option>16:9 (Widescreen)</option><option>1:1 (Square)</option><option>3:4 (Portrait Standard)</option><option>4:3 (Standard)</option><option>21:9 (Ultrawide)</option></select></label>
               </div>
 
@@ -233,15 +290,18 @@ export default function Home() {
               {!workflow?.ready && health?.comfyui === "ok" && <div className="notice warning">{workflow?.message || "Export and install the API workflow mapping to enable this mode."}</div>}
               {activeJob && (
                 <div className="job-progress">
-                  <div><LoaderCircle size={17} className={activeJob.status === "running" ? "spin" : ""} /><strong>{activeJob.status}</strong><span>{activeJob.stage}</span></div>
+                  <div>{activeJob.status === "completed" ? <Play size={17} /> : <LoaderCircle size={17} className={activeJob.status === "running" ? "spin" : ""} />}<strong>{activeJob.status}</strong><span>{activeJob.stage}</span></div>
                   <div className="progress-track"><span style={{ width: `${activeJob.progress}%` }} /></div>
-                  <button type="button" onClick={cancel}><Square size={13} /> Cancel</button>
+                  {!(["completed", "failed", "cancelled"].includes(activeJob.status)) && <button type="button" onClick={cancel}><Square size={13} /> Cancel</button>}
                 </div>
               )}
               {activeJob?.status === "completed" && activeJob.media?.[0] && (
                 <div className="result-video">
                   <video controls playsInline preload="metadata" src={`/api/v1/media/${activeJob.media[0].id}`} />
-                  <a href={`/api/v1/media/${activeJob.media[0].id}?download=true`} download>{activeJob.media[0].filename}</a>
+                  <div className="result-actions">
+                    <a href={`/api/v1/media/${activeJob.media[0].id}?download=true`} download><Download size={15} /> Download MP4</a>
+                    <button type="button" onClick={() => restoreSettings(activeJob)}><RotateCcw size={15} /> Use settings</button>
+                  </div>
                 </div>
               )}
               <button className="generate-button" disabled={!canGenerate || busy}>
@@ -253,7 +313,7 @@ export default function Home() {
           </div>
         )}
 
-        {view === "history" && <HistoryView jobs={jobs} refresh={refresh} />}
+        {view === "history" && <HistoryView jobs={jobs} refresh={refresh} onOpen={openResult} onRestore={restoreSettings} onDelete={deleteHistory} />}
         {view === "library" && <LibraryView />}
         {view === "settings" && <SettingsView health={health} refresh={refresh} />}
       </main>
@@ -265,8 +325,8 @@ export default function Home() {
   );
 }
 
-function HistoryView({ jobs, refresh }: { jobs: Job[]; refresh: () => void }) {
-  return <section className="content-page"><div className="page-title"><div><span>GENERATIONS</span><h2>History</h2><p>Jobs persist even when the browser closes.</p></div><button onClick={refresh}><RefreshCw size={16} /> Refresh</button></div>{jobs.length ? <div className="job-list">{jobs.map((job) => <article key={job.id}><div className={`job-state ${job.status}`}>{job.status === "completed" ? <Play size={20} /> : <LoaderCircle size={20} />}</div><div><strong>{job.status.toUpperCase()}</strong><span>{job.stage || "Waiting"}</span><small>{job.id}</small></div><b>{job.progress}%</b></article>)}</div> : <EmptyState icon={Clock3} title="No generations yet" body="Your queued and completed videos will appear here." />}</section>;
+function HistoryView({ jobs, refresh, onOpen, onRestore, onDelete }: { jobs: Job[]; refresh: () => void; onOpen: (job: Job) => void; onRestore: (job: Job) => void; onDelete: (job: Job) => void }) {
+  return <section className="content-page"><div className="page-title"><div><span>GENERATIONS</span><h2>History</h2><p>Videos, prompts, seeds, and settings are saved locally.</p></div><button onClick={refresh}><RefreshCw size={16} /> Refresh</button></div>{jobs.length ? <div className="history-grid">{jobs.map((job) => { const media = job.media?.[0]; return <article className="history-card" key={job.id}>{media ? <video controls playsInline preload="metadata" src={`/api/v1/media/${media.id}`} /> : <div className={`history-placeholder ${job.status}`}><LoaderCircle className={job.status === "running" ? "spin" : ""} size={24} /><span>{job.progress}%</span></div>}<div className="history-body"><div className="history-meta"><span>{job.generation.mode.toUpperCase()}</span><time>{new Date(job.created_at).toLocaleString()}</time></div><p>{job.generation.prompt}</p><div className="history-facts"><span>Seed {job.generation.seed}</span><span>{job.generation.duration ?? "–"}s</span><span>{job.status}</span></div><div className="history-actions">{media && <button onClick={() => onOpen(job)}><Play size={14} /> Open</button>}<button onClick={() => onRestore(job)}><RotateCcw size={14} /> Use settings</button><button className="danger" onClick={() => onDelete(job)} aria-label="Delete history"><Trash2 size={14} /></button></div></div></article>; })}</div> : <EmptyState icon={Clock3} title="No generations yet" body="Your queued and completed videos will appear here." />}</section>;
 }
 
 function LibraryView() {

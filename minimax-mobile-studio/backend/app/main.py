@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import generate, jobs, media, system, workflows
+from app.api import generate, jobs, media, system, uploads, workflows
 from app.core.config import settings
 from app.core.errors import AppError, app_error_handler
 from app.db.session import init_db
@@ -57,6 +57,7 @@ app.include_router(system.router, prefix="/api/v1")
 app.include_router(generate.router, prefix="/api/v1")
 app.include_router(jobs.router, prefix="/api/v1")
 app.include_router(media.router, prefix="/api/v1")
+app.include_router(uploads.router, prefix="/api/v1")
 app.include_router(workflows.router, prefix="/api/v1")
 
 

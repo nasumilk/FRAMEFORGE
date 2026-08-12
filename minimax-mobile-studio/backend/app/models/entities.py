@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import datetime, timezone
 
@@ -28,6 +29,14 @@ class Generation(Base):
     settings_json: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     jobs: Mapped[list["Job"]] = relationship(back_populates="generation", cascade="all, delete-orphan")
+
+    @property
+    def settings(self) -> dict:
+        try:
+            value = json.loads(self.settings_json)
+            return value if isinstance(value, dict) else {}
+        except (TypeError, json.JSONDecodeError):
+            return {}
 
 
 class Job(Base):
@@ -61,3 +70,15 @@ class Media(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     job: Mapped[Job] = relationship(back_populates="media")
 
+
+class Upload(Base):
+    __tablename__ = "uploads"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    type: Mapped[str] = mapped_column(String(24), index=True)
+    original_filename: Mapped[str] = mapped_column(String(255))
+    stored_filename: Mapped[str] = mapped_column(String(255), unique=True)
+    path: Mapped[str] = mapped_column(Text)
+    mime_type: Mapped[str] = mapped_column(String(120))
+    size: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

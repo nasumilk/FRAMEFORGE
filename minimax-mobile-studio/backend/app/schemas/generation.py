@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -68,6 +69,33 @@ class MediaResponse(BaseModel):
     size: int | None
 
 
+class GenerationResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    mode: str
+    prompt: str
+    negative_prompt: str | None
+    seed: int
+    width: int | None
+    height: int | None
+    duration: float | None
+    workflow_name: str
+    settings: dict[str, object]
+    created_at: datetime
+
+
+class UploadResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    type: str
+    original_filename: str
+    mime_type: str
+    size: int
+    created_at: datetime
+
+
 class JobResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -79,4 +107,7 @@ class JobResponse(BaseModel):
     stage: str | None
     current_node: str | None
     error_message: str | None
+    created_at: datetime
+    completed_at: datetime | None
+    generation: GenerationResponse
     media: list[MediaResponse] = Field(default_factory=list)
