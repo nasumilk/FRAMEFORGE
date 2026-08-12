@@ -36,6 +36,7 @@ class WorkflowRegistry:
         if not mapping_path.exists():
             raise AppError("WORKFLOW_NOT_FOUND", f"Workflow mapping '{safe_name}' is not installed.", 422)
         mapping = yaml.safe_load(mapping_path.read_text(encoding="utf-8")) or {}
+        self._validate_required_models(mapping)
         template_name = mapping.get("template", f"{safe_name}.json")
         template_path = self.root / Path(str(template_name)).name
         if not template_path.exists():
@@ -46,6 +47,25 @@ class WorkflowRegistry:
             raise AppError("WORKFLOW_INVALID", f"Workflow template '{template_path.name}' is invalid.", 422) from exc
         self._validate_api_format(template)
         return WorkflowDefinition(safe_name, template_path, mapping_path, template, mapping)
+
+    @staticmethod
+    def _validate_required_models(mapping: dict[str, Any]) -> None:
+        requirements = mapping.get("required_models", [])
+        if not isinstance(requirements, list):
+            raise AppError("WORKFLOW_INVALID", "required_models must be a list.", 422)
+        for requirement in requirements:
+            if not isinstance(requirement, dict):
+                raise AppError("WORKFLOW_INVALID", "Each required model must be an object.", 422)
+            directory = Path(str(requirement.get("directory", ""))).name
+            filename = Path(str(requirement.get("filename", ""))).name
+            expected_bytes = int(requirement.get("bytes", 0))
+            path = settings.comfyui_model_dir / directory / filename
+            if not path.is_file() or (expected_bytes and path.stat().st_size < expected_bytes):
+                raise AppError(
+                    "WORKFLOW_NOT_FOUND",
+                    f"Required model '{filename}' is missing or still downloading.",
+                    422,
+                )
 
     @staticmethod
     def _validate_api_format(template: dict[str, Any]) -> None:
@@ -65,4 +85,3 @@ class WorkflowRegistry:
             return {"name": name, "ready": True, "template": definition.template_path.name, "message": "Ready"}
         except AppError as exc:
             return {"name": name, "ready": False, "template": f"{name}.json", "message": exc.message}
-

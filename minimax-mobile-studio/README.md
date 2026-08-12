@@ -12,7 +12,9 @@ T2Vの実生成、ジョブ監視、完成MP4の取得まで確認済みです�
 
 画像・動画アップロードAPIと、ComfyUI公式MiniMax H3 I2V Workflowも登録済みです。画像アップロードからI2V生成、完成MP4の取得、履歴からの入力画像復元まで確認済みです。
 
-次はReference ImageまたはReference Videoへ進みます。対応するWorkflowはI2Vとはノード構成が異なるため、ComfyUIで実際に動作しているWorkflowを `Save (API Format)` で保存して登録します。
+ComfyUI公式のMiniMax H3 Reference-to-Video Workflowを基に、Reference ImageとReference Videoも登録済みです。Reference専用モデルの導入後、画像または動画をアップロードして利用できます。Reference Videoでは元動画の映像と音声を参照します。プロンプト内の `<Picture 1>`、`<Video 1>`、`<Audio 1>` タグは必要に応じてアプリが自動補完します。
+
+Reference品質は `match`（出力サイズに合わせて高速化）と `max`（最大の人物一貫性、低速）を選択できます。Reference専用モデルが未導入またはダウンロード途中の場合、誤実行を防ぐためReferenceモードは自動的に無効になります。
 
 ### 別のWorkflowへ差し替える場合の操作手順
 

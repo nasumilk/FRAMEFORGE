@@ -31,9 +31,11 @@ class GenerationService:
     async def create(self, request: GenerationRequest) -> Job:
         seed = request.seed if request.seed is not None else secrets.randbelow(2**31 - 1)
         workflow_name = request.workflow_name or MODE_WORKFLOWS[request.mode.value]
-        image_name = await self._prepare_image(request.image_id) if request.image_id else None
+        workflow_prompt = _reference_aware_prompt(request.mode.value, request.prompt)
+        image_name = await self._prepare_upload(request.image_id, "image") if request.image_id else None
+        video_name = await self._prepare_upload(request.video_id, "video") if request.video_id else None
         values = {
-            "prompt": request.prompt,
+            "prompt": workflow_prompt,
             "negative_prompt": request.negative_prompt or "",
             "seed": seed,
             "width": request.width,
@@ -42,7 +44,7 @@ class GenerationService:
             "aspect_ratio": request.aspect_ratio,
             "megapixels": request.megapixels,
             "image": image_name,
-            "video": request.video_id,
+            "video": video_name,
             **request.advanced,
         }
         workflow = self.builder.build(workflow_name, values)
@@ -72,13 +74,25 @@ class GenerationService:
         job.stage = "queued in ComfyUI"
         return self.repo.save(job)
 
-    async def _prepare_image(self, upload_id: str) -> str:
+    async def _prepare_upload(self, upload_id: str, expected_type: str) -> str:
         upload = self.repo.db.get(Upload, upload_id)
-        if not upload or upload.type != "image":
-            raise AppError("UPLOAD_INVALID", "The selected image upload was not found.", 422)
-        result = await self.client.upload_image(Path(upload.path))
+        if not upload or upload.type != expected_type:
+            raise AppError("UPLOAD_INVALID", f"The selected {expected_type} upload was not found.", 422)
+        result = await self.client.upload_input(Path(upload.path))
         name = result.get("name")
         if not name:
-            raise AppError("UPLOAD_INVALID", "ComfyUI did not accept the uploaded image.", 502)
+            raise AppError("UPLOAD_INVALID", f"ComfyUI did not accept the uploaded {expected_type}.", 502)
         subfolder = str(result.get("subfolder") or "").strip("/\\")
         return f"{subfolder}/{name}" if subfolder else str(name)
+
+
+def _reference_aware_prompt(mode: str, prompt: str) -> str:
+    if mode == "reference_image" and "<Picture 1>" not in prompt:
+        return f"Use <Picture 1> as the visual identity and appearance reference. {prompt}"
+    if mode == "reference_video" and "<Video 1>" not in prompt:
+        return (
+            "Use <Video 1> as the motion and appearance reference. "
+            "Use <Audio 1> as the soundtrack reference when present. "
+            f"{prompt}"
+        )
+    return prompt

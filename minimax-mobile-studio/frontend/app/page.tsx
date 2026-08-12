@@ -95,6 +95,7 @@ export default function Home() {
   const [duration, setDuration] = useState(6);
   const [aspectRatio, setAspectRatio] = useState("9:16 (Portrait Widescreen)");
   const [megapixels, setMegapixels] = useState(0.4);
+  const [referenceSize, setReferenceSize] = useState<"match" | "max">("match");
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [health, setHealth] = useState<Health | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -178,6 +179,7 @@ export default function Home() {
           seed: seedMode === "random" ? null : seed,
           ...workflowResolution,
           duration,
+          advanced: mode.startsWith("reference_") ? { reference_size: referenceSize } : {},
           image_id: currentMode.media === "image" ? mediaId : null,
           video_id: currentMode.media === "video" ? mediaId : null,
         }),
@@ -209,6 +211,8 @@ export default function Home() {
     setDuration(Number(settings.duration ?? job.generation.duration ?? 6));
     setAspectRatio(String(settings.aspect_ratio ?? "9:16 (Portrait Widescreen)"));
     setMegapixels(Number(settings.megapixels ?? 0.4));
+    const advanced = typeof settings.advanced === "object" && settings.advanced ? settings.advanced as Record<string, unknown> : {};
+    setReferenceSize(advanced.reference_size === "max" ? "max" : "match");
     setSelectedFile(null);
     setLocalPreview(null);
     const restoredMediaId = job.generation.mode === "reference_video" ? settings.video_id : settings.image_id;
@@ -297,6 +301,7 @@ export default function Home() {
                   <div className="segmented"><button type="button" className={seedMode === "random" ? "active" : ""} onClick={() => setSeedMode("random")}>Random seed</button><button type="button" className={seedMode === "fixed" ? "active" : ""} onClick={() => setSeedMode("fixed")}>Fixed seed</button></div>
                   {seedMode === "fixed" && <label><span>Seed</span><input type="number" min={0} value={seed} onChange={(event) => setSeed(Number(event.target.value))} /></label>}
                   <label><span>Target megapixels</span><input type="number" min={0.1} max={16} step={0.1} value={megapixels} onChange={(event) => setMegapixels(Number(event.target.value))} /></label>
+                  {mode.startsWith("reference_") && <label><span>Reference fidelity</span><select value={referenceSize} onChange={(event) => setReferenceSize(event.target.value as "match" | "max")}><option value="match">Match output size (faster)</option><option value="max">Maximum identity detail (slower)</option></select></label>}
                 </div>
               )}
 

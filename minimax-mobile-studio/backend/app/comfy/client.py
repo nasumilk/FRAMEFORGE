@@ -59,7 +59,7 @@ class ComfyUIClient:
     async def interrupt(self) -> None:
         await self._request("POST", "/interrupt", json={})
 
-    async def upload_image(self, path: Path, overwrite: bool = False) -> dict[str, Any]:
+    async def upload_input(self, path: Path, overwrite: bool = False) -> dict[str, Any]:
         with path.open("rb") as file_handle:
             response = await self._request(
                 "POST",
@@ -68,6 +68,9 @@ class ComfyUIClient:
                 data={"overwrite": str(overwrite).lower()},
             )
         return response.json()
+
+    async def upload_image(self, path: Path, overwrite: bool = False) -> dict[str, Any]:
+        return await self.upload_input(path, overwrite)
 
     async def get_output(self, filename: str, subfolder: str = "", output_type: str = "output") -> bytes:
         response = await self._request(
