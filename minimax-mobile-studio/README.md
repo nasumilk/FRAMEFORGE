@@ -1,149 +1,162 @@
 # MiniMax H3 Mobile Studio
 
-A mobile-first PWA that controls MiniMax H3 workflows through a local FastAPI service and the official ComfyUI Server API. ComfyUI remains bound to localhost and is treated as a headless execution engine.
+MiniMax H3を、iPhone・iPad・PCから操作するためのモバイル優先Webアプリです。
 
-## Current milestone
+画面操作はMobile Studio、動画生成処理はWindows上のComfyUIが担当します。ComfyUIは外部公開せず、ローカルの生成エンジンとして利用します。
 
-Implemented:
+## 次にやること
 
-- Next.js App Router PWA optimized for iPhone, iPad, and desktop
-- T2V composer with FRAMEFORGE prompt handoff
-- FastAPI health, generation, job, cancel, and workflow status endpoints
-- SQLite generation/job/media schema
-- ComfyUI client for `/system_stats`, `/prompt`, `/queue`, `/history`, `/history/{prompt_id}`, `/interrupt`, `/upload/image`, and `/view`
-- WebSocket execution monitor module for `/ws?clientId=...`
-- API-workflow registry, template/mapping builder, and startup-safe validation
-- Workflow inspection and LoRA scan scripts
-- Unit tests with ComfyUI mocked
+現在、アプリ本体とComfyUIの接続は完了しています。次は、普段ComfyUIで正常に生成できているH3のT2V Workflowを「API形式」で1個保存してください。
 
-Generation remains intentionally disabled until a working workflow is exported in **API format** and its mapping is installed. Editable graph JSON is rejected so the application never guesses node IDs.
+### 操作手順
 
-## Requirements
+1. PCでComfyUIを開きます。
+2. 普段T2V生成に使っているMiniMax H3 Workflowを開きます。
+3. ComfyUIの設定画面（歯車アイコン）を開きます。
+4. `Enable Dev mode Options`（開発者モードのオプション）を有効にします。
+5. Workflowメニューに追加された `Save (API Format)` を選びます。
+6. JSONファイルを保存します。ファイル名は変更しなくて構いません。
+7. 保存したJSONファイルをこのCodexチャットに添付してください。
+
+ここまでできれば大丈夫です。Node IDの調査、ファイル名変更、Mapping作成、アプリへの組み込み、実際のT2V生成テストはCodex側で行います。
+
+注意：通常の `Save` で保存したJSONではなく、必ず `Save (API Format)` を使用してください。正しいAPI形式は、JSONの先頭付近がノードIDをキーにした構造になっています。通常形式のようなトップレベルの `nodes` 配列はありません。
+
+## 現在のアクセス先
+
+- iPhone・iPad・別PC（Tailscale接続中）：`https://daichinopc.tail9ad2a3.ts.net:8444`
+- このWindows PC：`http://127.0.0.1:3300`
+- FRAMEFORGE：`https://frameforge-h3-studio.nasumilk.chatgpt.site`
+
+FRAMEFORGEのプロンプト表示欄にある「H3 Studioで開く」ボタンを押すと、生成したプロンプトをMobile Studioへ引き渡せます。
+
+## 現在できていること
+
+- iPhone、iPad、PC向けのPWA画面
+- FRAMEFORGEからのプロンプト受け渡し
+- ComfyUIのオンライン状態確認
+- T2V入力画面
+- FastAPIによる生成・ジョブ・キャンセル・Workflow状態API
+- SQLiteによる生成履歴・ジョブ・メディア管理の基礎
+- ComfyUI公式Server APIへの接続
+- Workflow Template＋Mapping方式
+- Workflowの形式・Node ID・入力名の検証
+- Workflow解析補助スクリプト
+- LoRA検索補助スクリプト
+- Windowsログイン後の自動起動
+- Tailscale HTTPS接続
+
+実際の「GENERATE VIDEO」ボタンは、正常動作するAPI形式WorkflowとMappingが登録されるまで意図的に無効化されています。Node IDを推測して誤ったWorkflowをGPUへ投入しないためです。
+
+## 必要環境
 
 - Windows 11
-- Node.js 22+
-- Python 3.11+
-- ComfyUI listening only on `127.0.0.1:8188`
-- Tailscale for mobile access
-- A working MiniMax H3 workflow exported using ComfyUI's API-format export
+- Node.js 22以上
+- Python 3.11以上
+- `127.0.0.1:8188`で稼働するComfyUI
+- モバイル接続用のTailscale
+- ComfyUIからAPI形式で保存したMiniMax H3 Workflow
 
-## Installation
+## Workflowの組み込み方法
 
-### Backend
+通常はCodex側で作業するため、ユーザーが以下のコマンドを操作する必要はありません。
 
-```powershell
-cd C:\Promptmaker\minimax-mobile-studio
-python -m venv backend\.venv
-backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
-Copy-Item .env.example .env
-```
+API形式Workflowは次の名前で`workflows`フォルダに配置します。
 
-Do not commit `.env`; it is ignored.
+- T2V：`h3_t2v.json`
+- I2V：`h3_i2v.json`
+- Reference Image：`h3_reference_image.json`
+- Reference Video：`h3_reference_video.json`
 
-### Frontend
-
-```powershell
-cd C:\Promptmaker\minimax-mobile-studio\frontend
-npm install
-npm run build
-```
-
-## ComfyUI setup
-
-Run ComfyUI on localhost. The tested local installation reports ComfyUI `0.30.0` at `http://127.0.0.1:8188`.
-
-The backend, not the browser, is the only component that communicates with port 8188.
-
-## Workflow export and mapping
-
-1. Open the known-good H3 workflow in ComfyUI.
-2. Enable developer options if necessary and choose **Save (API Format)**.
-3. Save the output as `workflows/h3_t2v.json`.
-4. Inspect it:
+Workflowを解析するコマンド：
 
 ```powershell
 backend\.venv\Scripts\python.exe scripts\inspect_workflow.py workflows\h3_t2v.json
 ```
 
-5. Copy `workflows/mappings/h3_t2v.example.yaml` to `h3_t2v.yaml`.
-6. Replace every `REPLACE_ME` with the actual node ID and input name reported by the inspector.
-7. Validate:
+Mapping検証コマンド：
 
 ```powershell
 backend\.venv\Scripts\python.exe scripts\validate_workflows.py
 ```
 
-Repeat for I2V and reference workflows. Node IDs exist only in YAML mapping files; application code contains no workflow node IDs.
+Node IDはPythonやReactのコードに書かず、`workflows/mappings`内のYAMLだけで管理します。ComfyUI側でWorkflowを編集してNode IDが変わった場合も、Mappingだけ更新できます。
 
-## Development startup
+## 起動方法
 
-Terminal 1:
+Windowsへのログイン時に自動起動するよう設定済みです。通常は手動操作不要です。
 
-```powershell
-cd C:\Promptmaker\minimax-mobile-studio\backend
-..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
-
-Terminal 2:
+手動で起動する場合：
 
 ```powershell
-cd C:\Promptmaker\minimax-mobile-studio\frontend
-npm run dev -- --hostname 127.0.0.1 --port 3300
+powershell -ExecutionPolicy Bypass -File C:\Promptmaker\minimax-mobile-studio\scripts\run_mobile_studio.ps1
 ```
 
-Open `http://127.0.0.1:3300`.
+使用ポート：
 
-## Production startup
+- Mobile Studio画面：`127.0.0.1:3300`
+- FastAPI：`127.0.0.1:8000`
+- ComfyUI：`127.0.0.1:8188`
 
-Run `scripts/run_mobile_studio.ps1`. It keeps both services on localhost:
+ブラウザはFastAPIやComfyUIへ直接接続しません。Mobile StudioからFastAPIを経由し、FastAPIだけがComfyUIへ接続します。
 
-- Frontend: `127.0.0.1:3300`
-- FastAPI: `127.0.0.1:8000`
-- ComfyUI: `127.0.0.1:8188`
+## Tailscale接続
 
-The frontend proxies `/api/v1/*` to FastAPI, so mobile browsers never contact the backend or ComfyUI ports directly.
+Mobile Studioは次のアドレスでtailnet内だけに公開されています。
 
-## Tailscale access
-
-```powershell
-tailscale serve --bg --https=8444 http://127.0.0.1:3300
+```text
+https://daichinopc.tail9ad2a3.ts.net:8444
 ```
 
-Then open `https://daichinopc.tail9ad2a3.ts.net:8444` from a tailnet-connected iPhone or iPad and choose **Add to Home Screen** in Safari.
+iPhoneまたはiPadを同じTailscaleへ接続し、Safariで開いてください。Safariの共有メニューから「ホーム画面に追加」を選ぶと、通常のアプリに近い形で起動できます。
 
-Do not use Tailscale Funnel. ComfyUI must not be directly exposed to the internet.
+Tailscale Funnelは使用しません。インターネットへ一般公開せず、ComfyUIのポートも直接公開しません。
 
-## FRAMEFORGE integration
+## FRAMEFORGEとの連携
 
-FRAMEFORGE includes **Open in H3 Studio** in the prompt preview. The prompt is transferred in the URL fragment (`#frameforge_prompt=...`), which is not sent to the web server, and is removed from the address bar immediately after import.
+FRAMEFORGEの「H3 Studioで開く」を押すと、現在のH3プロンプトがMobile StudioのPrompt欄へ入ります。
 
-## LoRA scan
+プロンプトはURLのフラグメント（`#frameforge_prompt=...`）で渡します。この部分はWebサーバーへ送信されず、Mobile Studioへ取り込んだ直後にアドレス欄から削除されます。
+
+## LoRA一覧の作成
+
+ComfyUIのLoRAフォルダを検索し、編集用メタデータの下書きを作るコマンドです。
 
 ```powershell
 backend\.venv\Scripts\python.exe scripts\scan_loras.py C:\ComfyUI\models\loras
 ```
 
-Review the generated YAML before replacing curated LoRA metadata.
+自動生成された内容を確認してから、正式なLoRAマスターへ反映します。
 
-## Testing
+## テスト
+
+Backend：
 
 ```powershell
 backend\.venv\Scripts\python.exe -m pytest backend\tests -q
+```
+
+Frontend：
+
+```powershell
 cd frontend
 npm run lint
 npm run build
 ```
 
-## Troubleshooting
+## 困ったとき
 
-- **Engine offline:** verify `http://127.0.0.1:8188/system_stats` on the Windows machine.
-- **Workflow setup required:** export API-format JSON, install its mapping YAML, and run the validation script.
-- **Workflow invalid / top-level nodes:** this is editable graph JSON. Export again using API format.
-- **Mapping error:** a node ID or input changed after editing the workflow; rerun the inspector and update only the YAML mapping.
-- **Mobile page unavailable:** connect the device to the same tailnet and verify `tailscale serve status`.
-- **History works but Generate is unavailable:** this is expected when ComfyUI is offline or the selected workflow is not ready.
+- `Engine offline`：Windows上でComfyUIが起動しているか確認してください。
+- `Workflow setup required`：API形式WorkflowとMappingがまだ登録されていません。
+- `Workflow invalid`またはトップレベルに`nodes`がある：通常形式のJSONです。`Save (API Format)`で保存し直してください。
+- `Mapping error`：ComfyUIでWorkflowを編集したためNode IDまたは入力名が変わっています。再解析してMappingを更新します。
+- iPhoneから画面を開けない：iPhoneのTailscale接続を確認してください。
+- Historyは見えるがGenerateできない：ComfyUIが停止中、または選択モードのWorkflowが未登録です。
 
-## Official API basis
+## 参照している公式仕様
 
-The integration follows ComfyUI's official [OpenAPI specification](https://github.com/Comfy-Org/ComfyUI/blob/master/openapi.yaml), [WebSocket API example](https://github.com/Comfy-Org/ComfyUI/blob/master/script_examples/websockets_api_example.py), and [MiniMax Hailuo node documentation](https://docs.comfy.org/built-in-nodes/MinimaxHailuoVideoNode).
+- [ComfyUI OpenAPI仕様](https://github.com/Comfy-Org/ComfyUI/blob/master/openapi.yaml)
+- [ComfyUI公式WebSocket APIサンプル](https://github.com/Comfy-Org/ComfyUI/blob/master/script_examples/websockets_api_example.py)
+- [ComfyUI公式MiniMax Hailuoノード仕様](https://docs.comfy.org/built-in-nodes/MinimaxHailuoVideoNode)
+- [API形式Workflowの公式説明](https://docs.comfy.org/development/cloud/overview)
 
