@@ -58,6 +58,9 @@ export interface TimelineEvent {
   clothingState: string;
   camera: string;
   bodyOrientation: string;
+  upperBodyOrientation: string;
+  hipOrientation: string;
+  cameraPlacement: string;
   shotSize: string;
   visualResult: string;
   cameraMotion: string;
@@ -136,6 +139,9 @@ export interface MasterData {
   maleAgeFeels: MasterItem[];
   poses: MasterItem[];
   bodyOrientations: MasterItem[];
+  upperBodyOrientations: MasterItem[];
+  hipOrientations: MasterItem[];
+  cameraPlacements: MasterItem[];
   captureDevices: MasterItem[];
   focalLengths: MasterItem[];
   subjectDistances: MasterItem[];

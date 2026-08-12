@@ -309,6 +309,30 @@ export const BODY_ORIENTATIONS = [
   "back facing the camera while looking over her shoulder",
 ];
 
+export const UPPER_BODY_ORIENTATIONS = [
+  "face, shoulders, and chest oriented directly toward the camera",
+  "head and eyes turned toward the camera while the shoulders follow the selected pose",
+  "chest open toward the camera in a three-quarter view",
+  "upper body oriented toward the partner",
+];
+
+export const HIP_ORIENTATIONS = [
+  "hips directed away from the camera toward the partner behind her",
+  "hips squared toward the camera",
+  "hips at a three-quarter angle to the camera",
+  "hips side-on to the camera",
+  "hips follow the selected pose naturally",
+];
+
+export const CAMERA_PLACEMENTS = [
+  "camera positioned directly in front of the primary woman at her eye level",
+  "camera positioned directly in front of the primary woman at her eye level while she is on all fours",
+  "camera positioned at a three-quarter front view of the primary woman",
+  "camera positioned directly beside the primary woman",
+  "camera positioned behind the primary woman",
+  "camera positioned over the partner's shoulder toward the primary woman",
+];
+
 export const ADULT_TOYS = [
   "no adult toy",
   "small handheld vibrator",
@@ -402,6 +426,9 @@ export const DEFAULT_MASTER_DATA: MasterData = {
   maleAgeFeels: asMasterItems(MALE_AGE_FEELS),
   poses: asMasterItems(POSES),
   bodyOrientations: asMasterItems(BODY_ORIENTATIONS),
+  upperBodyOrientations: asMasterItems(UPPER_BODY_ORIENTATIONS),
+  hipOrientations: asMasterItems(HIP_ORIENTATIONS),
+  cameraPlacements: asMasterItems(CAMERA_PLACEMENTS),
   captureDevices: asMasterItems(CAPTURE_DEVICES),
   focalLengths: asMasterItems(FOCAL_LENGTHS),
   subjectDistances: asMasterItems(SUBJECT_DISTANCES),

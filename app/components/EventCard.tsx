@@ -50,6 +50,8 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
         <div className="event-grid">
           <SelectField label={label("Woman pose (Auto recommended)", "女性ポーズ（自動推奨）")} value={event.pose} options={master.poses} onChange={(pose) => onUpdate({ pose })} />
           <SelectField label={label("Main woman's body orientation", "メイン女性の体の向き")} value={event.bodyOrientation} options={master.bodyOrientations} onChange={(bodyOrientation) => onUpdate({ bodyOrientation })} />
+          <SelectField label={label("Face / upper-body orientation", "顔・上半身の向き")} value={event.upperBodyOrientation} options={master.upperBodyOrientations} onChange={(upperBodyOrientation) => onUpdate({ upperBodyOrientation })} />
+          <SelectField label={label("Hip orientation", "腰の向き")} value={event.hipOrientation} options={master.hipOrientations} onChange={(hipOrientation) => onUpdate({ hipOrientation })} />
           <SelectField label={t.clothingState} value={event.clothingState} options={master.clothings} onChange={(clothingState) => onUpdate({ clothingState })} />
           {partnered && <SelectField label={sceneType === "female-female" ? label("Women-couple position", "女性同士の体位") : label("Couple position", "カップルの体位")} value={event.position} options={positions} onChange={(position) => onUpdate({ position })} />}
           {sceneType === "male-female" && <SelectField label={label("Intimacy mode", "接触モード")} value={event.intimacyMode} options={INTIMACY_OPTIONS} onChange={(intimacyMode) => onUpdate({ intimacyMode: intimacyMode as TimelineEvent["intimacyMode"] })} />}
@@ -65,6 +67,7 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
       <section className="track-panel camera-track">
         <div className="track-title"><Video size={14} /><span>{label("CAMERA TRACK", "カメラトラック")}</span></div>
         <div className="event-grid">
+          <SelectField label={label("Camera position relative to woman", "女性に対するカメラ位置")} value={event.cameraPlacement} options={master.cameraPlacements} onChange={(cameraPlacement) => onUpdate({ cameraPlacement })} />
           <SelectField label={label("1. Shot size / framing", "1. ショットサイズ・構図")} value={event.shotSize} options={master.shotSizes} onChange={(shotSize) => onUpdate({ shotSize })} />
           <SelectField label={label("2. Visual result", "2. 視覚的な見え方")} value={event.visualResult} options={master.visualResults} onChange={(visualResult) => onUpdate({ visualResult })} />
           <SelectField label={label("3. Camera angle", "3. カメラ角度")} value={event.camera} options={cameraOptions} onChange={(camera) => onUpdate({ camera })} />
@@ -78,6 +81,17 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
         </div>
         {event.cameraMotion === "locked-off static" && <span className="field-hint">{label("Static mode automatically forbids push, zoom, dolly, pan, tilt, reframing, and handheld shake.", "固定モードではプッシュ、ズーム、ドリー、パン、チルト、リフレーミング、手振れを自動的に禁止します。")}</span>}
       </section>
+
+      {sceneType === "male-female" && <button type="button" className="secondary-button" onClick={() => onUpdate({
+        position: "rear-entry position",
+        pose: "on all fours with an arched back",
+        bodyOrientation: "facing the camera while the head and eyes look directly into the lens",
+        upperBodyOrientation: "face, shoulders, and chest oriented directly toward the camera",
+        hipOrientation: "hips directed away from the camera toward the partner behind her",
+        cameraPlacement: "camera positioned directly in front of the primary woman at her eye level while she is on all fours",
+        camera: "eye-level angle",
+        partnerHandAction: "both hands firmly supporting the adult woman's hips",
+      })}>{label("Apply front-camera rear-entry setup", "正面カメラ後背位セットを適用")}</button>}
 
       <Field label={t.additionalDirection}><input value={event.additionalDetails} onChange={(e) => onUpdate({ additionalDetails: e.target.value })} placeholder={t.directionPlaceholder} /></Field>
     </article>

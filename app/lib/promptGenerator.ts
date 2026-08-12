@@ -77,7 +77,10 @@ export function buildTimelineSegment(event: TimelineEvent, basic: BasicSettings)
     `Visual result: ${cleanSentence(event.visualResult)}`,
     `Camera angle: ${cleanSentence(event.camera)}`,
     cameraMotionText(event, basic),
+    `Camera placement relative to the primary ${primaryWoman}: ${cleanSentence(event.cameraPlacement)}`,
     `Body orientation for the primary ${primaryWoman}: ${cleanSentence(event.bodyOrientation)}. She holds the selected pose while keeping this orientation relative to the camera`,
+    `Face and upper-body orientation for the primary ${primaryWoman}: ${cleanSentence(event.upperBodyOrientation)}`,
+    `Hip orientation for the primary ${primaryWoman}: ${cleanSentence(event.hipOrientation)}. The face and upper body may face the camera independently while the hips remain aligned with the partner and selected position`,
     ...roleDetails,
     clothingDirection,
     sceneType === "male-female" && event.intimacyMode === "consensual anal intercourse" ? "Couple interaction mode: consensual anal intercourse" : "",
@@ -221,6 +224,8 @@ export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
     if (basic.sceneType === "solo" && /second woman|two women|both women|partner|couple|mutual|each other|male/i.test(event.additionalDetails)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} additional direction may imply another person in Solo mode.` });
     if (basic.sceneType === "solo" && /fully nude/i.test(event.clothingState) && /undress|clothes|clothing/i.test(event.action)) diagnostics.push({ severity: "info", message: `Event ${index + 1} says fully nude and undressing; Solo output automatically converts this to self-caressing.` });
     if (/^front-facing/i.test(event.bodyOrientation) && /side profile/i.test(event.camera)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} requests a front-facing body with a side-profile camera angle; change one setting to avoid conflicting directions.` });
+    if (/rear-entry/i.test(event.position) && /directly in front/i.test(event.cameraPlacement) && /hips squared toward the camera/i.test(event.hipOrientation)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} places the camera in front for rear-entry but points the hips toward the camera; direct the hips toward the partner behind her.` });
+    if (/rear-entry/i.test(event.position) && /on all fours/i.test(event.pose) && !/partner behind|follow the selected pose/i.test(event.hipOrientation)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} rear-entry pose may need the hips directed toward the partner behind her.` });
   });
   if (basic.sceneType === "solo" && /second woman|two women|both women|partner|couple|mutual|each other|male/i.test(customNotes)) diagnostics.push({ severity: "warning", message: "Global notes may imply another person in Solo mode." });
   if (basic.sceneType === "solo" && /male|partner|two women|both women/i.test(soundscape)) diagnostics.push({ severity: "info", message: "Partner-like audio is automatically converted to a Solo-only soundscape." });

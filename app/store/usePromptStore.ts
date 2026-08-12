@@ -161,6 +161,9 @@ const normalizeEvent = (event: TimelineEvent): TimelineEvent => {
   ...event,
   camera: legacy.cameraAngle,
   bodyOrientation: event.bodyOrientation || "front-facing toward the camera with shoulders and hips squared to the lens",
+  upperBodyOrientation: event.upperBodyOrientation || "face, shoulders, and chest oriented directly toward the camera",
+  hipOrientation: event.hipOrientation || "hips follow the selected pose naturally",
+  cameraPlacement: event.cameraPlacement || "camera positioned directly in front of the primary woman at her eye level",
   shotSize: event.shotSize || legacy.shotSize,
   visualResult: event.visualResult || "natural perspective with a balanced relationship between subject and environment",
   cameraMotion: event.cameraMotion || legacy.cameraMotion,
@@ -279,6 +282,9 @@ export const usePromptStore = create<PromptState>()(
           clothingState: state.clothing,
           camera: "eye-level angle",
           bodyOrientation: "front-facing toward the camera with shoulders and hips squared to the lens",
+          upperBodyOrientation: "face, shoulders, and chest oriented directly toward the camera",
+          hipOrientation: "hips follow the selected pose naturally",
+          cameraPlacement: "camera positioned directly in front of the primary woman at her eye level",
           shotSize: "medium shot from the waist up",
           visualResult: "natural perspective with a balanced relationship between subject and environment",
           cameraMotion: "locked-off static",
@@ -314,6 +320,9 @@ export const usePromptStore = create<PromptState>()(
           clothingState: template?.clothingState || state.clothing,
           camera: template?.camera || "medium shot",
           bodyOrientation: template?.bodyOrientation || "front-facing toward the camera with shoulders and hips squared to the lens",
+          upperBodyOrientation: template?.upperBodyOrientation || "face, shoulders, and chest oriented directly toward the camera",
+          hipOrientation: template?.hipOrientation || "hips follow the selected pose naturally",
+          cameraPlacement: template?.cameraPlacement || "camera positioned directly in front of the primary woman at her eye level",
           shotSize: template?.shotSize || "medium shot from the waist up",
           visualResult: template?.visualResult || "natural perspective with a balanced relationship between subject and environment",
           cameraMotion: template?.cameraMotion || "locked-off static",
@@ -388,7 +397,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 15,
+      version: 16,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);
