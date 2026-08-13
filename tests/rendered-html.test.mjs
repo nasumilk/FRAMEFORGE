@@ -23,7 +23,7 @@ test("server-renders the Frameforge application shell", async () => {
 });
 
 test("ships advanced H3 controls and API export", async () => {
-  const [topBar, eventCard, generator, constants, store, promptPreview, timelineEditor, visualComposer, visualMappings] = await Promise.all([
+  const [topBar, eventCard, generator, constants, store, promptPreview, timelineEditor, visualComposer, visualMappings, interactive3d] = await Promise.all([
     readFile(new URL("../app/components/TopBar.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/EventCard.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/promptGenerator.ts", import.meta.url), "utf8"),
@@ -33,6 +33,7 @@ test("ships advanced H3 controls and API export", async () => {
     readFile(new URL("../app/components/TimelineEditor.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/VisualComposer.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/visualComposer.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/Interactive3DStage.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(topBar, /T2V/);
   assert.match(topBar, /I2V/);
@@ -96,7 +97,11 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(timelineEditor, />Visual</);
   assert.match(timelineEditor, />Manual</);
   assert.match(visualComposer, /CAMERA PLACEMENT/);
-  assert.match(visualComposer, /BoneFigure/);
+  assert.match(visualComposer, /Interactive3DStage/);
+  assert.match(interactive3d, /handlePointerMove/);
+  assert.match(interactive3d, /yaw: drag\.current!\.yaw \+ dx/);
+  assert.match(interactive3d, /pitch: clamp\(drag\.current!\.pitch - dy/);
+  assert.match(interactive3d, /camera-cone-line/);
   assert.match(visualMappings, /mf-rear-all-fours/);
   assert.match(visualMappings, /camera positioned directly in front of the primary woman at her eye level while she is on all fours/);
   assert.match(visualMappings, /visualCameraPoint/);

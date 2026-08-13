@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState } from "react";
 import { Camera, Crosshair, Eye, Scan, SlidersHorizontal } from "lucide-react";
 import type { SceneType, TimelineEvent, UiLanguage } from "../lib/types";
 import {
@@ -11,61 +11,9 @@ import {
   FRAMINGS,
   VISUAL_POSE_PRESETS,
   visualPoseForEvent,
-  type RigPose,
   type VisualOption,
 } from "../lib/visualComposer";
-
-type Point = readonly [number, number];
-type JointName = "head" | "neck" | "shoulderL" | "shoulderR" | "elbowL" | "elbowR" | "handL" | "handR" | "hip" | "hipL" | "hipR" | "kneeL" | "kneeR" | "ankleL" | "ankleR";
-type Rig = Record<JointName, Point>;
-
-const RIGS: Record<RigPose, Rig> = {
-  standing: {
-    head: [115, 22], neck: [115, 48], shoulderL: [84, 61], shoulderR: [146, 61], elbowL: [70, 103], elbowR: [160, 103], handL: [64, 145], handR: [166, 145], hip: [115, 125], hipL: [98, 130], hipR: [132, 130], kneeL: [94, 173], kneeR: [136, 173], ankleL: [88, 216], ankleR: [142, 216],
-  },
-  kneeling: {
-    head: [115, 28], neck: [115, 54], shoulderL: [83, 67], shoulderR: [147, 67], elbowL: [70, 107], elbowR: [160, 107], handL: [82, 142], handR: [148, 142], hip: [115, 130], hipL: [96, 134], hipR: [134, 134], kneeL: [78, 178], kneeR: [152, 178], ankleL: [57, 207], ankleR: [173, 207],
-  },
-  seated: {
-    head: [115, 28], neck: [115, 54], shoulderL: [84, 67], shoulderR: [146, 67], elbowL: [72, 108], elbowR: [158, 108], handL: [88, 139], handR: [142, 139], hip: [115, 128], hipL: [96, 132], hipR: [134, 132], kneeL: [58, 164], kneeR: [172, 164], ankleL: [35, 210], ankleR: [195, 210],
-  },
-  reclining: {
-    head: [28, 117], neck: [54, 117], shoulderL: [62, 92], shoulderR: [62, 142], elbowL: [88, 77], elbowR: [88, 157], handL: [112, 69], handR: [112, 165], hip: [126, 117], hipL: [126, 101], hipR: [126, 133], kneeL: [169, 78], kneeR: [169, 156], ankleL: [211, 54], ankleR: [211, 180],
-  },
-  "all-fours": {
-    head: [34, 62], neck: [62, 78], shoulderL: [67, 67], shoulderR: [67, 91], elbowL: [88, 119], elbowR: [101, 124], handL: [73, 181], handR: [109, 181], hip: [145, 103], hipL: [142, 90], hipR: [142, 116], kneeL: [133, 157], kneeR: [169, 154], ankleL: [107, 207], ankleR: [205, 198],
-  },
-  "side-lying": {
-    head: [31, 110], neck: [58, 111], shoulderL: [65, 95], shoulderR: [65, 128], elbowL: [92, 84], elbowR: [92, 143], handL: [116, 80], handR: [117, 151], hip: [128, 116], hipL: [128, 103], hipR: [128, 131], kneeL: [168, 109], kneeR: [173, 145], ankleL: [213, 102], ankleR: [214, 164],
-  },
-};
-
-const BONES: Array<readonly [JointName, JointName]> = [
-  ["head", "neck"], ["neck", "shoulderL"], ["neck", "shoulderR"], ["shoulderL", "elbowL"], ["elbowL", "handL"], ["shoulderR", "elbowR"], ["elbowR", "handR"], ["neck", "hip"], ["hip", "hipL"], ["hip", "hipR"], ["hipL", "kneeL"], ["kneeL", "ankleL"], ["hipR", "kneeR"], ["kneeR", "ankleR"],
-];
-
-function boneStyle(from: Point, to: Point): CSSProperties {
-  const dx = to[0] - from[0];
-  const dy = to[1] - from[1];
-  return {
-    left: from[0],
-    top: from[1],
-    width: Math.sqrt(dx * dx + dy * dy),
-    transform: `rotate(${Math.atan2(dy, dx) * (180 / Math.PI)}deg)`,
-  };
-}
-
-function BoneFigure({ pose, partner = false }: { pose: RigPose; partner?: boolean }) {
-  const rig = RIGS[pose];
-  return (
-    <div className={`bone-figure ${partner ? "partner" : "primary"} rig-${pose}`} aria-hidden="true">
-      {BONES.map(([from, to]) => <span className="bone-line" style={boneStyle(rig[from], rig[to])} key={`${from}-${to}`} />)}
-      {(Object.entries(rig) as Array<[JointName, Point]>).map(([name, point]) => (
-        <i className={`bone-joint joint-${name}`} key={name} style={{ left: point[0], top: point[1] }} />
-      ))}
-    </div>
-  );
-}
+import { Interactive3DStage } from "./Interactive3DStage";
 
 function OptionStrip({ title, icon, options, activeId, language, onSelect }: {
   title: string;
@@ -123,6 +71,9 @@ export function VisualComposer({
     pose: "姿勢・体位",
     cameraMap: "カメラ設置ポイント",
     front: "女性の正面",
+    drag: "横・縦ドラッグで3D回転 / ホイールで拡大",
+    reset: "視点リセット",
+    viewOnly: "3D視点の回転はプロンプトへ影響しません",
     direction: "体の向き",
     height: "カメラ高",
     framing: "構図",
@@ -136,6 +87,9 @@ export function VisualComposer({
     pose: "POSE / POSITION",
     cameraMap: "CAMERA PLACEMENT",
     front: "PRIMARY FRONT",
+    drag: "DRAG H/V TO ORBIT • WHEEL TO ZOOM",
+    reset: "Reset view",
+    viewOnly: "Orbit view does not change the prompt",
     direction: "BODY DIRECTION",
     height: "CAMERA HEIGHT",
     framing: "FRAMING",
@@ -171,39 +125,20 @@ export function VisualComposer({
       </div>
 
       <div className="visual-stage-grid">
-        <div className={`bone-stage framing-${framing}`}>
-          <div className="stage-title"><Crosshair size={14} /> {copy.cameraMap}</div>
-          <div className="stage-front-marker">{copy.front}</div>
-          <div className="stage-orbit" />
-          <div className="stage-axis axis-x" /><div className="stage-axis axis-y" />
-          <div className="bone-cast">
-            <div className="cast-member primary-member">
-              <BoneFigure pose={activePose.primaryRig} />
-              <span>{copy.primary}</span>
-            </div>
-            {activePose.partnerRig && sceneType !== "solo" && (
-              <div className={`cast-member partner-member pose-${activePose.id}`}>
-                <BoneFigure pose={activePose.partnerRig} partner />
-                <span>{copy.partner}</span>
-              </div>
-            )}
-          </div>
-          <div className="framing-window" aria-hidden="true"><span /><i /></div>
-          {CAMERA_POINTS.map((point) => (
-            <button
-              type="button"
-              key={point.id}
-              className={`camera-point point-${point.id} ${cameraPoint === point.id ? "active" : ""}`}
-              aria-pressed={cameraPoint === point.id}
-              aria-label={`${copy.cameraMap}: ${point.label[language]}`}
-              title={point.label[language]}
-              onClick={() => update(point.patch)}
-            >
-              <Camera size={16} /><span>{point.label[language]}</span>
-            </button>
-          ))}
-          <div className="stage-legend"><span><i className="legend-primary" />{copy.primary}</span>{sceneType !== "solo" && <span><i className="legend-partner" />{copy.partner}</span>}</div>
-        </div>
+        <Interactive3DStage
+          pose={activePose}
+          sceneType={sceneType}
+          language={language}
+          cameraPoint={cameraPoint}
+          cameraHeight={cameraHeight}
+          framing={framing}
+          bodyDirection={bodyDirection}
+          labels={{ title: copy.cameraMap, primary: copy.primary, partner: copy.partner, drag: copy.drag, reset: copy.reset, front: copy.front, viewOnly: copy.viewOnly }}
+          onSelectCamera={(id) => {
+            const point = CAMERA_POINTS.find((option) => option.id === id);
+            if (point) update(point.patch);
+          }}
+        />
 
         <div className="visual-controls">
           <OptionStrip title={copy.direction} icon={<Eye size={15} />} options={BODY_DIRECTIONS} activeId={bodyDirection} language={language} onSelect={(option) => update(option.patch)} />

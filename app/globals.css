@@ -308,6 +308,49 @@ select { cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: 
 .visual-manual-link { min-height: 35px; border: 1px solid #40384b; border-radius: 8px; background: transparent; color: #bda6e7; display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 9px; cursor: pointer; }
 .visual-manual-link:hover { background: rgba(139,92,246,.08); }
 
+.bone-stage-3d { min-height: 520px; touch-action: none; user-select: none; cursor: grab; outline: 0; }
+.bone-stage-3d.dragging { cursor: grabbing; }
+.bone-stage-3d:focus-visible { box-shadow: inset 0 0 0 2px var(--violet); }
+.stage-3d-toolbar { position: absolute; z-index: 1500; top: 10px; right: 11px; display: flex; align-items: center; gap: 8px; }
+.stage-3d-toolbar > span { min-height: 31px; display: flex; align-items: center; gap: 5px; padding: 0 9px; border: 1px solid rgba(75,105,121,.36); border-radius: 7px; background: rgba(10,15,19,.82); color: #7796a7; font: 600 7px var(--font-geist-mono); letter-spacing: .04em; backdrop-filter: blur(8px); }
+.stage-3d-toolbar button { min-height: 31px; border: 1px solid var(--border); border-radius: 7px; background: rgba(20,20,25,.9); color: var(--muted); padding: 0 8px; display: inline-flex; align-items: center; gap: 5px; font-size: 8px; cursor: pointer; }
+.stage-3d-toolbar button:hover { border-color: #51495d; color: #ded7e6; }
+.orbit-canvas { position: absolute; z-index: 2; left: 50%; top: 51%; width: min(100%, 640px); aspect-ratio: 640 / 520; transform: translate(-50%,-50%); overflow: visible; pointer-events: none; }
+.stage-drag-surface { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 0; background: transparent; color: transparent; padding: 0; cursor: grab; pointer-events: auto; touch-action: none; }
+.bone-stage-3d.dragging .stage-drag-surface { cursor: grabbing; }
+.stage-drag-surface:focus-visible { outline: 2px solid rgba(168,129,255,.65); outline-offset: -4px; }
+.scene-3d-line { position: absolute; height: 1px; transform-origin: 0 50%; border-radius: 99px; pointer-events: none; will-change: left, top, width, transform; }
+.floor-grid-line { background: rgba(139,111,184,.14); }
+.world-axis { height: 1px; opacity: .48 !important; }
+.axis-x-3d { background: linear-gradient(90deg, transparent, #6b5a83, transparent); }
+.axis-y-3d { background: linear-gradient(90deg, #6ea2a7, transparent); }
+.axis-z-3d { background: linear-gradient(90deg, transparent, #495e83, transparent); }
+.camera-orbit-line { height: 1px; background: rgba(84,151,181,.28); }
+.rig-bone { height: 3px; }
+.rig-bone.primary { background: linear-gradient(90deg, #c4a6ff, #7f58bf); box-shadow: 0 0 8px rgba(174,134,255,.28); }
+.rig-bone.partner { background: linear-gradient(90deg, #9ccedb, #527d8c); box-shadow: 0 0 7px rgba(100,191,214,.2); }
+.scene-3d-joint { position: absolute; width: 9px; height: 9px; border: 2px solid #c9b2f6; border-radius: 50%; background: #1a1424; pointer-events: none; will-change: left, top, transform; }
+.scene-3d-joint.head { width: 23px; height: 23px; background: rgba(94,67,140,.75); box-shadow: 0 0 12px rgba(174,134,255,.2); }
+.scene-3d-joint.partner { border-color: #9bcbd7; background: #102028; }
+.scene-3d-joint.partner.head { background: rgba(48,91,103,.78); box-shadow: 0 0 12px rgba(100,191,214,.16); }
+.selected-camera-ray { height: 2px; background: repeating-linear-gradient(90deg, #c8f0ff 0 7px, transparent 7px 12px); box-shadow: 0 0 8px rgba(116,204,238,.25); opacity: .82 !important; }
+.camera-cone-line { background: rgba(89,184,221,.26); }
+.camera-framing-plane { height: 2px; background: rgba(137,213,242,.65); box-shadow: 0 0 8px rgba(91,185,221,.12); }
+.camera-point-3d { pointer-events: auto; margin: 0; will-change: left, top, transform; }
+.camera-point-3d.active::after { content: ""; position: absolute; inset: -7px; border: 1px solid rgba(140,216,248,.28); border-radius: 14px; animation: cameraPulse 1.8s ease-in-out infinite; }
+@keyframes cameraPulse { 50% { transform: scale(1.13); opacity: .32; } }
+.world-front-label, .cast-label { position: absolute; display: inline-flex; align-items: center; justify-content: center; border-radius: 99px; padding: 4px 7px; pointer-events: none; white-space: nowrap; font: 650 7px var(--font-geist-mono); letter-spacing: .05em; }
+.world-front-label { border: 1px solid rgba(168,129,255,.2); background: rgba(15,13,20,.84); color: #8d78af; }
+.cast-label { border: 1px solid rgba(168,129,255,.27); background: rgba(20,16,28,.9); color: #c4abf2; }
+.cast-label.partner { border-color: rgba(105,192,216,.25); background: rgba(12,25,30,.9); color: #a4d0dc; }
+.stage-3d-status { position: absolute; z-index: 1500; left: 12px; right: 12px; bottom: 10px; display: flex; align-items: center; gap: 10px; color: var(--faint); font-size: 7px; pointer-events: none; }
+.stage-3d-status span { display: flex; align-items: center; gap: 4px; }
+.stage-3d-status i { width: 13px; height: 2px; border-radius: 8px; background: #a984ea; }
+.stage-3d-status .legend-partner { background: #78afbf; }
+.stage-3d-status b { margin-left: auto; color: #575064; font: 600 7px var(--font-geist-mono); }
+.stage-3d-status b + b { margin-left: 0; }
+.stage-3d-status em { color: #5f5968; font: normal 7px var(--font-geist-mono); }
+
 
 @media (max-width: 1120px) {
   .workspace-grid { grid-template-columns: 250px 1fr; }
@@ -340,6 +383,11 @@ select { cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: 
   .visual-preset-grid button { min-width: 145px; }
   .visual-stage-grid { grid-template-columns: 1fr; min-height: 0; }
   .bone-stage { min-height: 500px; border-right: 0; border-bottom: 1px solid var(--border); }
+  .bone-stage-3d { min-height: 510px; }
+  .stage-3d-toolbar > span { position: absolute; top: 40px; right: 0; width: max-content; }
+  .stage-3d-toolbar button { min-width: 42px; min-height: 38px; font-size: 0; justify-content: center; }
+  .orbit-canvas { width: 115%; }
+  .stage-3d-status em { display: none; }
   .bone-cast { width: 92%; transform: translate(-50%,-50%) scale(.79); }
   .stage-orbit { width: 86%; }
   .camera-point span { display: none; }
