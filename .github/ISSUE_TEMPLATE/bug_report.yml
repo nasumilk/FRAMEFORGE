@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a reproducible FRAMEFORGE problem
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Do not include personal media, API keys, private URLs, or illegal content."
+  - type: textarea
+    id: summary
+    attributes:
+      label: Problem
+      description: What happened, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Select…\n2. Change…\n3. Observe…"
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Editor mode
+      options:
+        - Visual
+        - Manual
+        - Both
+        - Not applicable
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "iPhone 16 / iOS 20 / Safari, or Windows 11 / Chrome"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add a sanitized prompt excerpt or screenshot if it helps reproduce the issue.
+

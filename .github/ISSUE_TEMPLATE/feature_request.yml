@@ -1,0 +1,32 @@
+name: Feature request
+description: Suggest an improvement to FRAMEFORGE
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What is difficult or missing today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed improvement
+      description: Describe the interaction or prompt behavior you would like.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: H3 behavior or examples
+      description: If relevant, provide sanitized examples showing why this would improve H3 output.
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Adult-only scope
+      options:
+        - label: This request concerns only consenting adults aged 18 or older.
+          required: true
+

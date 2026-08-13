@@ -1,100 +1,102 @@
-# vinext-starter
+# FRAMEFORGE — MiniMax H3 Visual Prompt Studio
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+FRAMEFORGE is a visual, browser-based prompt composer for MiniMax H3 video generation. It combines an interactive 3D blocking view, a sortable timeline, detailed manual controls, and structured H3 prompt output.
 
-## Prerequisites
+> **Adults only:** FRAMEFORGE is designed exclusively for fictional depictions of consenting adults aged 18 or older. Users are responsible for following the rules of the model provider and their local laws.
 
-- Node.js `>=22.13.0`
+![FRAMEFORGE preview](public/og.png)
 
-## Quick Start
+## Feedback wanted
+
+This project is public because practical feedback from H3 users is extremely valuable. Please open an issue for:
+
+- prompt structures that H3 follows—or ignores;
+- incorrect 3D poses, camera placement, or body orientation;
+- confusing controls on iPhone, iPad, or desktop;
+- English or Japanese translation improvements;
+- reproducible bugs and feature proposals.
+
+[Report a bug](https://github.com/nasumilk/FRAMEFORGE/issues/new?template=bug_report.yml) · [Suggest an improvement](https://github.com/nasumilk/FRAMEFORGE/issues/new?template=feature_request.yml)
+
+## Features
+
+- T2V, I2V, first/last-frame, and subject-reference prompt modes
+- Visual and Manual editing modes
+- Interactive 3D pose blocking with orbit, zoom, and camera placement points
+- Multi-event timeline with automatic timing
+- Detailed subject, partner, action, pose, camera, sound, and continuity controls
+- English/Japanese interface switching and Japanese hover translations
+- Editable local dropdown master data
+- Live structured prompt preview and clipboard export
+- Local presets stored in browser storage
+- Fully client-side prompt generation with no required external API
+
+FRAMEFORGE creates prompts; it does not itself run MiniMax H3 or upload prompts to a generation service.
+
+## Requirements
+
+- Node.js 22.13 or newer
+- npm
+
+## Run locally
 
 ```bash
+git clone https://github.com/nasumilk/FRAMEFORGE.git
+cd FRAMEFORGE
 npm install
 npm run dev
-npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+Open the local URL printed by the development server.
 
-## Included Shape
+## Validation
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
-
-The user ID is stable for the same user on the same Site and different across Sites. Email and name are intended for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```bash
+npm run lint
+npm test
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+`npm test` creates a production build and runs the server-rendering checks.
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+## Privacy
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+- Prompt settings and presets are stored locally in the browser.
+- The app does not require an API key.
+- No prompt-generation API call is made by FRAMEFORGE itself.
+- Do not commit personal images, generated media, API keys, or private network addresses.
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+## Contributing
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before contributing.
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+No open-source license has been selected yet. The source is public for inspection and feedback, but no additional reuse rights are granted until a license is added.
 
-## Useful Commands
+---
 
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+## 日本語
 
-## Learn More
+FRAMEFORGEは、MiniMax H3向けの動画プロンプトを視覚的に組み立てるブラウザアプリです。3D構図表示、タイムライン、詳細なManual設定を組み合わせ、H3用の構造化プロンプトを生成します。
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+> **成人専用:** 本アプリは、18歳以上の合意ある成人を描写する用途だけを想定しています。利用するモデルの規約と地域の法令を守って使用してください。
+
+### フィードバックを募集しています
+
+次のような情報をGitHub Issuesで共有してもらえると助かります。
+
+- H3で効いた、または効かなかったプロンプト表現
+- 3Dポーズ、カメラ位置、身体の向きの誤り
+- iPhone、iPad、PCで操作しづらい箇所
+- 英語・日本語翻訳の改善案
+- 再現手順のある不具合や機能提案
+
+### ローカル起動
+
+```bash
+git clone https://github.com/nasumilk/FRAMEFORGE.git
+cd FRAMEFORGE
+npm install
+npm run dev
+```
+
+開発サーバーが表示したローカルURLをブラウザで開いてください。プロンプト生成はクライアント内で完結し、APIキーは不要です。
+
