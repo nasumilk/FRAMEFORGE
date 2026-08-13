@@ -16,20 +16,23 @@ test("server-renders the Frameforge application shell", async () => {
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
-  assert.match(html, /<title>Frameforge — H3 Prompt Studio<\/title>/i);
-  assert.match(html, /adult-only visual timeline editor/i);
+  assert.match(html, /<title>FRAMEFORGE — H3 Visual Prompt Studio<\/title>/i);
+  assert.match(html, /visual pose, camera-blocking, and timeline editor/i);
   assert.match(html, /Preparing Frameforge/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
 });
 
 test("ships advanced H3 controls and API export", async () => {
-  const [topBar, eventCard, generator, constants, store, promptPreview] = await Promise.all([
+  const [topBar, eventCard, generator, constants, store, promptPreview, timelineEditor, visualComposer, visualMappings] = await Promise.all([
     readFile(new URL("../app/components/TopBar.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/EventCard.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/promptGenerator.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/constants.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/store/usePromptStore.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/components/PromptPreview.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/TimelineEditor.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/VisualComposer.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/visualComposer.ts", import.meta.url), "utf8"),
   ]);
   assert.match(topBar, /T2V/);
   assert.match(topBar, /I2V/);
@@ -89,4 +92,12 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(generator, /Breast size and shape/);
   assert.match(generator, /Preserve this relative breast volume, projection, and shape consistently/);
   assert.doesNotMatch(generator, /\$\{cleanSentence\(basic\.bustSize\)\}/);
+  assert.match(timelineEditor, /VisualComposer/);
+  assert.match(timelineEditor, />Visual</);
+  assert.match(timelineEditor, />Manual</);
+  assert.match(visualComposer, /CAMERA PLACEMENT/);
+  assert.match(visualComposer, /BoneFigure/);
+  assert.match(visualMappings, /mf-rear-all-fours/);
+  assert.match(visualMappings, /camera positioned directly in front of the primary woman at her eye level while she is on all fours/);
+  assert.match(visualMappings, /visualCameraPoint/);
 });

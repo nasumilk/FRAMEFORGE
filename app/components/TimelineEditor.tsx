@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   DndContext,
   KeyboardSensor,
@@ -11,13 +11,15 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { AlertTriangle, Clapperboard, Plus, Sparkles } from "lucide-react";
+import { AlertTriangle, Clapperboard, Eye, Plus, SlidersHorizontal, Sparkles } from "lucide-react";
 import { usePromptStore } from "../store/usePromptStore";
 import { supportedDurations, validateTimeline } from "../lib/promptGenerator";
 import { EventCard } from "./EventCard";
 import { UI_COPY } from "../lib/localization";
+import { VisualComposer } from "./VisualComposer";
 
 export function TimelineEditor() {
+  const [editorMode, setEditorMode] = useState<"visual" | "manual">("visual");
   const basic = usePromptStore((state) => state.basic);
   const events = usePromptStore((state) => state.events);
   const addEvent = usePromptStore((state) => state.addEvent);
@@ -59,6 +61,17 @@ export function TimelineEditor() {
         </div>
       </div>
 
+      <div className="composer-mode-bar">
+        <div>
+          <span>{language === "JAP" ? "編集モード" : "EDITOR MODE"}</span>
+          <small>{language === "JAP" ? "構図を見ながら選ぶか、全項目を直接調整します" : "Compose visually or tune every field directly"}</small>
+        </div>
+        <div className="composer-mode-switch" role="group" aria-label={language === "JAP" ? "編集モード" : "Editor mode"}>
+          <button type="button" className={editorMode === "visual" ? "active" : ""} aria-pressed={editorMode === "visual"} onClick={() => setEditorMode("visual")}><Eye size={16} />Visual</button>
+          <button type="button" className={editorMode === "manual" ? "active" : ""} aria-pressed={editorMode === "manual"} onClick={() => setEditorMode("manual")}><SlidersHorizontal size={16} />Manual</button>
+        </div>
+      </div>
+
       <div className="ruler" aria-label={`${basic.duration} ${t.secondTimeline}`}>
         <div className="ruler-track" />
         {Array.from({ length: basic.duration + 1 }, (_, second) => (
@@ -75,7 +88,15 @@ export function TimelineEditor() {
       </div>
       {issues.length > 0 && <div className="issue-list">{issues.slice(0, 3).map((issue, index) => <span key={`${issue.message}-${index}`}>{issue.message}</span>)}</div>}
 
-      {events.length ? (
+      {events.length && editorMode === "visual" ? (
+        <VisualComposer
+          events={events}
+          sceneType={basic.sceneType}
+          language={language}
+          onUpdate={updateEvent}
+          onSwitchManual={() => setEditorMode("manual")}
+        />
+      ) : events.length ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={events.map((event) => event.id)} strategy={verticalListSortingStrategy}>
             <div className="event-list">

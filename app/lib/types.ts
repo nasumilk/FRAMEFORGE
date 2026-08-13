@@ -88,6 +88,12 @@ export interface TimelineEvent {
   focusBehavior: string;
   frameRate: string;
   shutterAngle: string;
+  /** Visual Composer metadata. Prompt generation continues to use the mapped manual fields above. */
+  visualPosePreset?: string;
+  visualCameraPoint?: string;
+  visualBodyDirection?: string;
+  visualCameraHeight?: string;
+  visualFraming?: string;
 }
 
 export interface PromptSnapshot {
