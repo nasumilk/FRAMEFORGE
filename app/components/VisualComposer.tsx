@@ -108,10 +108,14 @@ export function VisualComposer({
   const poseOptions = useMemo(() => VISUAL_POSE_PRESETS.filter((preset) => preset.scenes.includes(sceneType)), [sceneType]);
   if (!selected) return null;
   const activePose = visualPoseForEvent(selected, sceneType);
-  const cameraPoint = selected.visualCameraPoint ?? (selected.cameraPlacement.includes("three-quarter front") ? "front-left" : selected.cameraPlacement.includes("behind") ? "rear" : selected.cameraPlacement.includes("beside") ? "left" : "front");
-  const bodyDirection = selected.visualBodyDirection ?? (selected.bodyOrientation.startsWith("three-quarter") ? "three-quarter" : selected.bodyOrientation.startsWith("side") ? "profile" : selected.bodyOrientation.startsWith("back") ? "rear-look" : "front");
-  const cameraHeight = selected.visualCameraHeight ?? (selected.camera === "low angle" ? "low" : selected.camera === "slight high angle" ? "high" : "eye");
-  const framing = selected.visualFraming ?? (selected.shotSize.startsWith("close") ? "close" : selected.shotSize.includes("waist") ? "waist" : selected.shotSize.includes("knees") ? "knees" : selected.shotSize.includes("establishing") ? "wide" : "full");
+  const storedCameraPoint = CAMERA_POINTS.find((option) => option.id === selected.visualCameraPoint && option.patch.cameraPlacement === selected.cameraPlacement)?.id;
+  const cameraPoint = storedCameraPoint ?? (selected.cameraPlacement.includes("three-quarter front") ? "front-left" : selected.cameraPlacement.includes("behind") ? "rear" : selected.cameraPlacement.includes("beside") ? "left" : "front");
+  const storedBodyDirection = BODY_DIRECTIONS.find((option) => option.id === selected.visualBodyDirection && option.patch.bodyOrientation === selected.bodyOrientation)?.id;
+  const bodyDirection = storedBodyDirection ?? (selected.bodyOrientation.startsWith("three-quarter") ? "three-quarter" : selected.bodyOrientation.startsWith("side") ? "profile" : selected.bodyOrientation.startsWith("back") ? "rear-look" : "front");
+  const storedCameraHeight = CAMERA_HEIGHTS.find((option) => option.id === selected.visualCameraHeight && option.patch.camera === selected.camera)?.id;
+  const cameraHeight = storedCameraHeight ?? (selected.camera === "low angle" ? "low" : selected.camera === "slight high angle" ? "high" : "eye");
+  const storedFraming = FRAMINGS.find((option) => option.id === selected.visualFraming && option.patch.shotSize === selected.shotSize)?.id;
+  const framing = storedFraming ?? (selected.shotSize.startsWith("close") ? "close" : selected.shotSize.includes("waist") ? "waist" : selected.shotSize.includes("knees") ? "knees" : selected.shotSize.includes("establishing") ? "wide" : "full");
   const motion = CAMERA_MOVES.find((option) => option.patch.cameraMotion === selected.cameraMotion)?.id ?? "static";
   const update = (patch: Partial<TimelineEvent>) => onUpdate(selected.id, patch);
   const copy = language === "JAP" ? {

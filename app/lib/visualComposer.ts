@@ -233,7 +233,7 @@ export const CAMERA_MOVES: VisualOption[] = [
 
 export function visualPoseForEvent(event: TimelineEvent, sceneType: SceneType): VisualPosePreset {
   const available = VISUAL_POSE_PRESETS.filter((preset) => preset.scenes.includes(sceneType));
-  return available.find((preset) => preset.id === event.visualPosePreset)
+  return available.find((preset) => preset.id === event.visualPosePreset && preset.patch.position === event.position && preset.patch.pose === event.pose)
     ?? available.find((preset) => preset.patch.position === event.position)
     ?? available[0];
 }
