@@ -31,7 +31,23 @@ export function PromptPreview() {
 
   const openMobileStudio = () => {
     const localHost = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
-    const studioUrl = localHost ? "http://127.0.0.1:3300" : "https://daichinopc.tail9ad2a3.ts.net:8444";
+    let studioUrl = localHost
+      ? "http://127.0.0.1:3300"
+      : process.env.NEXT_PUBLIC_H3_STUDIO_URL?.trim() || window.localStorage.getItem("frameforge-h3-studio-url") || "";
+    if (!studioUrl) {
+      const entered = window.prompt(language === "JAP" ? "接続するH3 StudioのURLを入力してください" : "Enter the H3 Studio URL to open");
+      if (!entered) return;
+      studioUrl = entered.trim();
+      try {
+        const parsed = new URL(studioUrl);
+        if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error("Unsupported URL protocol");
+        studioUrl = studioUrl.replace(/\/+$/, "");
+        window.localStorage.setItem("frameforge-h3-studio-url", studioUrl);
+      } catch {
+        window.alert(language === "JAP" ? "http または https の正しいURLを入力してください" : "Enter a valid http or https URL.");
+        return;
+      }
+    }
     const target = `${studioUrl}/#frameforge_prompt=${encodeURIComponent(prompt)}`;
     window.open(target, "_blank", "noopener,noreferrer");
   };

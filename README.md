@@ -49,6 +49,12 @@ npm run dev
 
 Open the local URL printed by the development server.
 
+To make **Open in H3 Studio** target a non-local installation without asking for its URL on first use, add an ignored `.env.local` file:
+
+```env
+NEXT_PUBLIC_H3_STUDIO_URL=https://your-private-h3-studio.example
+```
+
 ## Validation
 
 ```bash
@@ -99,3 +105,5 @@ npm run dev
 ```
 
 開発サーバーが表示したローカルURLをブラウザで開いてください。プロンプト生成はクライアント内で完結し、APIキーは不要です。
+
+「H3 Studioで開く」の接続先は初回クリック時に入力できます。固定したい場合は、Gitへ登録しない `.env.local` に `NEXT_PUBLIC_H3_STUDIO_URL` を設定してください。
