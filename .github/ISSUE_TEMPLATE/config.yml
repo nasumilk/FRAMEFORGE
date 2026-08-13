@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Contribution guide
+    url: https://github.com/nasumilk/FRAMEFORGE/blob/main/CONTRIBUTING.md
+    about: Read the contribution and privacy guidance before posting.
