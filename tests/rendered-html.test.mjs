@@ -99,9 +99,14 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(visualComposer, /CAMERA PLACEMENT/);
   assert.match(visualComposer, /Interactive3DStage/);
   assert.match(interactive3d, /handlePointerMove/);
-  assert.match(interactive3d, /yaw: drag\.current!\.yaw \+ dx/);
-  assert.match(interactive3d, /pitch: clamp\(drag\.current!\.pitch - dy/);
-  assert.match(interactive3d, /camera-cone-line/);
+  assert.match(interactive3d, /viewRef\.current\.yaw = drag\.yaw/);
+  assert.match(interactive3d, /viewRef\.current\.pitch = clamp\(drag\.pitch/);
+  assert.match(interactive3d, /requestAnimationFrame/);
+  assert.match(interactive3d, /getContext\("2d"\)/);
+  assert.doesNotMatch(interactive3d, /setView\(/);
+  assert.match(interactive3d, /QUADRUPED_HANDS/);
+  assert.match(interactive3d, /SUPINE_FLEXED/);
+  assert.match(interactive3d, /POSE_CASTS/);
   assert.match(visualMappings, /mf-rear-all-fours/);
   assert.match(visualMappings, /camera positioned directly in front of the primary woman at her eye level while she is on all fours/);
   assert.match(visualMappings, /visualCameraPoint/);
