@@ -69,7 +69,7 @@ npm test
 
 Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before contributing.
 
-No open-source license has been selected yet. The source is public for inspection and feedback, but no additional reuse rights are granted until a license is added.
+Licensed under the [Apache License 2.0](LICENSE), as selected for the public GitHub repository.
 
 ---
 
@@ -99,4 +99,3 @@ npm run dev
 ```
 
 開発サーバーが表示したローカルURLをブラウザで開いてください。プロンプト生成はクライアント内で完結し、APIキーは不要です。
-
