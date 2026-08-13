@@ -46,7 +46,7 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(constants, /suction-cup mounted dildo/);
   assert.match(generator, /generateApiPayload/);
   assert.match(generator, /2,000-character limit/);
-  assert.match(store, /version: 18/);
+  assert.match(store, /version: 19/);
   assert.match(generator, /consenting adults aged 18 or older/);
   assert.match(generator, /must not mirror or copy the woman's pose/);
   assert.match(generator, /Both of the male partner's hands remain visibly accounted for/);
@@ -54,6 +54,10 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(generator, /basic\.femalePartnerAge/);
   assert.match(constants, /LESBIAN_POSITIONS/);
   assert.match(constants, /PARTNER_HAND_ACTIONS/);
+  assert.match(constants, /BLOWJOB_POSITION/);
+  assert.match(constants, /HANDJOB_POSITION/);
+  assert.match(constants, /BLOWJOB_ACTION/);
+  assert.match(constants, /HANDJOB_ACTION/);
   assert.match(constants, /SHOT_SIZES/);
   assert.match(constants, /FOCAL_LENGTH_VISUAL_RESULTS/);
   assert.match(eventCard, /Camera motion \(one only\)/);
@@ -107,7 +111,14 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(interactive3d, /QUADRUPED_HANDS/);
   assert.match(interactive3d, /SUPINE_FLEXED/);
   assert.match(interactive3d, /POSE_CASTS/);
+  assert.match(interactive3d, /KNEELING_ORAL/);
+  assert.match(interactive3d, /KNEELING_MANUAL/);
   assert.match(visualMappings, /mf-rear-all-fours/);
+  assert.match(visualMappings, /mf-blowjob/);
+  assert.match(visualMappings, /mf-handjob/);
+  assert.match(visualMappings, /BLOWJOB_PARTNER_HANDS/);
+  assert.match(visualMappings, /HANDJOB_PARTNER_HANDS/);
+  assert.match(visualComposer, /PARTNER HANDS/);
   assert.match(visualMappings, /camera positioned directly in front of the primary woman at her eye level while she is on all fours/);
   assert.match(visualMappings, /visualCameraPoint/);
 });

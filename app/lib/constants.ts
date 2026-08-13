@@ -94,6 +94,14 @@ export const CLOTHINGS = [
   "thigh-high stockings only",
 ];
 
+export const BLOWJOB_POSITION = "kneeling blowjob position facing a standing male partner";
+export const HANDJOB_POSITION = "kneeling handjob position facing a standing male partner";
+export const BLOWJOB_ACTION = "she consensually performs oral sex on the standing adult male partner with deliberate head and upper-body movement";
+export const HANDJOB_ACTION = "she consensually stimulates the standing adult male partner with one hand using steady rhythmic movement while her other hand rests on his thigh";
+export const BLOWJOB_PARTNER_HANDS = "one hand rests gently on the woman's upper back while the other remains visible and relaxed beside his hip, without pushing or restraining her head";
+export const HANDJOB_PARTNER_HANDS = "one hand rests gently on the woman's shoulder while the other remains visible and relaxed beside his hip, clear of her working hand";
+export const KNEELING_PARTNER_FACING_POSE = "kneeling upright close to the standing partner with her torso angled slightly forward toward him";
+
 export const POSITIONS = [
   "missionary position",
   "cowgirl position",
@@ -107,8 +115,10 @@ export const POSITIONS = [
   "legs-raised missionary position",
   "mutual oral position",
   "oral stimulation",
+  BLOWJOB_POSITION,
   "breast stimulation",
   "manual stimulation while kissing",
+  HANDJOB_POSITION,
   "from behind while standing against a wall",
 ];
 
@@ -126,6 +136,8 @@ export const PARTNER_ACTIONS = [
   "camera slowly pushing in",
   "close-up of intertwined bodies",
   "looking at the camera with an intense expression",
+  BLOWJOB_ACTION,
+  HANDJOB_ACTION,
 ];
 
 export const PARTNER_HAND_ACTIONS = [
@@ -137,6 +149,8 @@ export const PARTNER_HAND_ACTIONS = [
   "one hand caressing her chest while the other hand supports her lower back",
   "both hands holding her thighs in a stable and physically plausible grip",
   "one hand interlaced with hers while the other hand caresses her breast",
+  BLOWJOB_PARTNER_HANDS,
+  HANDJOB_PARTNER_HANDS,
 ];
 
 export const LESBIAN_POSITIONS = [
@@ -326,6 +340,7 @@ export const POSES = [
   AUTO_POSE,
   "standing in a relaxed pose",
   "kneeling upright",
+  KNEELING_PARTNER_FACING_POSE,
   "lying on her back",
   "lying on her side",
   "seated with legs crossed",

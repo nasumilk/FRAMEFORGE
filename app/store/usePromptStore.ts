@@ -4,7 +4,19 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 import type { AgeValue, BasicSettings, MasterCategory, MasterData, MasterItem, PromptSnapshot, SavedPreset, SceneType, TimelineEvent, UiLanguage } from "../lib/types";
-import { AUTO_POSE, DEFAULT_MASTER_DATA, MALE_POV_CAMERA, STYLE_PRESETS } from "../lib/constants";
+import {
+  AUTO_POSE,
+  BLOWJOB_ACTION,
+  BLOWJOB_PARTNER_HANDS,
+  BLOWJOB_POSITION,
+  DEFAULT_MASTER_DATA,
+  HANDJOB_ACTION,
+  HANDJOB_PARTNER_HANDS,
+  HANDJOB_POSITION,
+  KNEELING_PARTNER_FACING_POSE,
+  MALE_POV_CAMERA,
+  STYLE_PRESETS,
+} from "../lib/constants";
 import { japaneseOption } from "../lib/localization";
 
 interface PromptState extends PromptSnapshot {
@@ -111,6 +123,14 @@ const migrateMasterData = (data: unknown): MasterData => {
     if (!result[category].length) result[category] = structuredClone(DEFAULT_MASTER_DATA[category]);
   }
   return result;
+};
+
+const appendMissingMasterItems = (masterData: MasterData, category: MasterCategory, values: string[]) => {
+  for (const value of values) {
+    if (!masterData[category].some((item) => item.value === value)) {
+      masterData[category].push({ value, japanese: japaneseOption(value) });
+    }
+  }
 };
 
 const snapshotFromState = (state: PromptState): PromptSnapshot => ({
@@ -412,7 +432,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 18,
+      version: 19,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);
@@ -421,6 +441,12 @@ export const usePromptStore = create<PromptState>()(
         }
         if (version < 10 && !masterData.poses.some((item) => item.value === AUTO_POSE)) {
           masterData.poses.unshift({ value: AUTO_POSE, japanese: japaneseOption(AUTO_POSE) });
+        }
+        if (version < 19) {
+          appendMissingMasterItems(masterData, "positions", [BLOWJOB_POSITION, HANDJOB_POSITION]);
+          appendMissingMasterItems(masterData, "partnerActions", [BLOWJOB_ACTION, HANDJOB_ACTION]);
+          appendMissingMasterItems(masterData, "partnerHandActions", [BLOWJOB_PARTNER_HANDS, HANDJOB_PARTNER_HANDS]);
+          appendMissingMasterItems(masterData, "poses", [KNEELING_PARTNER_FACING_POSE]);
         }
         const basic = persisted.basic ? normalizeBasic({ ...defaultBasic, ...persisted.basic }) : defaultBasic;
         return {

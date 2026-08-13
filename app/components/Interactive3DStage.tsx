@@ -34,6 +34,21 @@ const KNEELING: Rig3D = {
   hip: [0, -22, 0], hipL: [-14, -24, 0], hipR: [14, -24, 0], kneeL: [-27, -67, 22], kneeR: [27, -67, 22], ankleL: [-30, -82, -8], ankleR: [30, -82, -8],
 };
 
+// Partner-facing kneeling rigs keep the primary performer in a true 3D relationship with a standing partner.
+// The oral preset lowers and advances the head while both hands make stable contact near the partner's thighs.
+const KNEELING_ORAL: Rig3D = {
+  head: [0, 4, 52], neck: [0, 0, 34], chest: [0, -4, 20], shoulderL: [-24, 1, 27], shoulderR: [24, 1, 27],
+  elbowL: [-28, -17, 48], elbowR: [28, -17, 48], handL: [-19, -5, 70], handR: [19, -5, 70],
+  hip: [0, -22, 0], hipL: [-14, -24, 0], hipR: [14, -24, 0], kneeL: [-27, -67, 22], kneeR: [27, -67, 22], ankleL: [-30, -82, -8], ankleR: [30, -82, -8],
+};
+
+// The manual preset remains more upright and gives each arm an independent, visibly accounted-for role.
+const KNEELING_MANUAL: Rig3D = {
+  head: [0, 56, 9], neck: [0, 36, 7], chest: [0, 13, 5], shoulderL: [-26, 30, 6], shoulderR: [26, 30, 6],
+  elbowL: [-25, 5, 37], elbowR: [21, 8, 40], handL: [-17, -4, 58], handR: [8, 1, 70],
+  hip: [0, -22, 0], hipL: [-14, -24, 0], hipR: [14, -24, 0], kneeL: [-27, -67, 22], kneeR: [27, -67, 22], ankleL: [-30, -82, -8], ankleR: [30, -82, -8],
+};
+
 // Hip flexion, abduction and external rotation are made visible instead of keeping the legs on one 2D plane.
 const SEATED_OPEN: Rig3D = {
   head: [0, 66, -8], neck: [0, 45, -5], chest: [0, 21, -2], shoulderL: [-27, 38, -3], shoulderR: [27, 38, -3],
@@ -93,6 +108,18 @@ const STANDING_EMBRACE: Rig3D = {
   elbowL: [-24, 34, 20], elbowR: [24, 34, 20], handL: [-15, 27, 39], handR: [15, 27, 39],
 };
 
+const STANDING_ORAL_PARTNER: Rig3D = {
+  ...STANDING,
+  elbowL: [-30, 23, 30], handL: [-18, 1, 50],
+  elbowR: [35, 27, -2], handR: [31, -4, -13],
+};
+
+const STANDING_MANUAL_PARTNER: Rig3D = {
+  ...STANDING,
+  elbowL: [-27, 43, 33], handL: [-16, 29, 63],
+  elbowR: [35, 27, -2], handR: [31, -4, -13],
+};
+
 const SEATED_EMBRACE: Rig3D = {
   ...SEATED_OPEN,
   elbowL: [-22, 21, 18], elbowR: [22, 21, 18], handL: [-14, 16, 40], handR: [14, 16, 40],
@@ -127,6 +154,8 @@ const POSE_CASTS: Record<string, Cast3D> = {
   "solo-all-fours": { primary: QUADRUPED_HANDS },
   "mf-missionary": { primary: SUPINE_FLEXED, partner: MISSIONARY_PARTNER },
   "mf-rear-all-fours": { primary: QUADRUPED_HANDS, partner: KNEELING_BEHIND },
+  "mf-blowjob": { primary: KNEELING_ORAL, partner: transformRig(STANDING_ORAL_PARTNER, [0, 0, 78], 180, 1.03) },
+  "mf-handjob": { primary: KNEELING_MANUAL, partner: transformRig(STANDING_MANUAL_PARTNER, [0, 0, 78], 180, 1.03) },
   "mf-seated": { primary: transformRig(SEATED_EMBRACE, [0, 0, -19]), partner: transformRig(SEATED_EMBRACE, [0, 0, 26], 180, .94) },
   "mf-spooning": { primary: transformRig(SIDE_LYING, [11, 0, 0]), partner: transformRig(SIDE_LYING, [-18, 9, -8], 0, .96) },
   "mf-standing-rear": { primary: BENT_STANDING, partner: STANDING_BEHIND },

@@ -149,6 +149,8 @@ export function VisualComposer({
             <span>{copy.mapped}</span>
             <p><b>POSE</b>{selected.pose}</p>
             {selected.position && <p><b>POSITION</b>{selected.position}</p>}
+            <p><b>ACTION</b>{selected.action}</p>
+            {sceneType === "male-female" && <p><b>PARTNER HANDS</b>{selected.partnerHandAction}</p>}
             <p><b>CAMERA</b>{selected.cameraPlacement}</p>
             <p><b>FRAME</b>{selected.shotSize}</p>
           </div>

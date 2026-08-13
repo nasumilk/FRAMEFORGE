@@ -1,4 +1,13 @@
 import type { SceneType, TimelineEvent, UiLanguage } from "./types";
+import {
+  BLOWJOB_ACTION,
+  BLOWJOB_PARTNER_HANDS,
+  BLOWJOB_POSITION,
+  HANDJOB_ACTION,
+  HANDJOB_PARTNER_HANDS,
+  HANDJOB_POSITION,
+  KNEELING_PARTNER_FACING_POSE,
+} from "./constants";
 
 export type RigPose = "standing" | "kneeling" | "seated" | "reclining" | "all-fours" | "side-lying";
 
@@ -89,6 +98,40 @@ export const VISUAL_POSE_PRESETS: VisualPosePreset[] = [
       upperBodyOrientation: "face, shoulders, and chest oriented directly toward the camera",
       hipOrientation: "hips directed away from the camera toward the partner behind her",
       cameraPlacement: "camera positioned directly in front of the primary woman at her eye level while she is on all fours",
+    },
+  },
+  {
+    id: "mf-blowjob",
+    label: { ENG: "Blowjob", JAP: "ブロウジョブ" },
+    description: { ENG: "Kneeling woman facing a standing partner", JAP: "立っている相手に向き合う膝立ちの構図" },
+    scenes: ["male-female"],
+    primaryRig: "kneeling",
+    partnerRig: "standing",
+    patch: {
+      position: BLOWJOB_POSITION,
+      pose: KNEELING_PARTNER_FACING_POSE,
+      action: BLOWJOB_ACTION,
+      partnerHandAction: BLOWJOB_PARTNER_HANDS,
+      bodyOrientation: "three-quarter view toward the camera while facing the standing partner",
+      upperBodyOrientation: "upper body angled forward toward the standing partner while her face remains visible from the selected camera point",
+      hipOrientation: "hips and knees aligned naturally beneath her in the kneeling pose",
+    },
+  },
+  {
+    id: "mf-handjob",
+    label: { ENG: "Handjob", JAP: "ハンドジョブ" },
+    description: { ENG: "Kneeling manual stimulation facing a standing partner", JAP: "立っている相手に向き合い手で刺激する膝立ちの構図" },
+    scenes: ["male-female"],
+    primaryRig: "kneeling",
+    partnerRig: "standing",
+    patch: {
+      position: HANDJOB_POSITION,
+      pose: KNEELING_PARTNER_FACING_POSE,
+      action: HANDJOB_ACTION,
+      partnerHandAction: HANDJOB_PARTNER_HANDS,
+      bodyOrientation: "three-quarter view toward the camera while facing the standing partner",
+      upperBodyOrientation: "upper body upright and oriented toward the standing partner while her face remains visible from the selected camera point",
+      hipOrientation: "hips and knees aligned naturally beneath her in the kneeling pose",
     },
   },
   {
