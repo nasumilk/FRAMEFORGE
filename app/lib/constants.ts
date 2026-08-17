@@ -194,6 +194,10 @@ export const SOLO_ACTIONS = [
 ];
 
 export const MALE_POV_CAMERA = "male performer POV, first-person perspective";
+export const SIDE_CAMERA_PLACEMENT = "camera positioned directly beside the primary woman";
+export const PRIMARY_OTS_CAMERA_PLACEMENT = "camera positioned just behind and over the primary woman's shoulder";
+export const PARTNER_OTS_CAMERA_PLACEMENT = "camera positioned over the partner's shoulder toward the primary woman";
+export const MALE_POV_CAMERA_PLACEMENT = "camera positioned at the adult male partner's eye position in a first-person view";
 
 export const CAMERAS = [
   "eye-level angle",
@@ -392,9 +396,11 @@ export const CAMERA_PLACEMENTS = [
   "camera positioned directly in front of the primary woman at her eye level",
   "camera positioned directly in front of the primary woman at her eye level while she is on all fours",
   "camera positioned at a three-quarter front view of the primary woman",
-  "camera positioned directly beside the primary woman",
+  SIDE_CAMERA_PLACEMENT,
   "camera positioned behind the primary woman",
-  "camera positioned over the partner's shoulder toward the primary woman",
+  PRIMARY_OTS_CAMERA_PLACEMENT,
+  PARTNER_OTS_CAMERA_PLACEMENT,
+  MALE_POV_CAMERA_PLACEMENT,
 ];
 
 export const ADULT_TOYS = [

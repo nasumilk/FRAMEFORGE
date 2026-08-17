@@ -15,9 +15,14 @@ import {
   HANDJOB_POSITION,
   KNEELING_PARTNER_FACING_POSE,
   MALE_POV_CAMERA,
+  MALE_POV_CAMERA_PLACEMENT,
+  PARTNER_OTS_CAMERA_PLACEMENT,
+  PRIMARY_OTS_CAMERA_PLACEMENT,
   STYLE_PRESETS,
 } from "../lib/constants";
 import { japaneseOption } from "../lib/localization";
+import { angleForT2VCameraPlacement, normalizeT2VCamera, placementForT2VCameraAngle } from "../lib/cameraConsistency";
+import { normalizeVisualCameraBody } from "../lib/visualComposer";
 
 interface PromptState extends PromptSnapshot {
   uiLanguage: UiLanguage;
@@ -78,6 +83,12 @@ export const defaultBasic: BasicSettings = {
   promptOptimizer: false,
   fastPretreatment: false,
   firstFrameImage: "",
+  i2vClothingStartSource: "reference-image",
+  i2vPoseStartSource: "reference-image",
+  i2vBackgroundSource: "reference-image",
+  i2vCameraSource: "reference-image",
+  i2vMotionIntensity: "subtle",
+  i2vTransitionTiming: "balanced",
   lastFrameImage: "",
   subjectReferenceImage: "",
   preserveIdentity: true,
@@ -238,8 +249,8 @@ const normalizeBasic = (candidate: BasicSettings): BasicSettings => {
     if (basic.model === "MiniMax-Hailuo-2.3-Fast" && basic.mode !== "I2V") basic.model = "MiniMax-Hailuo-2.3";
     if (basic.resolution === "512P" && basic.model !== "MiniMax-Hailuo-02") basic.resolution = "768P";
   }
-  if (basic.resolution === "1080P" || basic.mode === "S2V") basic.duration = 6;
-  else basic.duration = basic.duration >= 8 ? 10 : 6;
+  if (basic.mode === "S2V") basic.duration = 6;
+  else if (![6, 10, 15].includes(basic.duration)) basic.duration = 6;
   return basic;
 };
 
@@ -263,7 +274,7 @@ export const usePromptStore = create<PromptState>()(
             ...event,
             position: "",
             partnerHandAction: "both hands firmly supporting the adult woman's hips",
-            camera: event.camera === MALE_POV_CAMERA ? "medium shot" : event.camera,
+            camera: event.camera === MALE_POV_CAMERA ? "eye-level angle" : event.camera,
             intimacyMode: "standard intimate contact",
             action: state.masterData.soloActions[Math.min(index, state.masterData.soloActions.length - 1)].value,
           }));
@@ -282,11 +293,14 @@ export const usePromptStore = create<PromptState>()(
             ...event,
             position: state.masterData.lesbianPositions[Math.min(index, state.masterData.lesbianPositions.length - 1)].value,
             pose: event.pose === "standing in a relaxed pose" ? AUTO_POSE : event.pose,
-            camera: event.camera === MALE_POV_CAMERA ? "medium shot" : event.camera,
+            camera: event.camera === MALE_POV_CAMERA ? "eye-level angle" : event.camera,
             intimacyMode: "standard intimate contact",
             action: state.masterData.lesbianActions[Math.min(index, state.masterData.lesbianActions.length - 1)].value,
             partnerHandAction: state.masterData.partnerHandActions[Math.min(3, state.masterData.partnerHandActions.length - 1)].value,
           }));
+        }
+        if (nextBasic.mode === "T2V") {
+          nextEvents = nextEvents.map((event) => normalizeT2VCamera(event, requestedSceneType));
         }
         return { basic: nextBasic, events: nextEvents };
       }),
@@ -310,6 +324,8 @@ export const usePromptStore = create<PromptState>()(
           upperBodyOrientation: "face, shoulders, and chest oriented directly toward the camera",
           hipOrientation: "hips follow the selected pose naturally",
           cameraPlacement: "camera positioned directly in front of the primary woman at her eye level",
+          visualCameraPoint: "front",
+          visualBodyDirection: "front",
           shotSize: "medium shot from the waist up",
           visualResult: "natural perspective with a balanced relationship between subject and environment",
           cameraMotion: "locked-off static",
@@ -343,7 +359,7 @@ export const usePromptStore = create<PromptState>()(
       addShot: () => set((state) => {
         const nextShot = Math.max(0, ...state.events.map((event) => event.shotNumber || 1)) + 1;
         const template = state.events[state.events.length - 1];
-        const newEvent = normalizeEvent({
+        const newEvent = normalizeVisualCameraBody(normalizeEvent({
           id: uuidv4(), start: 0, end: state.basic.duration,
           position: state.basic.sceneType === "female-female" ? (template?.position || state.masterData.lesbianPositions[0].value) : state.basic.sceneType === "male-female" ? (template?.position || "missionary position") : "",
           action: template?.action || (state.basic.sceneType === "female-female" ? state.masterData.lesbianActions[0].value : state.basic.sceneType === "male-female" ? state.masterData.partnerActions[0].value : state.masterData.soloActions[0].value),
@@ -353,6 +369,8 @@ export const usePromptStore = create<PromptState>()(
           upperBodyOrientation: template?.upperBodyOrientation || "face, shoulders, and chest oriented directly toward the camera",
           hipOrientation: template?.hipOrientation || "hips follow the selected pose naturally",
           cameraPlacement: template?.cameraPlacement || "camera positioned directly in front of the primary woman at her eye level",
+          visualCameraPoint: template?.visualCameraPoint,
+          visualBodyDirection: template?.visualBodyDirection,
           shotSize: template?.shotSize || "medium shot from the waist up",
           visualResult: template?.visualResult || "natural perspective with a balanced relationship between subject and environment",
           cameraMotion: template?.cameraMotion || "locked-off static",
@@ -381,11 +399,22 @@ export const usePromptStore = create<PromptState>()(
           focusBehavior: template?.focusBehavior || "continuous subject-tracking autofocus",
           frameRate: template?.frameRate || "24 fps cinematic motion",
           shutterAngle: template?.shutterAngle || "180-degree shutter",
-        });
+        }));
         return { events: fitEvents([...state.events, newEvent], state.basic.duration) };
       }),
       updateEvent: (id, data) => set((state) => ({
-        events: state.events.map((event) => event.id === id ? { ...event, ...data } : event),
+        events: state.events.map((event) => {
+          if (event.id !== id) return event;
+          const next = { ...event, ...data };
+          if (state.basic.mode !== "T2V") return next;
+          if (data.camera !== undefined) {
+            return { ...next, cameraPlacement: placementForT2VCameraAngle(next.camera, next.cameraPlacement, state.basic.sceneType) };
+          }
+          if (data.cameraPlacement !== undefined) {
+            return { ...next, camera: angleForT2VCameraPlacement(next.cameraPlacement, next.camera) };
+          }
+          return next;
+        }),
       })),
       removeEvent: (id) => set((state) => ({
         events: fitEvents(state.events.filter((event) => event.id !== id), state.basic.duration),
@@ -405,7 +434,7 @@ export const usePromptStore = create<PromptState>()(
         if (!preset) return {};
         const snapshot = structuredClone(preset.snapshot);
         const basic = normalizeBasic({ ...defaultBasic, ...snapshot.basic });
-        return { ...snapshot, basic, events: snapshot.events.map((event) => normalizeEventForRole(event, basic.sceneType)) };
+        return { ...snapshot, basic, events: snapshot.events.map((event) => normalizeVisualCameraBody(normalizeEventForRole(event, basic.sceneType))) };
       }),
       deletePreset: (id) => set((state) => ({ savedPresets: state.savedPresets.filter((item) => item.id !== id) })),
       addMasterItem: (category, item) => set((state) => {
@@ -432,7 +461,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 19,
+      version: 23,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);
@@ -448,12 +477,15 @@ export const usePromptStore = create<PromptState>()(
           appendMissingMasterItems(masterData, "partnerHandActions", [BLOWJOB_PARTNER_HANDS, HANDJOB_PARTNER_HANDS]);
           appendMissingMasterItems(masterData, "poses", [KNEELING_PARTNER_FACING_POSE]);
         }
+        if (version < 21) {
+          appendMissingMasterItems(masterData, "cameraPlacements", [PRIMARY_OTS_CAMERA_PLACEMENT, PARTNER_OTS_CAMERA_PLACEMENT, MALE_POV_CAMERA_PLACEMENT]);
+        }
         const basic = persisted.basic ? normalizeBasic({ ...defaultBasic, ...persisted.basic }) : defaultBasic;
         return {
           ...persisted,
           basic,
           masterData,
-          events: persisted.events?.map((event) => normalizeEventForRole(event, basic.sceneType)),
+          events: persisted.events?.map((event) => normalizeVisualCameraBody(normalizeEventForRole(event, basic.sceneType))),
         };
       },
     },

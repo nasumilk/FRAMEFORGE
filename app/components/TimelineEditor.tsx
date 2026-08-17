@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   DndContext,
   KeyboardSensor,
@@ -17,6 +17,7 @@ import { supportedDurations, validateTimeline } from "../lib/promptGenerator";
 import { EventCard } from "./EventCard";
 import { UI_COPY } from "../lib/localization";
 import { VisualComposer } from "./VisualComposer";
+import { inferVisualCameraPoint, linkedCameraPatch } from "../lib/visualComposer";
 
 export function TimelineEditor() {
   const [editorMode, setEditorMode] = useState<"visual" | "manual">("visual");
@@ -36,6 +37,16 @@ export function TimelineEditor() {
   );
   const issues = useMemo(() => validateTimeline(events, basic.duration), [events, basic.duration]);
   const durationOptions = supportedDurations(basic);
+
+  useEffect(() => {
+    if (editorMode !== "visual") return;
+    for (const event of events) {
+      const cameraPoint = event.visualCameraPoint || inferVisualCameraPoint(event.cameraPlacement);
+      const linked = linkedCameraPatch(cameraPoint);
+      const isInSync = Object.entries(linked).every(([key, value]) => event[key as keyof typeof event] === value);
+      if (!isInSync) updateEvent(event.id, linked);
+    }
+  }, [editorMode, events, updateEvent]);
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return;
@@ -115,8 +126,8 @@ export function TimelineEditor() {
       )}
 
       {events.length > 0 && <div className="timeline-add-actions">
-        <button className="add-event" onClick={addEvent}><Plus size={17} /> {t.addEvent}</button>
-        <button className="add-event add-shot" onClick={addShot}><Clapperboard size={17} /> {language === "JAP" ? "新しいショット" : "Add shot"}</button>
+        <button className="add-event" onClick={addEvent}><Plus size={17} /> {basic.mode === "I2V" ? (language === "JAP" ? "モーション区間を追加" : "Add motion phase") : t.addEvent}</button>
+        {basic.mode !== "I2V" && <button className="add-event add-shot" onClick={addShot}><Clapperboard size={17} /> {language === "JAP" ? "新しいショット" : "Add shot"}</button>}
       </div>}
     </main>
   );
