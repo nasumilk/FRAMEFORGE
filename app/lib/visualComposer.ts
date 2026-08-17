@@ -246,6 +246,78 @@ export const CAMERA_POINTS: VisualOption[] = [
   { id: "rear-right", label: { ENG: "Rear R", JAP: "右斜め後ろ" }, patch: { visualCameraPoint: "rear-right", cameraPlacement: "camera positioned behind the primary woman at a three-quarter rear view" } },
 ];
 
+const CAMERA_LINKED_BODY: Record<string, Partial<TimelineEvent>> = {
+  front: {
+    visualBodyDirection: "front",
+    bodyOrientation: "front-facing toward the camera with the front of the body visible",
+    upperBodyOrientation: "face and upper body naturally visible from the front camera position while following the selected pose",
+    hipOrientation: "hips follow the selected pose naturally as viewed from the front",
+  },
+  "front-left": {
+    visualBodyDirection: "three-quarter",
+    bodyOrientation: "three-quarter front view relative to the camera",
+    upperBodyOrientation: "face and upper body naturally visible at a three-quarter front angle while following the selected pose",
+    hipOrientation: "hips follow the selected pose naturally as viewed from a three-quarter front angle",
+  },
+  "front-right": {
+    visualBodyDirection: "three-quarter",
+    bodyOrientation: "three-quarter front view relative to the camera",
+    upperBodyOrientation: "face and upper body naturally visible at a three-quarter front angle while following the selected pose",
+    hipOrientation: "hips follow the selected pose naturally as viewed from a three-quarter front angle",
+  },
+  left: {
+    visualBodyDirection: "profile",
+    bodyOrientation: "side profile relative to the camera",
+    upperBodyOrientation: "upper body follows the selected pose in side profile, with the face turning only as the pose naturally allows",
+    hipOrientation: "hips follow the selected pose naturally as viewed from the side",
+  },
+  right: {
+    visualBodyDirection: "profile",
+    bodyOrientation: "side profile relative to the camera",
+    upperBodyOrientation: "upper body follows the selected pose in side profile, with the face turning only as the pose naturally allows",
+    hipOrientation: "hips follow the selected pose naturally as viewed from the side",
+  },
+  "rear-left": {
+    visualBodyDirection: "rear-look",
+    bodyOrientation: "three-quarter rear view relative to the camera",
+    upperBodyOrientation: "upper body follows the selected pose from a three-quarter rear view; the face may turn naturally if visible",
+    hipOrientation: "hips follow the selected pose naturally as viewed from a three-quarter rear angle",
+  },
+  rear: {
+    visualBodyDirection: "rear-look",
+    bodyOrientation: "back facing the camera with the rear of the body visible",
+    upperBodyOrientation: "upper body follows the selected pose from the rear; the face may look over a shoulder only if the pose naturally allows",
+    hipOrientation: "hips follow the selected pose naturally as viewed from behind",
+  },
+  "rear-right": {
+    visualBodyDirection: "rear-look",
+    bodyOrientation: "three-quarter rear view relative to the camera",
+    upperBodyOrientation: "upper body follows the selected pose from a three-quarter rear view; the face may turn naturally if visible",
+    hipOrientation: "hips follow the selected pose naturally as viewed from a three-quarter rear angle",
+  },
+};
+
+export function inferVisualCameraPoint(cameraPlacement: string): string {
+  if (cameraPlacement.includes("three-quarter front")) return "front-left";
+  if (cameraPlacement.includes("three-quarter rear")) return "rear-left";
+  if (cameraPlacement.includes("behind")) return "rear";
+  if (cameraPlacement.includes("beside")) return "left";
+  return "front";
+}
+
+export function linkedCameraPatch(cameraPoint: string): Partial<TimelineEvent> {
+  const point = CAMERA_POINTS.find((option) => option.id === cameraPoint) ?? CAMERA_POINTS[0];
+  return { ...point.patch, ...CAMERA_LINKED_BODY[point.id] };
+}
+
+export function normalizeVisualCameraBody(event: TimelineEvent): TimelineEvent {
+  if (!event.visualCameraPoint && !event.visualBodyDirection && !event.visualPosePreset) return event;
+  const cameraPoint = CAMERA_POINTS.some((option) => option.id === event.visualCameraPoint)
+    ? String(event.visualCameraPoint)
+    : inferVisualCameraPoint(event.cameraPlacement);
+  return { ...event, ...linkedCameraPatch(cameraPoint) };
+}
+
 export const BODY_DIRECTIONS: VisualOption[] = [
   { id: "front", label: { ENG: "Face camera", JAP: "カメラへ正面" }, patch: { visualBodyDirection: "front", ...frontPatch } },
   { id: "three-quarter", label: { ENG: "3/4 toward camera", JAP: "カメラへ斜め" }, patch: { visualBodyDirection: "three-quarter", bodyOrientation: "three-quarter view toward the camera", upperBodyOrientation: "chest open toward the camera in a three-quarter view", hipOrientation: "hips at a three-quarter angle to the camera" } },

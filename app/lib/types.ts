@@ -1,6 +1,9 @@
 export type Mode = "T2V" | "I2V" | "FLF" | "S2V";
 export type UiLanguage = "ENG" | "JAP";
 export type SceneType = "solo" | "male-female" | "female-female";
+export type I2VStartSource = "reference-image" | "prompt";
+export type I2VMotionIntensity = "subtle" | "moderate" | "strong";
+export type I2VTransitionTiming = "slow" | "balanced" | "fast";
 
 export type AgeValue =
   | { kind: "exact"; value: number }
@@ -38,6 +41,12 @@ export interface BasicSettings {
   promptOptimizer: boolean;
   fastPretreatment: boolean;
   firstFrameImage: string;
+  i2vClothingStartSource: I2VStartSource;
+  i2vPoseStartSource: I2VStartSource;
+  i2vBackgroundSource: I2VStartSource;
+  i2vCameraSource: I2VStartSource;
+  i2vMotionIntensity: I2VMotionIntensity;
+  i2vTransitionTiming: I2VTransitionTiming;
   lastFrameImage: string;
   subjectReferenceImage: string;
   preserveIdentity: boolean;
@@ -88,7 +97,7 @@ export interface TimelineEvent {
   focusBehavior: string;
   frameRate: string;
   shutterAngle: string;
-  /** Visual Composer metadata. Prompt generation continues to use the mapped manual fields above. */
+  /** Visual Composer metadata. Camera placement is authoritative for mapped body direction. */
   visualPosePreset?: string;
   visualCameraPoint?: string;
   visualBodyDirection?: string;
