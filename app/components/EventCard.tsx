@@ -25,7 +25,9 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
   const basic = usePromptStore((state) => state.basic);
   const mode = basic.mode;
   const isI2V = mode === "I2V";
-  const i2vCameraLocked = isI2V && basic.i2vCameraSource === "reference-image";
+  const isExtend = mode === "EXTEND";
+  const isContinuation = isI2V || isExtend;
+  const sourceCameraLocked = (isI2V && basic.i2vCameraSource === "reference-image") || (isExtend && basic.extendCameraSource === "continue");
   const t = UI_COPY[language];
   const partnered = sceneType !== "solo";
   const actions = sceneType === "female-female" ? master.lesbianActions : sceneType === "male-female" ? master.partnerActions : master.soloActions;
@@ -38,15 +40,15 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
     <article ref={setNodeRef} style={style} className={`event-card ${isDragging ? "dragging" : ""} ${invalid ? "invalid" : ""}`}>
       <div className="event-head">
         <button className="drag-handle" aria-label={`${t.dragEvent} ${index + 1}`} {...attributes} {...listeners}><GripVertical size={18} /></button>
-        <div><span className="event-number">{isI2V ? (language === "JAP" ? "連続モーション" : "MOTION PHASE") : `SHOT ${event.shotNumber}`} · {t.event} {String(index + 1).padStart(2, "0")}</span><strong>{event.start.toFixed(1)} – {event.end.toFixed(1)}s</strong></div>
+        <div><span className="event-number">{isExtend ? (language === "JAP" ? "延長ビート" : "CONTINUATION BEAT") : isI2V ? (language === "JAP" ? "連続モーション" : "MOTION PHASE") : `SHOT ${event.shotNumber}`} · {t.event} {String(index + 1).padStart(2, "0")}</span><strong>{event.start.toFixed(1)} – {event.end.toFixed(1)}s</strong></div>
         <button className="icon-button danger" onClick={onRemove} aria-label={`${t.deleteEvent} ${index + 1}`}><Trash2 size={16} /></button>
       </div>
 
       <div className="event-grid event-meta-grid">
-        {!isI2V && <Field label={label("Shot", "ショット")}><input type="number" min={1} max={99} value={event.shotNumber} onChange={(e) => onUpdate({ shotNumber: Math.max(1, Number(e.target.value)) })} /></Field>}
+        {!isContinuation && <Field label={label("Shot", "ショット")}><input type="number" min={1} max={99} value={event.shotNumber} onChange={(e) => onUpdate({ shotNumber: Math.max(1, Number(e.target.value)) })} /></Field>}
         <Field label={t.start}><input type="number" min={0} max={duration} step={0.1} value={event.start} onChange={(e) => onUpdate({ start: Number(e.target.value) })} /></Field>
         <Field label={t.end}><input type="number" min={0} max={duration} step={0.1} value={event.end} onChange={(e) => onUpdate({ end: Number(e.target.value) })} /></Field>
-        {!isI2V && <SelectField label={label("Transition", "トランジション")} value={event.transition} options={master.shotTransitions} onChange={(transition) => onUpdate({ transition })} />}
+        {!isContinuation && <SelectField label={label("Transition", "トランジション")} value={event.transition} options={master.shotTransitions} onChange={(transition) => onUpdate({ transition })} />}
       </div>
 
       <section className="track-panel subject-track">
@@ -78,9 +80,11 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
         </div>
       </section>
 
-      {i2vCameraLocked ? <section className="track-panel camera-track">
+      {sourceCameraLocked ? <section className="track-panel camera-track">
         <div className="track-title"><Video size={14} /><span>{label("CAMERA LOCK", "カメラ固定")}</span></div>
-        <span className="field-hint">{label("The first frame supplies camera position, lens perspective, crop, focus look, and composition. Camera controls are hidden because Preserve reference composition is selected.", "参照画像のカメラ位置・レンズ感・クロップ・フォーカス表現・構図をそのまま使用します。「参照画像の構図を維持」が選択されているため、カメラ設定は非表示です。")}</span>
+        <span className="field-hint">{isExtend
+          ? label("The source clip supplies the camera path, speed, amplitude, lens perspective, and composition. Controls are hidden because Continue exact source movement is selected.", "延長元のカメラ軌道・速度・振幅・レンズ感・構図をそのまま継続します。「延長元の動きを継続」が選択されているため、カメラ設定は非表示です。")
+          : label("The first frame supplies camera position, lens perspective, crop, focus look, and composition. Camera controls are hidden because Preserve reference composition is selected.", "参照画像のカメラ位置・レンズ感・クロップ・フォーカス表現・構図をそのまま使用します。「参照画像の構図を維持」が選択されているため、カメラ設定は非表示です。")}</span>
       </section> : <section className="track-panel camera-track">
         <div className="track-title"><Video size={14} /><span>{label("CAMERA TRACK", "カメラトラック")}</span></div>
         <div className="event-grid">

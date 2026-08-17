@@ -9,7 +9,7 @@ const promptPath = fileURLToPath(new URL("../app/lib/promptGenerator.ts", import
 const { module: i2vModule } = await runnerImport(i2vPath, { root: projectRoot, logLevel: "silent" });
 const { module: promptModule } = await runnerImport(promptPath, { root: projectRoot, logLevel: "silent" });
 const { generateI2VPrompt, diagnoseI2VPrompt } = i2vModule;
-const { generateH3Prompt, generateApiPayload, supportedDurations } = promptModule;
+const { generateH3Prompt, supportedDurations } = promptModule;
 
 
 const event = {
@@ -75,10 +75,10 @@ test("I2V uses a dedicated delta-only prompt and excludes T2V appearance reconst
   assert.equal(generateH3Prompt(snapshot), prompt);
 });
 
-test("15-second generations are available outside S2V, including 1080P", () => {
+test("T2V and I2V keep their presets while EXTEND supports every integer from 4 to 15 seconds", () => {
   assert.deepEqual(supportedDurations({ mode: "T2V", resolution: "1080P" }), [6, 10, 15]);
   assert.deepEqual(supportedDurations({ mode: "I2V", resolution: "768P" }), [6, 10, 15]);
-  assert.deepEqual(supportedDurations({ mode: "S2V", resolution: "1080P" }), [6]);
+  assert.deepEqual(supportedDurations({ mode: "EXTEND", resolution: "1080P" }), [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
 });
 
 test("I2V prompt camera control is relative and reconciles angle with placement", () => {
@@ -91,7 +91,7 @@ test("I2V prompt camera control is relative and reconciles angle with placement"
   assert.match(prompt, /camera positioned just behind and over the primary woman's shoulder/);
 });
 
-test("I2V disables prompt optimization and reports risky controls", () => {
+test("I2V reports risky controls", () => {
   const risky = {
     ...snapshot,
     basic: {
@@ -101,7 +101,6 @@ test("I2V disables prompt optimization and reports risky controls", () => {
       i2vMotionIntensity: "strong",
     },
   };
-  assert.equal(generateApiPayload(risky).prompt_optimizer, false);
   const messages = diagnoseI2VPrompt(risky).map((item) => item.message).join(" ");
   assert.match(messages, /Strong I2V motion/);
   assert.match(messages, /Changing the reference background/);

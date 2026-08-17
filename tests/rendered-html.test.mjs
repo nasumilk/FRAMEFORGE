@@ -22,12 +22,14 @@ test("server-renders the Frameforge application shell", async () => {
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
 });
 
-test("ships advanced H3 controls and API export", async () => {
-  const [topBar, eventCard, generator, i2vGenerator, constants, store, promptPreview, timelineEditor, visualComposer, visualMappings, interactive3d] = await Promise.all([
+test("ships advanced local H3 controls and dedicated continuation mode", async () => {
+  const [topBar, eventCard, generator, i2vGenerator, extendGenerator, selectors, constants, store, promptPreview, timelineEditor, visualComposer, visualMappings, interactive3d] = await Promise.all([
     readFile(new URL("../app/components/TopBar.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/EventCard.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/promptGenerator.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/i2vPromptGenerator.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/extendPromptGenerator.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/SelectorsPanel.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/constants.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/store/usePromptStore.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/components/PromptPreview.tsx", import.meta.url), "utf8"),
@@ -38,16 +40,23 @@ test("ships advanced H3 controls and API export", async () => {
   ]);
   assert.match(topBar, /T2V/);
   assert.match(topBar, /I2V/);
-  assert.match(topBar, /FLF/);
-  assert.match(topBar, /S2V/);
+  assert.match(topBar, /EXTEND/);
+  assert.doesNotMatch(topBar, /FLF|S2V/);
   assert.match(eventCard, /SUBJECT TRACK/);
   assert.match(eventCard, /CAMERA TRACK/);
   assert.match(constants, /OFFICIAL_CAMERA_COMMANDS/);
   assert.match(constants, /seated M-shaped leg-spread pose/);
   assert.match(constants, /suction-cup mounted dildo/);
-  assert.match(generator, /generateApiPayload/);
+  assert.doesNotMatch(generator, /generateApiPayload/);
+  assert.doesNotMatch(promptPreview, /API JSON|generateApiPayload/);
+  assert.doesNotMatch(selectors, /firstFrameImage|lastFrameImage|subjectReferenceImage|Data URI|promptOptimizer|fastPretreatment|VIDEO_MODELS|RESOLUTIONS/);
+  assert.match(extendGenerator, /Continue directly from/);
+  assert.match(extendGenerator, /Do not repeat any previous action/);
+  assert.match(extendGenerator, /extendClothingPolicy/);
+  assert.match(extendGenerator, /extendPosePolicy/);
+  assert.match(extendGenerator, /extendCameraSource/);
   assert.match(generator, /2,000-character limit/);
-  assert.match(store, /version: 23/);
+  assert.match(store, /version: 24/);
   assert.match(generator, /consenting adults aged 18 or older/);
   assert.match(generator, /must not mirror or copy the woman's pose/);
   assert.match(generator, /Both of the male partner's hands remain visibly accounted for/);
