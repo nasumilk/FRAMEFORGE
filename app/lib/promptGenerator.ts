@@ -2,6 +2,7 @@ import type { AgeValue, BasicSettings, PromptSnapshot, SceneType, TimelineEvent 
 import { AUTO_POSE, BUST_PROMPT_DESCRIPTIONS, CAPTURE_DEVICE_DESCRIPTIONS, FOCAL_LENGTH_VISUAL_RESULTS, SUBJECT_DISTANCE_VISUAL_RESULTS } from "./constants";
 import { normalizeT2VCamera } from "./cameraConsistency";
 import { diagnoseI2VPrompt, generateI2VPrompt } from "./i2vPromptGenerator";
+import { diagnoseExtendPrompt, generateExtendPrompt } from "./extendPromptGenerator";
 
 const cleanSentence = (value = "") => value.trim().replace(/[.\s]+$/, "");
 const exactQuote = (value: string) => JSON.stringify(value.trim());
@@ -43,8 +44,8 @@ export function formatAge(age: AgeValue): string {
   return `${Math.max(18, age.value)}-year-old`;
 }
 
-export function supportedDurations(basic: Pick<BasicSettings, "mode" | "resolution">): number[] {
-  if (basic.mode === "S2V") return [6];
+export function supportedDurations(basic: Pick<BasicSettings, "mode">): number[] {
+  if (basic.mode === "EXTEND") return Array.from({ length: 12 }, (_, index) => index + 4);
   return [6, 10, 15];
 }
 
@@ -134,6 +135,7 @@ const continuityText = (basic: BasicSettings) => {
 
 export function generateH3Prompt(state: PromptSnapshot): string {
   if (state.basic.mode === "I2V") return generateI2VPrompt(state);
+  if (state.basic.mode === "EXTEND") return generateExtendPrompt(state);
   const { basic, situation, clothing, events, soundscape, music, customNotes } = state;
   const sortedEvents = [...events].sort((a, b) => (a.shotNumber || 1) - (b.shotNumber || 1) || a.start - b.start);
   const primaryWoman = `${formatAge(basic.age)} Japanese woman`;
@@ -171,35 +173,9 @@ export function generateH3Prompt(state: PromptSnapshot): string {
   const notes = customNotes.trim() ? ` ${cleanSentence(customNotes)}.` : "";
   const referenceVideoNote = basic.includeReferenceVideoNote ? " For more precise camera choreography, use a Reference Video to guide camera motion." : "";
   const integrated = `[Shot 1] ${subject} ${capture} ${continuityText(basic)} Location: ${cleanSentence(situation)}.${shots}${notes}${referenceVideoNote}`;
-  let referencePrefix = "";
-  if (basic.mode === "FLF") {
-    referencePrefix += `For the target video, at 0.00 seconds into the target video, <Picture 1> is fully referenced as the starting appearance and identity of the ${primaryWoman}.\n`;
-  }
-  if (basic.mode === "FLF") referencePrefix += "The final target frame fully references <Picture 2> as the ending composition, pose, and camera destination.\n";
-  if (basic.mode === "S2V") referencePrefix += `<Picture 1> is fully referenced as the ${primaryWoman}'s facial identity throughout the target video.\n`;
-  if (referencePrefix) referencePrefix += "\n";
-
   const baseSoundscape = basic.sceneType === "solo" ? soloSoundscape(soundscape) : cleanSentence(soundscape);
   const finalSoundscape = `${baseSoundscape}. ${dialogueSoundDirection(sortedEvents)}`;
-  return `${referencePrefix}integrated_multimodal_description: ${integrated}\n\noverall_soundscape: ${finalSoundscape}\n\nnon_diegetic_music: ${music || "N/A"}`;
-}
-
-export function generateApiPayload(state: PromptSnapshot) {
-  const { basic } = state;
-  const payload: Record<string, unknown> = {
-    model: basic.model,
-    prompt: generateH3Prompt(state),
-    duration: basic.duration,
-    resolution: basic.resolution,
-    prompt_optimizer: basic.mode === "I2V" ? false : basic.promptOptimizer,
-  };
-  if (basic.fastPretreatment && basic.model.includes("Hailuo")) payload.fast_pretreatment = true;
-  if (basic.mode === "I2V" || basic.mode === "FLF") payload.first_frame_image = basic.firstFrameImage || "<FIRST_FRAME_IMAGE_URL_OR_DATA_URI>";
-  if (basic.mode === "FLF") payload.last_frame_image = basic.lastFrameImage || "<LAST_FRAME_IMAGE_URL_OR_DATA_URI>";
-  if (basic.mode === "S2V") {
-    payload.subject_reference = [{ type: "character", image: [basic.subjectReferenceImage || "<SUBJECT_REFERENCE_IMAGE_URL>"] }];
-  }
-  return payload;
+  return `integrated_multimodal_description: ${integrated}\n\noverall_soundscape: ${finalSoundscape}\n\nnon_diegetic_music: ${music || "N/A"}`;
 }
 
 export interface TimelineIssue {
@@ -227,16 +203,13 @@ export interface PromptDiagnostic { severity: "error" | "warning" | "info"; mess
 
 export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
   if (state.basic.mode === "I2V") return diagnoseI2VPrompt(state);
+  if (state.basic.mode === "EXTEND") return diagnoseExtendPrompt(state);
   const { basic, events, customNotes, soundscape } = state;
   const diagnostics: PromptDiagnostic[] = [];
   const prompt = generateH3Prompt(state);
   if (prompt.length > 2000) diagnostics.push({ severity: "error", message: `Prompt is ${prompt.length - 2000} characters over the official 2,000-character limit.` });
   else if (prompt.length > 1800) diagnostics.push({ severity: "warning", message: "Prompt is close to the 2,000-character limit." });
-  if (!supportedDurations(basic).includes(basic.duration)) diagnostics.push({ severity: "error", message: `${basic.resolution} does not support a ${basic.duration}s generation.` });
-  if (basic.mode === "FLF" && basic.model !== "MiniMax-Hailuo-02") diagnostics.push({ severity: "error", message: "First/last-frame mode requires MiniMax-Hailuo-02." });
-  if (basic.mode === "S2V" && basic.model !== "S2V-01") diagnostics.push({ severity: "error", message: "Subject-reference mode requires S2V-01." });
-  if (basic.mode === "FLF" && (!basic.firstFrameImage || !basic.lastFrameImage)) diagnostics.push({ severity: "warning", message: "First/last-frame mode needs both image URLs." });
-  if (basic.mode === "S2V" && !basic.subjectReferenceImage) diagnostics.push({ severity: "warning", message: "Add a subject-reference image URL before using the API JSON." });
+  if (!supportedDurations(basic).includes(basic.duration)) diagnostics.push({ severity: "error", message: `${basic.duration}s is not supported in ${basic.mode} mode.` });
   events.forEach((event, index) => {
     if ((event.cameraCommands?.length || 0) > 1) diagnostics.push({ severity: "warning", message: `Event ${index + 1} contains legacy camera commands; only one camera motion is used per shot.` });
     const explicitPose = event.pose && event.pose !== AUTO_POSE;

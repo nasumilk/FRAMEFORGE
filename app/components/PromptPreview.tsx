@@ -1,15 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, Braces, Check, ChevronDown, Copy, ExternalLink, Info, Save, Trash2 } from "lucide-react";
+import { AlertTriangle, Check, ChevronDown, Copy, ExternalLink, Info, Save, Trash2 } from "lucide-react";
 import { usePromptStore } from "../store/usePromptStore";
-import { diagnosePrompt, generateApiPayload, generateH3Prompt } from "../lib/promptGenerator";
+import { diagnosePrompt, generateH3Prompt } from "../lib/promptGenerator";
 import { UI_COPY } from "../lib/localization";
 
 export function PromptPreview() {
   const state = usePromptStore();
   const [copied, setCopied] = useState(false);
-  const [jsonCopied, setJsonCopied] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [presetName, setPresetName] = useState("");
   const language = usePromptStore((store) => store.uiLanguage);
@@ -21,12 +20,6 @@ export function PromptPreview() {
     await navigator.clipboard.writeText(prompt);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
-  };
-
-  const copyJson = async () => {
-    await navigator.clipboard.writeText(JSON.stringify(generateApiPayload(state), null, 2));
-    setJsonCopied(true);
-    window.setTimeout(() => setJsonCopied(false), 1600);
   };
 
   const openMobileStudio = () => {
@@ -68,7 +61,6 @@ export function PromptPreview() {
         <div className="preview-actions">
           <span>{prompt.length.toLocaleString()} {t.chars}</span>
           <button className="secondary-button" onClick={openMobileStudio}><ExternalLink size={15} />{language === "JAP" ? "H3 Studioで開く" : "Open in H3 Studio"}</button>
-          <button className="secondary-button" onClick={copyJson}>{jsonCopied ? <Check size={15} /> : <Braces size={15} />}{jsonCopied ? t.copied : "API JSON"}</button>
           <button className="secondary-button" onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? t.copied : t.copy}</button>
           <button className="icon-button" onClick={() => setCollapsed((value) => !value)} aria-label={t.togglePreview}><ChevronDown size={17} /></button>
         </div>

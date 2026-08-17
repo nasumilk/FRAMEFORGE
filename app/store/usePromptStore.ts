@@ -78,19 +78,23 @@ export const defaultBasic: BasicSettings = {
   includeReferenceVideoNote: false,
   handheldShake: true,
   handheldStyle: "natural documentary shake",
-  model: "MiniMax-Hailuo-2.3",
-  resolution: "1080P",
-  promptOptimizer: false,
-  fastPretreatment: false,
-  firstFrameImage: "",
   i2vClothingStartSource: "reference-image",
   i2vPoseStartSource: "reference-image",
   i2vBackgroundSource: "reference-image",
   i2vCameraSource: "reference-image",
   i2vMotionIntensity: "subtle",
   i2vTransitionTiming: "balanced",
-  lastFrameImage: "",
-  subjectReferenceImage: "",
+  extendMethod: "video-reference",
+  extendSourceSummary: "",
+  extendPreviousAction: "",
+  extendPromptLanguage: "english",
+  extendUseIdentityImage: false,
+  extendUseEnvironmentImage: false,
+  extendClothingPolicy: "preserve",
+  extendPosePolicy: "transition",
+  extendCameraSource: "continue",
+  extendEndingFrame: "",
+  extendSoundContinuity: "continue the exact ambience, vocal cadence, and room tone from the source clip",
   preserveIdentity: true,
   preserveWardrobe: true,
   stabilizeAnatomy: true,
@@ -238,18 +242,8 @@ const normalizeBasic = (candidate: BasicSettings): BasicSettings => {
     age: clampAge(candidate.age),
     femalePartnerAge: clampAge(candidate.femalePartnerAge ?? defaultBasic.femalePartnerAge),
   };
-  if (basic.mode === "FLF") {
-    basic.model = "MiniMax-Hailuo-02";
-    if (basic.resolution === "512P") basic.resolution = "768P";
-  } else if (basic.mode === "S2V") {
-    basic.model = "S2V-01";
-    basic.resolution = "1080P";
-  } else {
-    if (basic.model === "S2V-01") basic.model = "MiniMax-Hailuo-2.3";
-    if (basic.model === "MiniMax-Hailuo-2.3-Fast" && basic.mode !== "I2V") basic.model = "MiniMax-Hailuo-2.3";
-    if (basic.resolution === "512P" && basic.model !== "MiniMax-Hailuo-02") basic.resolution = "768P";
-  }
-  if (basic.mode === "S2V") basic.duration = 6;
+  if (!["T2V", "I2V", "EXTEND"].includes(basic.mode)) basic.mode = "T2V";
+  if (basic.mode === "EXTEND") basic.duration = Math.min(15, Math.max(4, Math.round(basic.duration || 6)));
   else if (![6, 10, 15].includes(basic.duration)) basic.duration = 6;
   return basic;
 };
@@ -461,7 +455,7 @@ export const usePromptStore = create<PromptState>()(
     }),
     {
       name: "frameforge-h3-adult-prompt-storage",
-      version: 23,
+      version: 24,
       migrate: (persistedState, version) => {
         const persisted = persistedState as Partial<PromptState>;
         const masterData = migrateMasterData(persisted.masterData);

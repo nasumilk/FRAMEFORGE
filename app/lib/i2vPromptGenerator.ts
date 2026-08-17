@@ -133,8 +133,7 @@ export function diagnoseI2VPrompt(state: PromptSnapshot): I2VPromptDiagnostic[] 
   const prompt = generateI2VPrompt(state);
   if (prompt.length > 20000) diagnostics.push({ severity: "error", message: "I2V prompt exceeds the Mobile Studio 20,000-character request limit." });
   else if (prompt.length > 3500) diagnostics.push({ severity: "warning", message: "I2V prompt is unusually long; fewer target events usually preserve the reference image better." });
-  if (!state.basic.firstFrameImage) diagnostics.push({ severity: "warning", message: "Add a first-frame image URL before using the API JSON." });
-  if (state.basic.promptOptimizer) diagnostics.push({ severity: "info", message: "Prompt optimizer is disabled automatically in I2V so it cannot rewrite identity-preservation instructions." });
+  if (!state.events.length) diagnostics.push({ severity: "info", message: "Choose a motion phase to describe how the local source image should begin moving." });
   if (state.basic.i2vMotionIntensity === "strong") diagnostics.push({ severity: "warning", message: "Strong I2V motion increases identity, anatomy, and background drift risk." });
   if (state.basic.i2vBackgroundSource === "prompt") diagnostics.push({ severity: "warning", message: "Changing the reference background can cause the model to reconstruct the entire frame." });
   if (state.basic.i2vCameraSource === "prompt") diagnostics.push({ severity: "warning", message: "Changing the reference camera or framing increases composition and identity drift risk." });
