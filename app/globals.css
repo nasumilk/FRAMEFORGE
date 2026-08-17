@@ -427,3 +427,6 @@ select { cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: 
   .option-translation { position: static; display: block; max-width: none; margin-top: 4px; border: 0; background: transparent; box-shadow: none; color: #bfa6ee; padding: 0; opacity: 1; transform: none; }
   .translated-select-option { min-height: 43px; }
 }
+.i2v-reference-notice { display:flex; flex-direction:column; gap:6px; padding:12px; border:1px solid rgba(190,242,100,.28); border-radius:10px; background:rgba(190,242,100,.06); }
+.i2v-reference-notice strong { color:var(--green); font-size:12px; }
+.i2v-reference-notice span { color:var(--muted); font-size:11px; line-height:1.55; }

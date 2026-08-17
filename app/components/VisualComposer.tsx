@@ -1,15 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Camera, Crosshair, Eye, Scan, SlidersHorizontal } from "lucide-react";
+import { Camera, Crosshair, Scan, SlidersHorizontal } from "lucide-react";
 import type { SceneType, TimelineEvent, UiLanguage } from "../lib/types";
 import {
-  BODY_DIRECTIONS,
   CAMERA_HEIGHTS,
   CAMERA_MOVES,
   CAMERA_POINTS,
   FRAMINGS,
   VISUAL_POSE_PRESETS,
+  inferVisualCameraPoint,
+  linkedCameraPatch,
   visualPoseForEvent,
   type VisualOption,
 } from "../lib/visualComposer";
@@ -57,9 +58,7 @@ export function VisualComposer({
   if (!selected) return null;
   const activePose = visualPoseForEvent(selected, sceneType);
   const storedCameraPoint = CAMERA_POINTS.find((option) => option.id === selected.visualCameraPoint && option.patch.cameraPlacement === selected.cameraPlacement)?.id;
-  const cameraPoint = storedCameraPoint ?? (selected.cameraPlacement.includes("three-quarter front") ? "front-left" : selected.cameraPlacement.includes("behind") ? "rear" : selected.cameraPlacement.includes("beside") ? "left" : "front");
-  const storedBodyDirection = BODY_DIRECTIONS.find((option) => option.id === selected.visualBodyDirection && option.patch.bodyOrientation === selected.bodyOrientation)?.id;
-  const bodyDirection = storedBodyDirection ?? (selected.bodyOrientation.startsWith("three-quarter") ? "three-quarter" : selected.bodyOrientation.startsWith("side") ? "profile" : selected.bodyOrientation.startsWith("back") ? "rear-look" : "front");
+  const cameraPoint = storedCameraPoint ?? inferVisualCameraPoint(selected.cameraPlacement);
   const storedCameraHeight = CAMERA_HEIGHTS.find((option) => option.id === selected.visualCameraHeight && option.patch.camera === selected.camera)?.id;
   const cameraHeight = storedCameraHeight ?? (selected.camera === "low angle" ? "low" : selected.camera === "slight high angle" ? "high" : "eye");
   const storedFraming = FRAMINGS.find((option) => option.id === selected.visualFraming && option.patch.shotSize === selected.shotSize)?.id;
@@ -117,7 +116,7 @@ export function VisualComposer({
         <div className="visual-section-heading"><Scan size={15} /><span>{copy.pose}</span></div>
         <div className="visual-preset-grid">
           {poseOptions.map((preset) => (
-            <button key={preset.id} type="button" className={activePose.id === preset.id ? "active" : ""} onClick={() => update({ ...preset.patch, visualPosePreset: preset.id })}>
+            <button key={preset.id} type="button" className={activePose.id === preset.id ? "active" : ""} onClick={() => update({ ...preset.patch, visualPosePreset: preset.id, ...linkedCameraPatch(cameraPoint) })}>
               <span>{preset.label[language]}</span><small>{preset.description[language]}</small>
             </button>
           ))}
@@ -132,16 +131,14 @@ export function VisualComposer({
           cameraPoint={cameraPoint}
           cameraHeight={cameraHeight}
           framing={framing}
-          bodyDirection={bodyDirection}
+          bodyDirection="front"
           labels={{ title: copy.cameraMap, primary: copy.primary, partner: copy.partner, drag: copy.drag, reset: copy.reset, front: copy.front, viewOnly: copy.viewOnly }}
           onSelectCamera={(id) => {
-            const point = CAMERA_POINTS.find((option) => option.id === id);
-            if (point) update(point.patch);
+            update(linkedCameraPatch(id));
           }}
         />
 
         <div className="visual-controls">
-          <OptionStrip title={copy.direction} icon={<Eye size={15} />} options={BODY_DIRECTIONS} activeId={bodyDirection} language={language} onSelect={(option) => update(option.patch)} />
           <OptionStrip title={copy.height} icon={<Camera size={15} />} options={CAMERA_HEIGHTS} activeId={cameraHeight} language={language} onSelect={(option) => update(option.patch)} />
           <OptionStrip title={copy.framing} icon={<Scan size={15} />} options={FRAMINGS} activeId={framing} language={language} onSelect={(option) => update(option.patch)} />
           <OptionStrip title={copy.motion} icon={<Crosshair size={15} />} options={CAMERA_MOVES} activeId={motion} language={language} onSelect={(option) => update(option.patch)} />
@@ -152,6 +149,7 @@ export function VisualComposer({
             <p><b>ACTION</b>{selected.action}</p>
             {sceneType === "male-female" && <p><b>PARTNER HANDS</b>{selected.partnerHandAction}</p>}
             <p><b>CAMERA</b>{selected.cameraPlacement}</p>
+            <p><b>BODY</b>{selected.bodyOrientation}</p>
             <p><b>FRAME</b>{selected.shotSize}</p>
           </div>
           <button type="button" className="visual-manual-link" onClick={onSwitchManual}><SlidersHorizontal size={15} />{copy.manual}</button>

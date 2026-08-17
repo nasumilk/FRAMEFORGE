@@ -23,10 +23,11 @@ test("server-renders the Frameforge application shell", async () => {
 });
 
 test("ships advanced H3 controls and API export", async () => {
-  const [topBar, eventCard, generator, constants, store, promptPreview, timelineEditor, visualComposer, visualMappings, interactive3d] = await Promise.all([
+  const [topBar, eventCard, generator, i2vGenerator, constants, store, promptPreview, timelineEditor, visualComposer, visualMappings, interactive3d] = await Promise.all([
     readFile(new URL("../app/components/TopBar.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/EventCard.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/promptGenerator.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/i2vPromptGenerator.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/constants.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/store/usePromptStore.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/components/PromptPreview.tsx", import.meta.url), "utf8"),
@@ -46,7 +47,7 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(constants, /suction-cup mounted dildo/);
   assert.match(generator, /generateApiPayload/);
   assert.match(generator, /2,000-character limit/);
-  assert.match(store, /version: 19/);
+  assert.match(store, /version: 23/);
   assert.match(generator, /consenting adults aged 18 or older/);
   assert.match(generator, /must not mirror or copy the woman's pose/);
   assert.match(generator, /Both of the male partner's hands remain visibly accounted for/);
@@ -96,12 +97,25 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(generator, /describeBustForH3/);
   assert.match(generator, /Breast size and shape/);
   assert.match(generator, /Preserve this relative breast volume, projection, and shape consistently/);
+  assert.match(generator, /generateI2VPrompt/);
+  assert.match(i2vGenerator, /FIRST-FRAME AUTHORITY/);
+  assert.match(i2vGenerator, /Animate this image; do not reinterpret it as a text-to-video scene/);
+  assert.match(i2vGenerator, /CONTROLLED TRANSITION/);
+  assert.match(generator, /normalizeT2VCamera/);
+  assert.match(store, /placementForT2VCameraAngle/);
+  assert.match(store, /angleForT2VCameraPlacement/);
+  assert.match(promptPreview, /frameforge_prompt/);
+  assert.match(store, /i2vClothingStartSource: "reference-image"/);
+  assert.match(store, /i2vPoseStartSource: "reference-image"/);
   assert.doesNotMatch(generator, /\$\{cleanSentence\(basic\.bustSize\)\}/);
   assert.match(timelineEditor, /VisualComposer/);
   assert.match(timelineEditor, />Visual</);
   assert.match(timelineEditor, />Manual</);
   assert.match(visualComposer, /CAMERA PLACEMENT/);
   assert.match(visualComposer, /Interactive3DStage/);
+  assert.match(visualComposer, /linkedCameraPatch/);
+  assert.doesNotMatch(visualComposer, /options=\{BODY_DIRECTIONS\}/);
+  assert.match(visualMappings, /normalizeVisualCameraBody/);
   assert.match(interactive3d, /handlePointerMove/);
   assert.match(interactive3d, /viewRef\.current\.yaw = drag\.yaw/);
   assert.match(interactive3d, /viewRef\.current\.pitch = clamp\(drag\.pitch/);

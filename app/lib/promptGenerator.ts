@@ -1,5 +1,7 @@
 import type { AgeValue, BasicSettings, PromptSnapshot, SceneType, TimelineEvent } from "./types";
 import { AUTO_POSE, BUST_PROMPT_DESCRIPTIONS, CAPTURE_DEVICE_DESCRIPTIONS, FOCAL_LENGTH_VISUAL_RESULTS, SUBJECT_DISTANCE_VISUAL_RESULTS } from "./constants";
+import { normalizeT2VCamera } from "./cameraConsistency";
+import { diagnoseI2VPrompt, generateI2VPrompt } from "./i2vPromptGenerator";
 
 const cleanSentence = (value = "") => value.trim().replace(/[.\s]+$/, "");
 const exactQuote = (value: string) => JSON.stringify(value.trim());
@@ -42,8 +44,8 @@ export function formatAge(age: AgeValue): string {
 }
 
 export function supportedDurations(basic: Pick<BasicSettings, "mode" | "resolution">): number[] {
-  if (basic.mode === "S2V" || basic.resolution === "1080P") return [6];
-  return [6, 10];
+  if (basic.mode === "S2V") return [6];
+  return [6, 10, 15];
 }
 
 const cameraMotionText = (event: TimelineEvent, basic: BasicSettings) => {
@@ -56,7 +58,8 @@ const cameraMotionText = (event: TimelineEvent, basic: BasicSettings) => {
   return `Camera motion: the camera ${cleanSentence(event.cameraMotion)} at ${cleanSentence(event.motionSpeed)} with ${cleanSentence(event.motionAmplitude)}${handheld}`;
 };
 
-export function buildTimelineSegment(event: TimelineEvent, basic: BasicSettings): string {
+export function buildTimelineSegment(inputEvent: TimelineEvent, basic: BasicSettings): string {
+  const event = basic.mode === "T2V" ? normalizeT2VCamera(inputEvent, basic.sceneType) : inputEvent;
   const sceneType: SceneType = basic.sceneType;
   const primaryWoman = `${formatAge(basic.age)} Japanese woman`;
   const secondWoman = `${formatAge(basic.femalePartnerAge)} Japanese woman`;
@@ -130,6 +133,7 @@ const continuityText = (basic: BasicSettings) => {
 };
 
 export function generateH3Prompt(state: PromptSnapshot): string {
+  if (state.basic.mode === "I2V") return generateI2VPrompt(state);
   const { basic, situation, clothing, events, soundscape, music, customNotes } = state;
   const sortedEvents = [...events].sort((a, b) => (a.shotNumber || 1) - (b.shotNumber || 1) || a.start - b.start);
   const primaryWoman = `${formatAge(basic.age)} Japanese woman`;
@@ -168,7 +172,7 @@ export function generateH3Prompt(state: PromptSnapshot): string {
   const referenceVideoNote = basic.includeReferenceVideoNote ? " For more precise camera choreography, use a Reference Video to guide camera motion." : "";
   const integrated = `[Shot 1] ${subject} ${capture} ${continuityText(basic)} Location: ${cleanSentence(situation)}.${shots}${notes}${referenceVideoNote}`;
   let referencePrefix = "";
-  if (basic.mode === "I2V" || basic.mode === "FLF") {
+  if (basic.mode === "FLF") {
     referencePrefix += `For the target video, at 0.00 seconds into the target video, <Picture 1> is fully referenced as the starting appearance and identity of the ${primaryWoman}.\n`;
   }
   if (basic.mode === "FLF") referencePrefix += "The final target frame fully references <Picture 2> as the ending composition, pose, and camera destination.\n";
@@ -187,7 +191,7 @@ export function generateApiPayload(state: PromptSnapshot) {
     prompt: generateH3Prompt(state),
     duration: basic.duration,
     resolution: basic.resolution,
-    prompt_optimizer: basic.promptOptimizer,
+    prompt_optimizer: basic.mode === "I2V" ? false : basic.promptOptimizer,
   };
   if (basic.fastPretreatment && basic.model.includes("Hailuo")) payload.fast_pretreatment = true;
   if (basic.mode === "I2V" || basic.mode === "FLF") payload.first_frame_image = basic.firstFrameImage || "<FIRST_FRAME_IMAGE_URL_OR_DATA_URI>";
@@ -222,6 +226,7 @@ export function validateTimeline(events: TimelineEvent[], duration: number): Tim
 export interface PromptDiagnostic { severity: "error" | "warning" | "info"; message: string }
 
 export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
+  if (state.basic.mode === "I2V") return diagnoseI2VPrompt(state);
   const { basic, events, customNotes, soundscape } = state;
   const diagnostics: PromptDiagnostic[] = [];
   const prompt = generateH3Prompt(state);
@@ -230,7 +235,6 @@ export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
   if (!supportedDurations(basic).includes(basic.duration)) diagnostics.push({ severity: "error", message: `${basic.resolution} does not support a ${basic.duration}s generation.` });
   if (basic.mode === "FLF" && basic.model !== "MiniMax-Hailuo-02") diagnostics.push({ severity: "error", message: "First/last-frame mode requires MiniMax-Hailuo-02." });
   if (basic.mode === "S2V" && basic.model !== "S2V-01") diagnostics.push({ severity: "error", message: "Subject-reference mode requires S2V-01." });
-  if (basic.mode === "I2V" && !basic.firstFrameImage) diagnostics.push({ severity: "warning", message: "Add a first-frame image URL before using the API JSON." });
   if (basic.mode === "FLF" && (!basic.firstFrameImage || !basic.lastFrameImage)) diagnostics.push({ severity: "warning", message: "First/last-frame mode needs both image URLs." });
   if (basic.mode === "S2V" && !basic.subjectReferenceImage) diagnostics.push({ severity: "warning", message: "Add a subject-reference image URL before using the API JSON." });
   events.forEach((event, index) => {

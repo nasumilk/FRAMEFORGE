@@ -13,17 +13,22 @@ export function BasicSettings() {
   const t = UI_COPY[language];
   const age = basic.age;
   const femalePartnerAge = basic.femalePartnerAge;
+  const isI2V = basic.mode === "I2V";
 
   return (
     <aside className="panel settings-panel">
       <div className="panel-heading">
         <div className="panel-kicker"><UserRound size={14} /> {t.subject}</div>
-        <h2>{t.characterSetup}</h2>
-        <p>{t.characterDescription}</p>
+        <h2>{isI2V ? (language === "JAP" ? "参照人物の維持" : "Reference identity") : t.characterSetup}</h2>
+        <p>{isI2V ? (language === "JAP" ? "人物の外見・体格・年齢感は参照画像から取得し、ここでは再指定しません。" : "Appearance, body proportions, and apparent age come only from the reference image and are not rebuilt from text.") : t.characterDescription}</p>
       </div>
 
       <div className="adult-notice"><span>18+</span> {t.adultsOnly}</div>
 
+      {isI2V ? <div className="i2v-reference-notice">
+        <strong>{language === "JAP" ? "参照画像が人物設定の唯一の基準です" : "The first frame is the only identity source"}</strong>
+        <span>{language === "JAP" ? "年齢・髪・目・肌・体型・胸・画風・照明のT2V設定はI2Vプロンプトへ出力されません。" : "T2V age, hair, eyes, skin, body, bust, style, and lighting settings are excluded from the I2V prompt."}</span>
+      </div> : <>
       <div className="segmented compact" aria-label={t.ageInputMode}>
         <button className={age.kind === "exact" ? "active" : ""} onClick={() => setBasic({ age: { kind: "exact", value: age.kind === "exact" ? age.value : age.min } })}>{t.exact}</button>
         <button className={age.kind === "range" ? "active" : ""} onClick={() => setBasic({ age: { kind: "range", min: age.kind === "range" ? age.min : age.value, max: age.kind === "range" ? age.max : Math.min(age.value + 4, 80) } })}>{t.range}</button>
@@ -45,6 +50,7 @@ export function BasicSettings() {
       <SelectField label={t.hair} value={basic.hair} options={master.hairStyles} onChange={(hair) => setBasic({ hair })} />
       <SelectField label={t.eyes} value={basic.eyes} options={master.eyeStyles} onChange={(eyes) => setBasic({ eyes })} />
       <SelectField label={t.skin} value={basic.skin} options={master.skinOptions} onChange={(skin) => setBasic({ skin })} />
+      </>}
 
       <div className="section-rule" />
       <div className="field-label"><span><UsersRound size={16} /> {language === "JAP" ? "出演者構成" : "Scene cast"}</span></div>
@@ -53,8 +59,9 @@ export function BasicSettings() {
         <button className={basic.sceneType === "male-female" ? "active" : ""} onClick={() => setBasic({ sceneType: "male-female" })}>{language === "JAP" ? "男女" : "M + W"}</button>
         <button className={basic.sceneType === "female-female" ? "active" : ""} onClick={() => setBasic({ sceneType: "female-female" })}>{language === "JAP" ? "女性同士" : "W + W"}</button>
       </div>
+      {isI2V && <span className="field-hint">{language === "JAP" ? "参照画像に実際に写っている成人構成と一致させてください。画像にいない人物は追加しません。" : "Match the adult cast already visible in the first frame. I2V will not add a missing person."}</span>}
 
-      {basic.sceneType === "male-female" && (
+      {!isI2V && basic.sceneType === "male-female" && (
         <div className="nested-settings">
           <SelectField label={t.build} value={basic.maleBodyType} options={master.maleBodyTypes} onChange={(maleBodyType) => setBasic({ maleBodyType })} />
           <SelectField label={t.ageFeel} value={basic.maleAgeFeel} options={master.maleAgeFeels} onChange={(maleAgeFeel) => setBasic({ maleAgeFeel })} />
@@ -62,7 +69,7 @@ export function BasicSettings() {
         </div>
       )}
 
-      {basic.sceneType === "female-female" && (
+      {!isI2V && basic.sceneType === "female-female" && (
         <div className="nested-settings">
           <div className="field-label"><span>{language === "JAP" ? "2人目の女性の年齢" : "Second woman's age"}</span><small>{t.hardMinimum}</small></div>
           <div className="segmented compact" aria-label={language === "JAP" ? "2人目の女性の年齢入力モード" : "Second woman's age input mode"}>
@@ -85,9 +92,11 @@ export function BasicSettings() {
         </div>
       )}
 
-      <div className="section-rule" />
-      <SelectField label={t.globalStyle} value={basic.style} options={master.stylePresets} onChange={(style) => setBasic({ style })} />
-      <SelectField label={t.lighting} value={basic.lighting} options={master.lightingOptions} onChange={(lighting) => setBasic({ lighting })} />
+      {!isI2V && <>
+        <div className="section-rule" />
+        <SelectField label={t.globalStyle} value={basic.style} options={master.stylePresets} onChange={(style) => setBasic({ style })} />
+        <SelectField label={t.lighting} value={basic.lighting} options={master.lightingOptions} onChange={(lighting) => setBasic({ lighting })} />
+      </>}
     </aside>
   );
 }
