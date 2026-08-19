@@ -56,7 +56,7 @@ test("ships advanced local H3 controls and dedicated continuation mode", async (
   assert.match(extendGenerator, /extendPosePolicy/);
   assert.match(extendGenerator, /extendCameraSource/);
   assert.match(generator, /2,000-character limit/);
-  assert.match(store, /version: 24/);
+  assert.match(store, /version: 25/);
   assert.match(generator, /consenting adults aged 18 or older/);
   assert.match(generator, /must not mirror or copy the woman's pose/);
   assert.match(generator, /Both of the male partner's hands remain visibly accounted for/);
@@ -72,7 +72,7 @@ test("ships advanced local H3 controls and dedicated continuation mode", async (
   assert.match(constants, /FOCAL_LENGTH_VISUAL_RESULTS/);
   assert.match(eventCard, /Camera motion \(one only\)/);
   assert.match(generator, /No push, no zoom, no dolly, no pan, no tilt, no reframing/);
-  assert.match(generator, /Optional visual look converted from numeric hints/);
+  assert.match(generator, /Capture profile for this timeline segment/);
   assert.match(generator, /performance direction/);
   assert.match(generator, /all reactions and body language must remain clearly consensual/);
   assert.match(constants, /PERFORMANCE_TONES/);
@@ -98,6 +98,15 @@ test("ships advanced local H3 controls and dedicated continuation mode", async (
   assert.match(constants, /very small, petite natural breasts/);
   assert.match(constants, /massive, very heavy natural breasts/);
   assert.match(eventCard, /Exact Japanese dialogue \(optional\)/);
+  assert.match(eventCard, /SHOT DIRECTION/);
+  assert.match(eventCard, /Location \/ situation/);
+  assert.match(eventCard, /Capture device/);
+  assert.match(eventCard, /SHOT AUDIO/);
+  assert.match(eventCard, /event\.soundscape/);
+  assert.match(eventCard, /event\.music/);
+  assert.doesNotMatch(selectors, /soundscape|startingClothing|captureDevice|customNotes/);
+  assert.match(generator, /event\.soundscape/);
+  assert.match(generator, /event\.music/);
   assert.match(promptPreview, /frameforge_prompt/);
   assert.match(promptPreview, /Open in H3 Studio/);
   assert.match(generator, /No spoken words or intelligible dialogue in any language/);

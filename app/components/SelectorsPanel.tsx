@@ -1,44 +1,24 @@
 "use client";
 
-import { AudioLines, Camera, Film, Image, MapPin, ShieldCheck, Shirt } from "lucide-react";
-import { Field, SelectField } from "./Field";
+import { Film, Image, ShieldCheck } from "lucide-react";
+import { Field } from "./Field";
 import { usePromptStore } from "../store/usePromptStore";
-import { UI_COPY } from "../lib/localization";
 
 export function SelectorsPanel() {
-  const situation = usePromptStore((state) => state.situation);
-  const master = usePromptStore((state) => state.masterData);
-  const clothing = usePromptStore((state) => state.clothing);
-  const soundscape = usePromptStore((state) => state.soundscape);
-  const music = usePromptStore((state) => state.music);
-  const customNotes = usePromptStore((state) => state.customNotes);
   const basic = usePromptStore((state) => state.basic);
-  const setSituation = usePromptStore((state) => state.setSituation);
-  const setClothing = usePromptStore((state) => state.setClothing);
-  const setSoundscape = usePromptStore((state) => state.setSoundscape);
-  const setMusic = usePromptStore((state) => state.setMusic);
-  const setCustomNotes = usePromptStore((state) => state.setCustomNotes);
   const setBasic = usePromptStore((state) => state.setBasic);
   const language = usePromptStore((state) => state.uiLanguage);
-  const t = UI_COPY[language];
   const label = (eng: string, jap: string) => language === "JAP" ? jap : eng;
 
   return (
     <aside className="panel content-panel">
       <div className="panel-heading">
-        <div className="panel-kicker"><MapPin size={14} /> {basic.mode === "EXTEND" ? label("CONTINUATION", "動画延長") : t.scene}</div>
-        <h2>{basic.mode === "EXTEND" ? label("Continue from the source tail", "延長元の末尾から続ける") : t.direction}</h2>
+        <div className="panel-kicker"><ShieldCheck size={14} /> {basic.mode === "EXTEND" ? label("CONTINUATION RULES", "動画延長ルール") : basic.mode === "I2V" ? label("REFERENCE RULES", "参照ルール") : label("GLOBAL RULES", "全体ルール")}</div>
+        <h2>{basic.mode === "EXTEND" ? label("Continue from the source tail", "延長元の末尾から続ける") : label("Shared continuity only", "全ショット共通の連続性")}</h2>
         <p>{basic.mode === "EXTEND"
           ? label("The local video or its final frame is authoritative. Describe only the next one or two beats.", "ローカル動画または最終フレームを基準に、次の1〜2ビートだけを指定します。")
-          : t.directionDescription}</p>
+          : label("Location, wardrobe, capture, sound, and direction now belong to each timeline shot.", "場所・衣装・撮影・音響・追加演出は、タイムラインの各ショットで設定します。")}</p>
       </div>
-
-      {basic.mode === "T2V" && <>
-        <SelectField label={t.situation} value={situation} options={master.situations} onChange={setSituation} />
-        <Field label={t.customSituation}><input value={situation} onChange={(event) => setSituation(event.target.value)} placeholder={t.customSituationPlaceholder} /></Field>
-        <div className="section-label"><Shirt size={14} /> {t.wardrobe}</div>
-        <SelectField label={t.startingClothing} value={clothing} options={master.clothings} onChange={setClothing} />
-      </>}
 
       {basic.mode === "I2V" && <>
         <div className="section-label"><Image size={14} /> {label("Local source image", "ローカル参照画像")}</div>
@@ -122,32 +102,12 @@ export function SelectorsPanel() {
       </>}
 
       {basic.mode === "T2V" && <>
-        <div className="section-label"><Camera size={14} /> {t.captureSetup}</div>
-        <SelectField label={t.cameraDevice} value={basic.captureDevice} options={master.captureDevices} onChange={(captureDevice) => setBasic({ captureDevice })} />
-        <label className="switch-row capture-switch"><span>{label("Convert optional numeric camera hints", "数値カメラ指定を視覚表現へ変換")}</span><input type="checkbox" checked={basic.useNumericCameraHints} onChange={(event) => setBasic({ useNumericCameraHints: event.target.checked })}/></label>
-        {basic.useNumericCameraHints && <>
-          <SelectField label={label("Optional lens-look hint", "補助的なレンズ表現")} value={basic.focalLength} options={master.focalLengths} onChange={(focalLength) => setBasic({ focalLength })}/>
-          <SelectField label={label("Optional framing-distance hint", "補助的な距離・構図表現")} value={basic.subjectDistance} options={master.subjectDistances} onChange={(subjectDistance) => setBasic({ subjectDistance })}/>
-        </>}
-        <label className="switch-row capture-switch"><span>{label("Recommend Reference Video for precise camera work", "正確なカメラワークにはReference Videoを推奨")}</span><input type="checkbox" checked={basic.includeReferenceVideoNote} onChange={(event) => setBasic({ includeReferenceVideoNote: event.target.checked })}/></label>
-        <label className="switch-row capture-switch"><span>{t.naturalHandheld}</span><input type="checkbox" checked={basic.handheldShake} onChange={(event) => setBasic({ handheldShake: event.target.checked })}/></label>
-        {basic.handheldShake && <SelectField label={t.shakeStyle} value={basic.handheldStyle} options={master.handheldStyles} onChange={(handheldStyle) => setBasic({ handheldStyle })}/>} 
         <div className="section-label"><ShieldCheck size={14} /> {label("Continuity locks", "連続性・破綻防止")}</div>
         <div className="continuity-grid">{([
-          ["preserveIdentity", "Identity", "人物同一性"], ["preserveWardrobe", "Wardrobe", "衣装"], ["stabilizeAnatomy", "Anatomy / hands", "人体・手指"],
-          ["stabilizeBackground", "Background", "背景"], ["preserveLighting", "Lighting", "照明"], ["preventCameraTeleport", "Camera path", "カメラ軌道"], ["continuousTake", "No unintended cuts", "意図しないカット禁止"],
+          ["preserveIdentity", "Identity across shots", "ショット間の人物同一性"], ["preserveWardrobe", "Wardrobe within each shot", "各ショット内の衣装維持"], ["stabilizeAnatomy", "Anatomy / hands", "人体・手指"],
+          ["stabilizeBackground", "Selected location within each shot", "各ショット内の場所維持"], ["preserveLighting", "Lighting continuity", "照明の連続性"], ["preventCameraTeleport", "Camera path", "カメラ軌道"], ["continuousTake", "No unintended cuts", "意図しないカット禁止"],
         ] as const).map(([key, eng, jap]) => <label className="check-row" key={key}><input type="checkbox" checked={basic[key]} onChange={(event) => setBasic({ [key]: event.target.checked })}/><span>{label(eng, jap)}</span></label>)}</div>
       </>}
-
-      <div className="section-label"><AudioLines size={14} /> {t.soundDesign}</div>
-      <SelectField label={t.soundPreset} value={soundscape} options={master.soundPresets} onChange={setSoundscape}/>
-      <Field label={t.customSoundscape}><textarea rows={3} value={soundscape} onChange={(event) => setSoundscape(event.target.value)}/></Field>
-      <SelectField label={t.music} value={music} options={master.musicOptions} onChange={setMusic}/>
-
-      <Field label={basic.mode === "EXTEND" ? label("Additional continuation direction", "追加の延長指示") : basic.mode === "I2V" ? label("Additional motion direction", "追加モーション指示") : t.globalNotes}
-        hint={basic.mode === "T2V" ? t.notesHint : label("This refines motion only and cannot override the source locks.", "参照元の維持ロックより下位のモーション指示として追加します。") }>
-        <textarea rows={4} value={customNotes} onChange={(event) => setCustomNotes(event.target.value)} placeholder={t.notesPlaceholder}/>
-      </Field>
     </aside>
   );
 }

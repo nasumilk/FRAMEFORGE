@@ -107,8 +107,15 @@ const sound = (state: PromptSnapshot, japanese: boolean) => {
   const noDialogue = japanese
     ? "指定された台詞以外の言葉や会話を追加しない。台詞がない区間は呼吸、息をのむ声、ため息、非言語の声だけにする。"
     : "Do not add spoken words or dialogue beyond the exact timeline dialogue. Where no line is specified, use only breathing, gasps, sighs, and nonverbal vocalization.";
-  return [clean(state.basic.extendSoundContinuity), clean(state.soundscape), dialogue, noDialogue].filter(Boolean).join(" ");
+  const timelineSound = state.events.length
+    ? [...state.events].sort((a, b) => a.start - b.start).slice(0, 2).map((event) => `[${time(event.start)}–${time(event.end)}${japanese ? "秒" : "s"}] ${clean(event.soundscape || state.soundscape)}`).join(" ")
+    : clean(state.soundscape);
+  return [clean(state.basic.extendSoundContinuity), timelineSound, dialogue, noDialogue].filter(Boolean).join(" ");
 };
+
+const music = (state: PromptSnapshot, japanese: boolean) => state.events.length
+  ? [...state.events].sort((a, b) => a.start - b.start).slice(0, 2).map((event) => `[${time(event.start)}–${time(event.end)}${japanese ? "秒" : "s"}] ${event.music || state.music || "N/A"}`).join(" ")
+  : state.music || "N/A";
 
 const englishPrompt = (state: PromptSnapshot, events: TimelineEvent[]) => {
   const { basic } = state;
@@ -123,9 +130,9 @@ const englishPrompt = (state: PromptSnapshot, events: TimelineEvent[]) => {
   const timeline = events.length
     ? events.map((event) => `[${time(event.start)}–${time(event.end)}s]: ${actionDetails(state, event, false)}.`).join("\n")
     : `[0–${time(basic.duration)}s]: Continue the source-tail motion with one natural next beat, stable anatomy, and no reset.`;
-  const notes = clean(state.customNotes);
+  const notes = events.some((event) => event.additionalDetails?.trim()) ? "" : clean(state.customNotes);
 
-  return `[References]\n${referenceLines(state, false)}\n\n[Core idea]\nContinue directly from ${source} without a visible reset or cut. Continue the previous scene seamlessly. Preserve the exact adult cast already present, facial identity, hair, body proportions, wardrobe continuity, environment, lighting, lens, color grade, spatial relationships, sound character, and motion energy from the source tail. Do not recreate or redesign the scene.${sourceSummary ? ` Source-tail state: ${sourceSummary}.` : ""}\n\n[Process]\n${camera}\n${timeline}${notes ? `\nAdditional continuation direction: ${notes}. This may refine the next motion only and must not override the source locks.` : ""}\nEnd with ${endFrame(state, events.at(-1), false)}.\n\nDo not repeat any previous action${previousAction ? `, especially: ${previousAction}` : ""}.\nDo not introduce new characters, objects, extra limbs, duplicate people, abrupt setting changes, pose snapping, instant clothing replacement, scene cuts, or impossible camera jumps.\nPreserve every identity and environmental detail from the continuation source.\n\noverall_soundscape: ${sound(state, false)}\n\nnon_diegetic_music: ${state.music || "N/A"}`;
+  return `[References]\n${referenceLines(state, false)}\n\n[Core idea]\nContinue directly from ${source} without a visible reset or cut. Continue the previous scene seamlessly. Preserve the exact adult cast already present, facial identity, hair, body proportions, wardrobe continuity, environment, lighting, lens, color grade, spatial relationships, sound character, and motion energy from the source tail. Do not recreate or redesign the scene.${sourceSummary ? ` Source-tail state: ${sourceSummary}.` : ""}\n\n[Process]\n${camera}\n${timeline}${notes ? `\nAdditional continuation direction: ${notes}. This may refine the next motion only and must not override the source locks.` : ""}\nEnd with ${endFrame(state, events.at(-1), false)}.\n\nDo not repeat any previous action${previousAction ? `, especially: ${previousAction}` : ""}.\nDo not introduce new characters, objects, extra limbs, duplicate people, abrupt setting changes, pose snapping, instant clothing replacement, scene cuts, or impossible camera jumps.\nPreserve every identity and environmental detail from the continuation source.\n\noverall_soundscape: ${sound(state, false)}\n\nnon_diegetic_music: ${music(state, false)}`;
 };
 
 const japanesePrompt = (state: PromptSnapshot, events: TimelineEvent[]) => {
@@ -141,9 +148,9 @@ const japanesePrompt = (state: PromptSnapshot, events: TimelineEvent[]) => {
   const timeline = events.length
     ? events.map((event) => `[${time(event.start)}–${time(event.end)}秒]: ${actionDetails(state, event, true)}。`).join("\n")
     : `[0–${time(basic.duration)}秒]: 延長元の末尾の動きから自然な次の1ビートだけを続け、人体を安定させ、リセットを入れない。`;
-  const notes = clean(state.customNotes);
+  const notes = events.some((event) => event.additionalDetails?.trim()) ? "" : clean(state.customNotes);
 
-  return `[参照]\n${referenceLines(state, true)}\n\n[中心アイデア]\n${source}から目に見えるリセットやカットなしで直接続ける。前のシーンをシームレスに延長する。延長元にいる成人の人物構成、顔、髪、体格、衣服の連続性、環境、照明、レンズ、色調、人物間の位置関係、音の特徴、動きの勢いを正確に維持し、作り直さない。${sourceSummary ? ` 延長元の末尾状態: ${sourceSummary}。` : ""}\n\n[展開]\n${camera}\n${timeline}${notes ? `\n追加の延長指示: ${notes}。この指示は次の動きだけを補足し、参照元の維持ロックを上書きしない。` : ""}\n最後は「${endFrame(state, events.at(-1), true)}」で終わる。\n\n前の動作を繰り返さない${previousAction ? `。特に「${previousAction}」を繰り返さない` : ""}。\n新しい人物・物体・余分な手足・人物複製・急な場所変更・ポーズの瞬間切替・衣服の瞬間置換・場面カット・不可能なカメラ移動を入れない。\n延長元の人物同一性と環境ディテールをすべて維持する。\n\noverall_soundscape: ${sound(state, true)}\n\nnon_diegetic_music: ${state.music || "N/A"}`;
+  return `[参照]\n${referenceLines(state, true)}\n\n[中心アイデア]\n${source}から目に見えるリセットやカットなしで直接続ける。前のシーンをシームレスに延長する。延長元にいる成人の人物構成、顔、髪、体格、衣服の連続性、環境、照明、レンズ、色調、人物間の位置関係、音の特徴、動きの勢いを正確に維持し、作り直さない。${sourceSummary ? ` 延長元の末尾状態: ${sourceSummary}。` : ""}\n\n[展開]\n${camera}\n${timeline}${notes ? `\n追加の延長指示: ${notes}。この指示は次の動きだけを補足し、参照元の維持ロックを上書きしない。` : ""}\n最後は「${endFrame(state, events.at(-1), true)}」で終わる。\n\n前の動作を繰り返さない${previousAction ? `。特に「${previousAction}」を繰り返さない` : ""}。\n新しい人物・物体・余分な手足・人物複製・急な場所変更・ポーズの瞬間切替・衣服の瞬間置換・場面カット・不可能なカメラ移動を入れない。\n延長元の人物同一性と環境ディテールをすべて維持する。\n\noverall_soundscape: ${sound(state, true)}\n\nnon_diegetic_music: ${music(state, true)}`;
 };
 
 export function generateExtendPrompt(state: PromptSnapshot): string {

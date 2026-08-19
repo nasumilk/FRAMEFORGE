@@ -70,6 +70,12 @@ export interface TimelineEvent {
   id: string;
   start: number;
   end: number;
+  location: string;
+  captureDevice: string;
+  handheldShake: boolean;
+  handheldStyle: string;
+  soundscape: string;
+  music: string;
   position: string;
   action: string;
   clothingState: string;

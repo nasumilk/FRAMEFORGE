@@ -147,6 +147,9 @@ export function VisualComposer({
             <p><b>POSE</b>{selected.pose}</p>
             {selected.position && <p><b>POSITION</b>{selected.position}</p>}
             <p><b>ACTION</b>{selected.action}</p>
+            <p><b>LOCATION</b>{selected.location}</p>
+            <p><b>WARDROBE</b>{selected.clothingState}</p>
+            <p><b>AUDIO</b>{selected.soundscape}</p>
             {sceneType === "male-female" && <p><b>PARTNER HANDS</b>{selected.partnerHandAction}</p>}
             <p><b>CAMERA</b>{selected.cameraPlacement}</p>
             <p><b>BODY</b>{selected.bodyOrientation}</p>
