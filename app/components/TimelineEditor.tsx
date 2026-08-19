@@ -126,8 +126,8 @@ export function TimelineEditor() {
       )}
 
       {events.length > 0 && <div className="timeline-add-actions">
-        <button className="add-event" onClick={addEvent}><Plus size={17} /> {basic.mode === "I2V" ? (language === "JAP" ? "モーション区間を追加" : "Add motion phase") : t.addEvent}</button>
-        {basic.mode !== "I2V" && <button className="add-event add-shot" onClick={addShot}><Clapperboard size={17} /> {language === "JAP" ? "新しいショット" : "Add shot"}</button>}
+        <button className="add-event" onClick={addEvent}><Plus size={17} /> {basic.mode === "EXTEND" ? (language === "JAP" ? "延長ビートを追加" : "Add continuation beat") : basic.mode === "I2V" ? (language === "JAP" ? "モーション区間を追加" : "Add motion phase") : t.addEvent}</button>
+        {basic.mode === "T2V" && <button className="add-event add-shot" onClick={addShot}><Clapperboard size={17} /> {language === "JAP" ? "新しいショット" : "Add shot"}</button>}
       </div>}
     </main>
   );

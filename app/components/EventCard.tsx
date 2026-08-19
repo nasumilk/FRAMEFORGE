@@ -2,7 +2,7 @@
 
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
-import { GripVertical, UserRound, Video, Trash2 } from "lucide-react";
+import { AudioLines, GripVertical, MapPin, UserRound, Video, Trash2 } from "lucide-react";
 import type { MasterItem, SceneType, TimelineEvent } from "../lib/types";
 import { Field, SelectField } from "./Field";
 import { usePromptStore } from "../store/usePromptStore";
@@ -25,7 +25,10 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
   const basic = usePromptStore((state) => state.basic);
   const mode = basic.mode;
   const isI2V = mode === "I2V";
-  const i2vCameraLocked = isI2V && basic.i2vCameraSource === "reference-image";
+  const isExtend = mode === "EXTEND";
+  const isContinuation = isI2V || isExtend;
+  const sourceEnvironmentLocked = isExtend || (isI2V && basic.i2vBackgroundSource === "reference-image");
+  const sourceCameraLocked = (isI2V && basic.i2vCameraSource === "reference-image") || (isExtend && basic.extendCameraSource === "continue");
   const t = UI_COPY[language];
   const partnered = sceneType !== "solo";
   const actions = sceneType === "female-female" ? master.lesbianActions : sceneType === "male-female" ? master.partnerActions : master.soloActions;
@@ -38,16 +41,40 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
     <article ref={setNodeRef} style={style} className={`event-card ${isDragging ? "dragging" : ""} ${invalid ? "invalid" : ""}`}>
       <div className="event-head">
         <button className="drag-handle" aria-label={`${t.dragEvent} ${index + 1}`} {...attributes} {...listeners}><GripVertical size={18} /></button>
-        <div><span className="event-number">{isI2V ? (language === "JAP" ? "連続モーション" : "MOTION PHASE") : `SHOT ${event.shotNumber}`} · {t.event} {String(index + 1).padStart(2, "0")}</span><strong>{event.start.toFixed(1)} – {event.end.toFixed(1)}s</strong></div>
+        <div><span className="event-number">{isExtend ? (language === "JAP" ? "延長ビート" : "CONTINUATION BEAT") : isI2V ? (language === "JAP" ? "連続モーション" : "MOTION PHASE") : `SHOT ${event.shotNumber}`} · {t.event} {String(index + 1).padStart(2, "0")}</span><strong>{event.start.toFixed(1)} – {event.end.toFixed(1)}s</strong></div>
         <button className="icon-button danger" onClick={onRemove} aria-label={`${t.deleteEvent} ${index + 1}`}><Trash2 size={16} /></button>
       </div>
 
       <div className="event-grid event-meta-grid">
-        {!isI2V && <Field label={label("Shot", "ショット")}><input type="number" min={1} max={99} value={event.shotNumber} onChange={(e) => onUpdate({ shotNumber: Math.max(1, Number(e.target.value)) })} /></Field>}
+        {!isContinuation && <Field label={label("Shot", "ショット")}><input type="number" min={1} max={99} value={event.shotNumber} onChange={(e) => onUpdate({ shotNumber: Math.max(1, Number(e.target.value)) })} /></Field>}
         <Field label={t.start}><input type="number" min={0} max={duration} step={0.1} value={event.start} onChange={(e) => onUpdate({ start: Number(e.target.value) })} /></Field>
         <Field label={t.end}><input type="number" min={0} max={duration} step={0.1} value={event.end} onChange={(e) => onUpdate({ end: Number(e.target.value) })} /></Field>
-        {!isI2V && <SelectField label={label("Transition", "トランジション")} value={event.transition} options={master.shotTransitions} onChange={(transition) => onUpdate({ transition })} />}
+        {!isContinuation && <SelectField label={label("Transition", "トランジション")} value={event.transition} options={master.shotTransitions} onChange={(transition) => onUpdate({ transition })} />}
       </div>
+
+      <section className="track-panel direction-track">
+        <div className="track-title"><MapPin size={14} /><span>{label("SHOT DIRECTION", "ショット演出")}</span></div>
+        <div className="event-grid">
+          {sourceEnvironmentLocked ? <span className="field-hint">{isExtend
+            ? label("The environment continues from the source clip. Use Additional direction only for small, continuous environmental motion; abrupt setting changes are blocked.", "環境は延長元の動画から継続します。追加演出は小さく連続した環境の動きだけに使用し、急な場所変更は行いません。")
+            : label("The environment comes from the reference image. Location controls are hidden while Preserve reference background is selected.", "環境は参照画像を使用します。「参照画像の背景を維持」が選択されているため、場所設定は非表示です。")}</span> : <>
+            <SelectField label={label("Location / situation", "場所・状況")} value={event.location} options={master.situations} onChange={(location) => onUpdate({ location })} />
+            <Field label={label("Custom location", "場所・状況を自由入力")}><input value={event.location} onChange={(e) => onUpdate({ location: e.target.value })} /></Field>
+          </>}
+          {mode === "T2V" && <>
+            <SelectField label={label("Capture device", "撮影機材")} value={event.captureDevice} options={master.captureDevices} onChange={(captureDevice) => onUpdate({ captureDevice })} />
+            <label className="switch-row capture-switch"><span>{label("Natural handheld shake", "自然な手振れ")}</span><input type="checkbox" disabled={event.cameraMotion === "locked-off static"} checked={event.cameraMotion === "locked-off static" ? false : event.handheldShake} onChange={(e) => onUpdate({ handheldShake: e.target.checked })} /></label>
+            {event.handheldShake && event.cameraMotion !== "locked-off static" && <SelectField label={label("Handheld character", "手振れの特徴")} value={event.handheldStyle} options={master.handheldStyles} onChange={(handheldStyle) => onUpdate({ handheldStyle })} />}
+          </>}
+          <Field label={t.additionalDirection} hint={label("Applies only to this shot or continuation beat.", "このショット／延長ビートだけに適用されます。")}><input value={event.additionalDetails} onChange={(e) => onUpdate({ additionalDetails: e.target.value })} placeholder={t.directionPlaceholder} /></Field>
+        </div>
+        <div className="track-title"><AudioLines size={14} /><span>{label("SHOT AUDIO", "ショット音響")}</span></div>
+        <div className="event-grid">
+          <SelectField label={label("Sound preset", "サウンドプリセット")} value={event.soundscape} options={master.soundPresets} onChange={(soundscape) => onUpdate({ soundscape })} />
+          <Field label={label("Custom soundscape", "サウンドを自由入力")}><textarea rows={3} value={event.soundscape} onChange={(e) => onUpdate({ soundscape: e.target.value })} /></Field>
+          <SelectField label={label("Music", "音楽")} value={event.music} options={master.musicOptions} onChange={(music) => onUpdate({ music })} />
+        </div>
+      </section>
 
       <section className="track-panel subject-track">
         <div className="track-title"><UserRound size={14} /><span>{label("SUBJECT TRACK", "被写体トラック")}</span></div>
@@ -78,9 +105,11 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
         </div>
       </section>
 
-      {i2vCameraLocked ? <section className="track-panel camera-track">
+      {sourceCameraLocked ? <section className="track-panel camera-track">
         <div className="track-title"><Video size={14} /><span>{label("CAMERA LOCK", "カメラ固定")}</span></div>
-        <span className="field-hint">{label("The first frame supplies camera position, lens perspective, crop, focus look, and composition. Camera controls are hidden because Preserve reference composition is selected.", "参照画像のカメラ位置・レンズ感・クロップ・フォーカス表現・構図をそのまま使用します。「参照画像の構図を維持」が選択されているため、カメラ設定は非表示です。")}</span>
+        <span className="field-hint">{isExtend
+          ? label("The source clip supplies the camera path, speed, amplitude, lens perspective, and composition. Controls are hidden because Continue exact source movement is selected.", "延長元のカメラ軌道・速度・振幅・レンズ感・構図をそのまま継続します。「延長元の動きを継続」が選択されているため、カメラ設定は非表示です。")
+          : label("The first frame supplies camera position, lens perspective, crop, focus look, and composition. Camera controls are hidden because Preserve reference composition is selected.", "参照画像のカメラ位置・レンズ感・クロップ・フォーカス表現・構図をそのまま使用します。「参照画像の構図を維持」が選択されているため、カメラ設定は非表示です。")}</span>
       </section> : <section className="track-panel camera-track">
         <div className="track-title"><Video size={14} /><span>{label("CAMERA TRACK", "カメラトラック")}</span></div>
         <div className="event-grid">
@@ -111,7 +140,6 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
         partnerHandAction: "both hands firmly supporting the adult woman's hips",
       })}>{label("Apply front-camera rear-entry setup", "正面カメラ後背位セットを適用")}</button>}
 
-      <Field label={t.additionalDirection}><input value={event.additionalDetails} onChange={(e) => onUpdate({ additionalDetails: e.target.value })} placeholder={t.directionPlaceholder} /></Field>
     </article>
   );
 }

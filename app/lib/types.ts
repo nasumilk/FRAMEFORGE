@@ -1,9 +1,13 @@
-export type Mode = "T2V" | "I2V" | "FLF" | "S2V";
+export type Mode = "T2V" | "I2V" | "EXTEND";
 export type UiLanguage = "ENG" | "JAP";
 export type SceneType = "solo" | "male-female" | "female-female";
 export type I2VStartSource = "reference-image" | "prompt";
 export type I2VMotionIntensity = "subtle" | "moderate" | "strong";
 export type I2VTransitionTiming = "slow" | "balanced" | "fast";
+export type ExtendMethod = "video-reference" | "last-frame" | "motion-context";
+export type ExtendChangePolicy = "preserve" | "transition";
+export type ExtendCameraSource = "continue" | "prompt";
+export type ExtendPromptLanguage = "english" | "japanese";
 
 export type AgeValue =
   | { kind: "exact"; value: number }
@@ -36,19 +40,23 @@ export interface BasicSettings {
   includeReferenceVideoNote: boolean;
   handheldShake: boolean;
   handheldStyle: string;
-  model: string;
-  resolution: "512P" | "768P" | "1080P";
-  promptOptimizer: boolean;
-  fastPretreatment: boolean;
-  firstFrameImage: string;
   i2vClothingStartSource: I2VStartSource;
   i2vPoseStartSource: I2VStartSource;
   i2vBackgroundSource: I2VStartSource;
   i2vCameraSource: I2VStartSource;
   i2vMotionIntensity: I2VMotionIntensity;
   i2vTransitionTiming: I2VTransitionTiming;
-  lastFrameImage: string;
-  subjectReferenceImage: string;
+  extendMethod: ExtendMethod;
+  extendSourceSummary: string;
+  extendPreviousAction: string;
+  extendPromptLanguage: ExtendPromptLanguage;
+  extendUseIdentityImage: boolean;
+  extendUseEnvironmentImage: boolean;
+  extendClothingPolicy: ExtendChangePolicy;
+  extendPosePolicy: ExtendChangePolicy;
+  extendCameraSource: ExtendCameraSource;
+  extendEndingFrame: string;
+  extendSoundContinuity: string;
   preserveIdentity: boolean;
   preserveWardrobe: boolean;
   stabilizeAnatomy: boolean;
@@ -62,6 +70,12 @@ export interface TimelineEvent {
   id: string;
   start: number;
   end: number;
+  location: string;
+  captureDevice: string;
+  handheldShake: boolean;
+  handheldStyle: string;
+  soundscape: string;
+  music: string;
   position: string;
   action: string;
   clothingState: string;

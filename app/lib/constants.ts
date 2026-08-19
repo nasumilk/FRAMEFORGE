@@ -424,8 +424,6 @@ export const FOCAL_LENGTHS = ["18mm ultra-wide", "24mm wide-angle", "35mm natura
 export const SUBJECT_DISTANCES = ["0.3m extreme close distance", "0.6m close distance", "1.5m medium distance", "3m full-body distance", "5m or more distant view"];
 export const HANDHELD_STYLES = ["subtle micro-shake", "natural documentary shake", "pronounced handheld shake"];
 
-export const VIDEO_MODELS = ["MiniMax-Hailuo-2.3", "MiniMax-Hailuo-2.3-Fast", "MiniMax-Hailuo-02", "S2V-01"];
-export const RESOLUTIONS = ["512P", "768P", "1080P"] as const;
 export const OFFICIAL_CAMERA_COMMANDS = [
   "Truck left", "Truck right", "Pan left", "Pan right", "Push in", "Pull out",
   "Pedestal up", "Pedestal down", "Tilt up", "Tilt down", "Zoom in", "Zoom out",

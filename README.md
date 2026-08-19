@@ -20,7 +20,8 @@ This project is public because practical feedback from H3 users is extremely val
 
 ## Features
 
-- T2V, I2V, first/last-frame, and subject-reference prompt modes
+- Local-first T2V, I2V, and dedicated video-continuation prompt modes
+- EXTEND prompts for video reference, final-frame chaining, or ComfyUI Motion Context, with natural pose, position, wardrobe, camera, and sound continuation controls
 - Visual and Manual editing modes
 - Interactive 3D pose blocking with orbit, zoom, and camera placement points
 - Multi-event timeline with automatic timing

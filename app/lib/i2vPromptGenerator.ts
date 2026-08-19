@@ -96,8 +96,15 @@ const soundControl = (state: PromptSnapshot) => {
       return `At ${formatTime(event.start)}-${formatTime(event.end)}s speak exactly ${JSON.stringify(event.dialogueText.trim())} in Japanese${delivery ? ` with ${delivery}` : ""}; add no other words.`;
     }).join(" ")
     : "No spoken words or intelligible dialogue; use only breathing, gasps, sighs, and nonverbal vocalization.";
-  return `${cleanSentence(state.soundscape)}. ${dialogue}`;
+  const timelineSound = state.events.length
+    ? [...state.events].sort((a, b) => a.start - b.start).map((event) => `[${formatTime(event.start)}-${formatTime(event.end)}s] ${cleanSentence(event.soundscape || state.soundscape)}`).join(" ")
+    : cleanSentence(state.soundscape);
+  return `${timelineSound}. ${dialogue}`;
 };
+
+const musicControl = (state: PromptSnapshot) => state.events.length
+  ? [...state.events].sort((a, b) => a.start - b.start).map((event) => `[${formatTime(event.start)}-${formatTime(event.end)}s] ${event.music || state.music || "N/A"}`).join(" ")
+  : state.music || "N/A";
 
 export function generateI2VPrompt(state: PromptSnapshot): string {
   const { basic, clothing, events, situation } = state;
@@ -117,12 +124,12 @@ export function generateI2VPrompt(state: PromptSnapshot): string {
     `TARGET CONTINUATION [${formatTime(targetReached)}-${formatTime(basic.duration)}s]: Continue the achieved motion naturally without resetting identity, anatomy, clothing continuity, background geometry, or camera continuity.`,
     `MOTION LIMIT: ${motionDirection(basic.i2vMotionIntensity)}`,
     `CAMERA CONTROL: ${cameraControl(basic, firstEvent)}`,
-    `ENVIRONMENT CONTROL: ${backgroundControl(basic, situation)}`,
+    `ENVIRONMENT CONTROL: ${backgroundControl(basic, firstEvent?.location || situation)}`,
     sortedEvents.length ? `MOTION PHASE TARGETS:\n${eventTargets(sortedEvents, basic.sceneType, holdEnd)}` : "MOTION PHASE TARGET: Natural breathing, blinking, and minimal pose-preserving movement only.",
-    state.customNotes.trim() ? `ADDITIONAL MOTION DIRECTION: ${cleanSentence(state.customNotes)}. This may refine motion only and must not override the first-frame identity, wardrobe, background, or camera locks selected above.` : "",
+    !sortedEvents.some((event) => event.additionalDetails?.trim()) && state.customNotes.trim() ? `ADDITIONAL MOTION DIRECTION: ${cleanSentence(state.customNotes)}. This may refine motion only and must not override the first-frame identity, wardrobe, background, or camera locks selected above.` : "",
     "QUALITY LOCK: Maintain temporal coherence, stable hands and fingers, stable facial features, stable anatomy, and consistent texture. No morphing, flicker, warping, sudden crop, scene cut, or first-frame replacement.",
     `overall_soundscape: ${soundControl(state)}`,
-    `non_diegetic_music: ${state.music || "N/A"}`,
+    `non_diegetic_music: ${musicControl(state)}`,
   ].filter(Boolean).join("\n\n");
 }
 
@@ -133,8 +140,7 @@ export function diagnoseI2VPrompt(state: PromptSnapshot): I2VPromptDiagnostic[] 
   const prompt = generateI2VPrompt(state);
   if (prompt.length > 20000) diagnostics.push({ severity: "error", message: "I2V prompt exceeds the Mobile Studio 20,000-character request limit." });
   else if (prompt.length > 3500) diagnostics.push({ severity: "warning", message: "I2V prompt is unusually long; fewer target events usually preserve the reference image better." });
-  if (!state.basic.firstFrameImage) diagnostics.push({ severity: "warning", message: "Add a first-frame image URL before using the API JSON." });
-  if (state.basic.promptOptimizer) diagnostics.push({ severity: "info", message: "Prompt optimizer is disabled automatically in I2V so it cannot rewrite identity-preservation instructions." });
+  if (!state.events.length) diagnostics.push({ severity: "info", message: "Choose a motion phase to describe how the local source image should begin moving." });
   if (state.basic.i2vMotionIntensity === "strong") diagnostics.push({ severity: "warning", message: "Strong I2V motion increases identity, anatomy, and background drift risk." });
   if (state.basic.i2vBackgroundSource === "prompt") diagnostics.push({ severity: "warning", message: "Changing the reference background can cause the model to reconstruct the entire frame." });
   if (state.basic.i2vCameraSource === "prompt") diagnostics.push({ severity: "warning", message: "Changing the reference camera or framing increases composition and identity drift risk." });

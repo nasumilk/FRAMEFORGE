@@ -22,12 +22,14 @@ test("server-renders the Frameforge application shell", async () => {
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
 });
 
-test("ships advanced H3 controls and API export", async () => {
-  const [topBar, eventCard, generator, i2vGenerator, constants, store, promptPreview, timelineEditor, visualComposer, visualMappings, interactive3d] = await Promise.all([
+test("ships advanced local H3 controls and dedicated continuation mode", async () => {
+  const [topBar, eventCard, generator, i2vGenerator, extendGenerator, selectors, constants, store, promptPreview, timelineEditor, visualComposer, visualMappings, interactive3d] = await Promise.all([
     readFile(new URL("../app/components/TopBar.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/EventCard.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/promptGenerator.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/i2vPromptGenerator.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/extendPromptGenerator.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/SelectorsPanel.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/constants.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/store/usePromptStore.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/components/PromptPreview.tsx", import.meta.url), "utf8"),
@@ -38,16 +40,23 @@ test("ships advanced H3 controls and API export", async () => {
   ]);
   assert.match(topBar, /T2V/);
   assert.match(topBar, /I2V/);
-  assert.match(topBar, /FLF/);
-  assert.match(topBar, /S2V/);
+  assert.match(topBar, /EXTEND/);
+  assert.doesNotMatch(topBar, /FLF|S2V/);
   assert.match(eventCard, /SUBJECT TRACK/);
   assert.match(eventCard, /CAMERA TRACK/);
   assert.match(constants, /OFFICIAL_CAMERA_COMMANDS/);
   assert.match(constants, /seated M-shaped leg-spread pose/);
   assert.match(constants, /suction-cup mounted dildo/);
-  assert.match(generator, /generateApiPayload/);
+  assert.doesNotMatch(generator, /generateApiPayload/);
+  assert.doesNotMatch(promptPreview, /API JSON|generateApiPayload/);
+  assert.doesNotMatch(selectors, /firstFrameImage|lastFrameImage|subjectReferenceImage|Data URI|promptOptimizer|fastPretreatment|VIDEO_MODELS|RESOLUTIONS/);
+  assert.match(extendGenerator, /Continue directly from/);
+  assert.match(extendGenerator, /Do not repeat any previous action/);
+  assert.match(extendGenerator, /extendClothingPolicy/);
+  assert.match(extendGenerator, /extendPosePolicy/);
+  assert.match(extendGenerator, /extendCameraSource/);
   assert.match(generator, /2,000-character limit/);
-  assert.match(store, /version: 23/);
+  assert.match(store, /version: 25/);
   assert.match(generator, /consenting adults aged 18 or older/);
   assert.match(generator, /must not mirror or copy the woman's pose/);
   assert.match(generator, /Both of the male partner's hands remain visibly accounted for/);
@@ -63,7 +72,7 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(constants, /FOCAL_LENGTH_VISUAL_RESULTS/);
   assert.match(eventCard, /Camera motion \(one only\)/);
   assert.match(generator, /No push, no zoom, no dolly, no pan, no tilt, no reframing/);
-  assert.match(generator, /Optional visual look converted from numeric hints/);
+  assert.match(generator, /Capture profile for this timeline segment/);
   assert.match(generator, /performance direction/);
   assert.match(generator, /all reactions and body language must remain clearly consensual/);
   assert.match(constants, /PERFORMANCE_TONES/);
@@ -89,6 +98,15 @@ test("ships advanced H3 controls and API export", async () => {
   assert.match(constants, /very small, petite natural breasts/);
   assert.match(constants, /massive, very heavy natural breasts/);
   assert.match(eventCard, /Exact Japanese dialogue \(optional\)/);
+  assert.match(eventCard, /SHOT DIRECTION/);
+  assert.match(eventCard, /Location \/ situation/);
+  assert.match(eventCard, /Capture device/);
+  assert.match(eventCard, /SHOT AUDIO/);
+  assert.match(eventCard, /event\.soundscape/);
+  assert.match(eventCard, /event\.music/);
+  assert.doesNotMatch(selectors, /soundscape|startingClothing|captureDevice|customNotes/);
+  assert.match(generator, /event\.soundscape/);
+  assert.match(generator, /event\.music/);
   assert.match(promptPreview, /frameforge_prompt/);
   assert.match(promptPreview, /Open in H3 Studio/);
   assert.match(generator, /No spoken words or intelligible dialogue in any language/);
