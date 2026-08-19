@@ -2,7 +2,7 @@
 
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
-import { GripVertical, UserRound, Video, Trash2 } from "lucide-react";
+import { AudioLines, GripVertical, MapPin, UserRound, Video, Trash2 } from "lucide-react";
 import type { MasterItem, SceneType, TimelineEvent } from "../lib/types";
 import { Field, SelectField } from "./Field";
 import { usePromptStore } from "../store/usePromptStore";
@@ -27,6 +27,7 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
   const isI2V = mode === "I2V";
   const isExtend = mode === "EXTEND";
   const isContinuation = isI2V || isExtend;
+  const sourceEnvironmentLocked = isExtend || (isI2V && basic.i2vBackgroundSource === "reference-image");
   const sourceCameraLocked = (isI2V && basic.i2vCameraSource === "reference-image") || (isExtend && basic.extendCameraSource === "continue");
   const t = UI_COPY[language];
   const partnered = sceneType !== "solo";
@@ -50,6 +51,30 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
         <Field label={t.end}><input type="number" min={0} max={duration} step={0.1} value={event.end} onChange={(e) => onUpdate({ end: Number(e.target.value) })} /></Field>
         {!isContinuation && <SelectField label={label("Transition", "トランジション")} value={event.transition} options={master.shotTransitions} onChange={(transition) => onUpdate({ transition })} />}
       </div>
+
+      <section className="track-panel direction-track">
+        <div className="track-title"><MapPin size={14} /><span>{label("SHOT DIRECTION", "ショット演出")}</span></div>
+        <div className="event-grid">
+          {sourceEnvironmentLocked ? <span className="field-hint">{isExtend
+            ? label("The environment continues from the source clip. Use Additional direction only for small, continuous environmental motion; abrupt setting changes are blocked.", "環境は延長元の動画から継続します。追加演出は小さく連続した環境の動きだけに使用し、急な場所変更は行いません。")
+            : label("The environment comes from the reference image. Location controls are hidden while Preserve reference background is selected.", "環境は参照画像を使用します。「参照画像の背景を維持」が選択されているため、場所設定は非表示です。")}</span> : <>
+            <SelectField label={label("Location / situation", "場所・状況")} value={event.location} options={master.situations} onChange={(location) => onUpdate({ location })} />
+            <Field label={label("Custom location", "場所・状況を自由入力")}><input value={event.location} onChange={(e) => onUpdate({ location: e.target.value })} /></Field>
+          </>}
+          {mode === "T2V" && <>
+            <SelectField label={label("Capture device", "撮影機材")} value={event.captureDevice} options={master.captureDevices} onChange={(captureDevice) => onUpdate({ captureDevice })} />
+            <label className="switch-row capture-switch"><span>{label("Natural handheld shake", "自然な手振れ")}</span><input type="checkbox" disabled={event.cameraMotion === "locked-off static"} checked={event.cameraMotion === "locked-off static" ? false : event.handheldShake} onChange={(e) => onUpdate({ handheldShake: e.target.checked })} /></label>
+            {event.handheldShake && event.cameraMotion !== "locked-off static" && <SelectField label={label("Handheld character", "手振れの特徴")} value={event.handheldStyle} options={master.handheldStyles} onChange={(handheldStyle) => onUpdate({ handheldStyle })} />}
+          </>}
+          <Field label={t.additionalDirection} hint={label("Applies only to this shot or continuation beat.", "このショット／延長ビートだけに適用されます。")}><input value={event.additionalDetails} onChange={(e) => onUpdate({ additionalDetails: e.target.value })} placeholder={t.directionPlaceholder} /></Field>
+        </div>
+        <div className="track-title"><AudioLines size={14} /><span>{label("SHOT AUDIO", "ショット音響")}</span></div>
+        <div className="event-grid">
+          <SelectField label={label("Sound preset", "サウンドプリセット")} value={event.soundscape} options={master.soundPresets} onChange={(soundscape) => onUpdate({ soundscape })} />
+          <Field label={label("Custom soundscape", "サウンドを自由入力")}><textarea rows={3} value={event.soundscape} onChange={(e) => onUpdate({ soundscape: e.target.value })} /></Field>
+          <SelectField label={label("Music", "音楽")} value={event.music} options={master.musicOptions} onChange={(music) => onUpdate({ music })} />
+        </div>
+      </section>
 
       <section className="track-panel subject-track">
         <div className="track-title"><UserRound size={14} /><span>{label("SUBJECT TRACK", "被写体トラック")}</span></div>
@@ -115,7 +140,6 @@ export function EventCard({ event, index, duration, sceneType, onUpdate, onRemov
         partnerHandAction: "both hands firmly supporting the adult woman's hips",
       })}>{label("Apply front-camera rear-entry setup", "正面カメラ後背位セットを適用")}</button>}
 
-      <Field label={t.additionalDirection}><input value={event.additionalDetails} onChange={(e) => onUpdate({ additionalDetails: e.target.value })} placeholder={t.directionPlaceholder} /></Field>
     </article>
   );
 }

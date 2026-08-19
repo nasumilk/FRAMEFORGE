@@ -44,7 +44,8 @@ test("EXTEND emits a seamless local video-reference prompt with controlled state
   assert.match(prompt, /same direction, speed, amplitude/);
   assert.match(prompt, /End with a stable medium full shot by the window/);
   assert.match(prompt, /Do not repeat any previous action, especially: she has just looked down/);
-  assert.match(prompt, /Additional continuation direction: keep the motion restrained/);
+  assert.match(prompt, /one continuous motion/);
+  assert.doesNotMatch(prompt, /Additional continuation direction: keep the motion restrained/);
   assert.match(prompt, /overall_soundscape:/);
 });
 

@@ -1,5 +1,5 @@
 import type { AgeValue, BasicSettings, PromptSnapshot, SceneType, TimelineEvent } from "./types";
-import { AUTO_POSE, BUST_PROMPT_DESCRIPTIONS, CAPTURE_DEVICE_DESCRIPTIONS, FOCAL_LENGTH_VISUAL_RESULTS, SUBJECT_DISTANCE_VISUAL_RESULTS } from "./constants";
+import { AUTO_POSE, BUST_PROMPT_DESCRIPTIONS, CAPTURE_DEVICE_DESCRIPTIONS } from "./constants";
 import { normalizeT2VCamera } from "./cameraConsistency";
 import { diagnoseI2VPrompt, generateI2VPrompt } from "./i2vPromptGenerator";
 import { diagnoseExtendPrompt, generateExtendPrompt } from "./extendPromptGenerator";
@@ -49,12 +49,12 @@ export function supportedDurations(basic: Pick<BasicSettings, "mode">): number[]
   return [6, 10, 15];
 }
 
-const cameraMotionText = (event: TimelineEvent, basic: BasicSettings) => {
+const cameraMotionText = (event: TimelineEvent) => {
   if (event.cameraMotion === "locked-off static") {
     return `Locked-off static ${cleanSentence(event.shotSize)}. No push, no zoom, no dolly, no pan, no tilt, no reframing. The frame never moves`;
   }
-  const handheld = basic.handheldShake
-    ? `. Natural handheld character: ${cleanSentence(basic.handheldStyle)} with physically plausible operator drift and breathing-induced micro-movement, without synthetic jitter`
+  const handheld = event.handheldShake
+    ? `. Natural handheld character: ${cleanSentence(event.handheldStyle)} with physically plausible operator drift and breathing-induced micro-movement, without synthetic jitter`
     : ". No additional handheld shake";
   return `Camera motion: the camera ${cleanSentence(event.cameraMotion)} at ${cleanSentence(event.motionSpeed)} with ${cleanSentence(event.motionAmplitude)}${handheld}`;
 };
@@ -92,10 +92,12 @@ export function buildTimelineSegment(inputEvent: TimelineEvent, basic: BasicSett
     ? `The ${primaryWoman} is fully nude`
     : `The ${primaryWoman} wears ${cleanSentence(event.clothingState)}`;
   const details = [
+    `Location for this timeline segment: ${cleanSentence(event.location)}`,
+    `Capture profile for this timeline segment: ${cleanSentence(CAPTURE_DEVICE_DESCRIPTIONS[event.captureDevice] ?? event.captureDevice)}`,
     `Shot size and framing: ${cleanSentence(event.shotSize)}`,
     `Visual result: ${cleanSentence(event.visualResult)}`,
     `Camera angle: ${cleanSentence(event.camera)}`,
-    cameraMotionText(event, basic),
+    cameraMotionText(event),
     `Camera placement relative to the primary ${primaryWoman}: ${cleanSentence(event.cameraPlacement)}`,
     `Body orientation for the primary ${primaryWoman}: ${cleanSentence(event.bodyOrientation)}. She holds the selected pose while keeping this orientation relative to the camera`,
     `Face and upper-body orientation for the primary ${primaryWoman}: ${cleanSentence(event.upperBodyOrientation)}`,
@@ -123,9 +125,9 @@ export function buildTimelineSegment(inputEvent: TimelineEvent, basic: BasicSett
 const continuityText = (basic: BasicSettings) => {
   const rules = [
     basic.preserveIdentity && "preserve facial identity and body proportions across every frame",
-    basic.preserveWardrobe && "maintain exact wardrobe continuity",
+    basic.preserveWardrobe && "preserve the configured wardrobe state within each timeline segment and allow only explicitly selected wardrobe changes between segments",
     basic.stabilizeAnatomy && "keep hands, fingers, limbs, and anatomy stable",
-    basic.stabilizeBackground && "prevent background warping or object morphing",
+    basic.stabilizeBackground && "keep each selected location stable within its timeline segment, change locations only at explicit shot transitions, and prevent background warping or object morphing",
     basic.preserveLighting && "preserve the established lighting direction and color temperature",
     basic.preventCameraTeleport && "avoid camera teleportation and impossible perspective jumps",
     basic.continuousTake && "render as a continuous take without unintended cuts",
@@ -155,12 +157,6 @@ export function generateH3Prompt(state: PromptSnapshot): string {
     subject += ` A second consenting ${formatAge(basic.femalePartnerAge)} Japanese woman with a ${cleanSentence(basic.femalePartnerBodyType)} build and ${cleanSentence(basic.femalePartnerHair)}, with a clearly distinct identity from the first woman. The second woman's breast size and shape: ${describeBustForH3(basic.femalePartnerBustSize)}; preserve her selected relative breast volume and shape consistently without copying the primary woman's proportions.`;
   }
 
-  const device = CAPTURE_DEVICE_DESCRIPTIONS[basic.captureDevice] ?? cleanSentence(basic.captureDevice);
-  const hintText = basic.useNumericCameraHints
-    ? ` Optional visual look converted from numeric hints: ${cleanSentence(FOCAL_LENGTH_VISUAL_RESULTS[basic.focalLength] ?? basic.focalLength)}; ${cleanSentence(SUBJECT_DISTANCE_VISUAL_RESULTS[basic.subjectDistance] ?? basic.subjectDistance)}.`
-    : "";
-  const capture = `Capture profile: ${cleanSentence(device)}.${hintText}`;
-
   const shotNumbers = [...new Set(sortedEvents.map((event) => event.shotNumber || 1))];
   const shots = shotNumbers.length
     ? shotNumbers.map((shotNumber, index) => {
@@ -170,12 +166,16 @@ export function generateH3Prompt(state: PromptSnapshot): string {
     }).join("")
     : ` [0-${basic.duration}s] Medium shot. She is ${cleanSentence(clothing)} in a ${cleanSentence(situation)}. ${basic.sceneType === "female-female" ? "Two consenting adult women share a sensual intimate moment" : basic.sceneType === "male-female" ? "A consenting adult couple shares a sensual intimate moment" : "She performs a sensual solo scene"}.`;
 
-  const notes = customNotes.trim() ? ` ${cleanSentence(customNotes)}.` : "";
-  const referenceVideoNote = basic.includeReferenceVideoNote ? " For more precise camera choreography, use a Reference Video to guide camera motion." : "";
-  const integrated = `[Shot 1] ${subject} ${capture} ${continuityText(basic)} Location: ${cleanSentence(situation)}.${shots}${notes}${referenceVideoNote}`;
-  const baseSoundscape = basic.sceneType === "solo" ? soloSoundscape(soundscape) : cleanSentence(soundscape);
-  const finalSoundscape = `${baseSoundscape}. ${dialogueSoundDirection(sortedEvents)}`;
-  return `integrated_multimodal_description: ${integrated}\n\noverall_soundscape: ${finalSoundscape}\n\nnon_diegetic_music: ${music || "N/A"}`;
+  const legacyNotes = !sortedEvents.some((event) => event.additionalDetails?.trim()) && customNotes.trim() ? ` ${cleanSentence(customNotes)}.` : "";
+  const integrated = `[Shot 1] ${subject} ${continuityText(basic)}${shots}${legacyNotes}`;
+  const soundTimeline = sortedEvents.length
+    ? sortedEvents.map((event) => `[${event.start}-${event.end}s] ${basic.sceneType === "solo" ? soloSoundscape(event.soundscape || soundscape) : cleanSentence(event.soundscape || soundscape)}`).join(" ")
+    : basic.sceneType === "solo" ? soloSoundscape(soundscape) : cleanSentence(soundscape);
+  const musicTimeline = sortedEvents.length
+    ? sortedEvents.map((event) => `[${event.start}-${event.end}s] ${event.music || music || "N/A"}`).join(" ")
+    : music || "N/A";
+  const finalSoundscape = `${soundTimeline}. ${dialogueSoundDirection(sortedEvents)}`;
+  return `integrated_multimodal_description: ${integrated}\n\noverall_soundscape: ${finalSoundscape}\n\nnon_diegetic_music: ${musicTimeline}`;
 }
 
 export interface TimelineIssue {
@@ -204,7 +204,7 @@ export interface PromptDiagnostic { severity: "error" | "warning" | "info"; mess
 export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
   if (state.basic.mode === "I2V") return diagnoseI2VPrompt(state);
   if (state.basic.mode === "EXTEND") return diagnoseExtendPrompt(state);
-  const { basic, events, customNotes, soundscape } = state;
+  const { basic, events } = state;
   const diagnostics: PromptDiagnostic[] = [];
   const prompt = generateH3Prompt(state);
   if (prompt.length > 2000) diagnostics.push({ severity: "error", message: `Prompt is ${prompt.length - 2000} characters over the official 2,000-character limit.` });
@@ -225,9 +225,8 @@ export function diagnosePrompt(state: PromptSnapshot): PromptDiagnostic[] {
     if (/rear-entry/i.test(event.position) && /on all fours/i.test(event.pose) && !/partner behind|follow the selected pose/i.test(event.hipOrientation)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} rear-entry pose may need the hips directed toward the partner behind her.` });
     if (event.lactationEffect !== "no visible lactation" && !/nude|open|shifted|lingerie/i.test(event.clothingState)) diagnostics.push({ severity: "warning", message: `Event ${index + 1} enables lactation, but the selected clothing may hide the chest.` });
   });
-  if (!events.some((event) => event.dialogueText.trim()) && /dialogue|speaks?|says?|spoken words?|conversation|セリフ|会話|話す/i.test(soundscape)) diagnostics.push({ severity: "info", message: "Soundscape mentions speech, but no timeline dialogue is specified; output automatically enforces nonverbal breathing and moans only." });
-  if (basic.sceneType === "solo" && /second woman|two women|both women|partner|couple|mutual|each other|male/i.test(customNotes)) diagnostics.push({ severity: "warning", message: "Global notes may imply another person in Solo mode." });
-  if (basic.sceneType === "solo" && /male|partner|two women|both women/i.test(soundscape)) diagnostics.push({ severity: "info", message: "Partner-like audio is automatically converted to a Solo-only soundscape." });
+  if (!events.some((event) => event.dialogueText.trim()) && events.some((event) => /dialogue|speaks?|says?|spoken words?|conversation|セリフ|会話|話す/i.test(event.soundscape))) diagnostics.push({ severity: "info", message: "A shot soundscape mentions speech, but no timeline dialogue is specified; output automatically enforces nonverbal breathing and moans only." });
+  if (basic.sceneType === "solo" && events.some((event) => /male|partner|two women|both women/i.test(event.soundscape))) diagnostics.push({ severity: "info", message: "Partner-like shot audio is automatically converted to a Solo-only soundscape." });
   if (!events.length) diagnostics.push({ severity: "info", message: "Add timeline events for precise shot and focus control." });
   return diagnostics;
 }
