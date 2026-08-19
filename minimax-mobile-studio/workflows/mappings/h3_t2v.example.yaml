@@ -1,0 +1,9 @@
+workflow: h3_t2v
+template: h3_t2v.json
+inputs:
+  prompt: { node_id: "REPLACE_ME", input: "REPLACE_ME", required: true }
+  negative_prompt: { node_id: "REPLACE_ME", input: "REPLACE_ME" }
+  seed: { node_id: "REPLACE_ME", input: "REPLACE_ME" }
+  width: { node_id: "REPLACE_ME", input: "REPLACE_ME" }
+  height: { node_id: "REPLACE_ME", input: "REPLACE_ME" }
+  duration: { node_id: "REPLACE_ME", input: "REPLACE_ME" }

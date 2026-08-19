@@ -1,0 +1,25 @@
+workflow: h3_reference_image
+template: h3_reference_image.json
+required_models:
+  - directory: diffusion_models
+    filename: minimax_h3_ref2va_pruned_int8_convrot.safetensors
+    bytes: 20970379616
+lora_stack:
+  model: {node_id: "127", output: 0}
+  loader_class: LoraLoaderModelOnly
+  model_input: model
+  name_input: lora_name
+  strength_input: strength_model
+  model_output: 0
+  parameter_inputs: {}
+inputs:
+  diffusion_model: {node_id: "127", input: unet_name}
+  prompt: {node_id: "136", input: prompt, required: true}
+  image: {node_id: "137", input: image, required: true}
+  seed: {node_id: "129", input: noise_seed}
+  duration: {node_id: "132", input: value}
+  aspect_ratio: {node_id: "115", input: aspect_ratio}
+  megapixels: {node_id: "115", input: megapixels}
+  steps: {node_id: "124", input: steps}
+  fps: {node_id: "130", input: fps}
+  reference_size: {node_id: "136", input: ref_image_size}

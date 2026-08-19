@@ -6,7 +6,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://frameforge-h3-studio.nasumilk.chatgpt.site"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://frameforge.example"),
   title: "FRAMEFORGE — H3 Visual Prompt Studio",
   description: "A visual pose, camera-blocking, and timeline editor for structured MiniMax H3 video prompts.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },

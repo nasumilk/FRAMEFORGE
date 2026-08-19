@@ -1,0 +1,34 @@
+workflow: h3_t2v
+template: h3_t2v.json
+lora_stack:
+  model: {node_id: "105:6", output: 0}
+  loader_class: LoraLoaderModelOnly
+  model_input: model
+  name_input: lora_name
+  strength_input: strength_model
+  model_output: 0
+  parameter_inputs: {}
+inputs:
+  diffusion_model: {node_id: "105:6", input: unet_name}
+  prompt:
+    node_id: "105:104"
+    input: prompt
+    required: true
+  seed:
+    node_id: "105:15"
+    input: noise_seed
+  duration:
+    node_id: "105:111"
+    input: value
+  aspect_ratio:
+    node_id: "115"
+    input: aspect_ratio
+  megapixels:
+    node_id: "115"
+    input: megapixels
+  steps:
+    node_id: "105:9"
+    input: steps
+  fps:
+    node_id: "105:91"
+    input: fps

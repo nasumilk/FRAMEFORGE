@@ -16,7 +16,7 @@ This project is public because practical feedback from H3 users is extremely val
 - English or Japanese translation improvements;
 - reproducible bugs and feature proposals.
 
-[Report a bug](https://github.com/nasumilk/FRAMEFORGE/issues/new?template=bug_report.yml) · [Suggest an improvement](https://github.com/nasumilk/FRAMEFORGE/issues/new?template=feature_request.yml)
+Use the repository's **Issues** tab to report a bug or suggest an improvement.
 
 ## Features
 
@@ -31,8 +31,11 @@ This project is public because practical feedback from H3 users is extremely val
 - Live structured prompt preview and clipboard export
 - Local presets stored in browser storage
 - Fully client-side prompt generation with no required external API
+- Optional [MiniMax H3 Mobile Studio](minimax-mobile-studio/README.md) PWA for controlling a local ComfyUI instance from iPhone, iPad, or desktop
 
 FRAMEFORGE creates prompts; it does not itself run MiniMax H3 or upload prompts to a generation service.
+
+The optional `minimax-mobile-studio` subproject provides a separate, mobile-first browser interface for local generation. It supports adjustable sampling steps, model and LoRA selection, queue control, history, and completion notifications. Private media, databases, keys, hostnames, and local environment files are excluded from version control.
 
 ## Requirements
 
@@ -42,7 +45,7 @@ FRAMEFORGE creates prompts; it does not itself run MiniMax H3 or upload prompts 
 ## Run locally
 
 ```bash
-git clone https://github.com/nasumilk/FRAMEFORGE.git
+git clone https://github.com/your-account/FRAMEFORGE.git
 cd FRAMEFORGE
 npm install
 npm run dev
@@ -99,7 +102,7 @@ FRAMEFORGEは、MiniMax H3向けの動画プロンプトを視覚的に組み立
 ### ローカル起動
 
 ```bash
-git clone https://github.com/nasumilk/FRAMEFORGE.git
+git clone https://github.com/your-account/FRAMEFORGE.git
 cd FRAMEFORGE
 npm install
 npm run dev

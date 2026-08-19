@@ -1,0 +1,15 @@
+frontend/node_modules/
+frontend/.next/
+backend/.venv/
+backend/__pycache__/
+backend/.pytest_cache/
+**/__pycache__/
+data/database/*.db*
+data/uploads/*
+data/outputs/*
+data/thumbnails/*
+data/temp/*
+data/push/*
+!data/**/.gitkeep
+.env
+*.log
