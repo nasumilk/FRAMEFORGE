@@ -1,0 +1,24 @@
+# Copy this lora_stack block into a workflow mapping when its graph exposes
+# both MODEL and CLIP. Existing H3 graphs use LoraLoaderModelOnly instead.
+workflow: example_dual_lora
+template: example_dual_lora.json
+lora_stack:
+  model: {node_id: "MODEL_NODE", output: 0}
+  clip: {node_id: "CLIP_NODE", output: 0}
+  loader_class: LoraLoader
+  model_input: model
+  clip_input: clip
+  name_input: lora_name
+  strength_input: strength_model
+  model_output: 0
+  clip_output: 1
+  parameter_inputs:
+    strength_clip:
+      input: strength_clip
+      label: CLIP strength
+      type: number
+      default: 1.0
+      min: -2.0
+      max: 2.0
+      step: 0.05
+inputs: {}

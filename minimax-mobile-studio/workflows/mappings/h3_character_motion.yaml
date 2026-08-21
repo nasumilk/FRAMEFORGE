@@ -1,0 +1,38 @@
+workflow: h3_character_motion
+template: h3_character_motion.json
+required_models:
+  - directory: diffusion_models
+    filename: minimax_h3_ref2va_pruned_int8_convrot.safetensors
+    bytes: 20970379616
+lora_stack:
+  model: {node_id: "127", output: 0}
+  loader_class: LoraLoaderModelOnly
+  model_input: model
+  name_input: lora_name
+  strength_input: strength_model
+  model_output: 0
+  parameter_inputs: {}
+reference_media:
+  target_node_id: "136"
+  images_value: character_images
+  max_images: 9
+  image_loader_class: LoadImage
+  image_loader_input: image
+  image_target_prefix: ref_images.ref_image_
+  video_value: motion_video
+  video_loader_class: LoadVideo
+  video_loader_input: file
+  video_components_class: GetVideoComponents
+  video_components_input: video
+  video_target_input: ref_videos.ref_video_0
+  audio_target_input: ref_video_audios.ref_video_audio_0
+inputs:
+  diffusion_model: {node_id: "127", input: unet_name}
+  prompt: {node_id: "136", input: prompt, required: true}
+  seed: {node_id: "129", input: noise_seed}
+  duration: {node_id: "132", input: value}
+  aspect_ratio: {node_id: "115", input: aspect_ratio}
+  megapixels: {node_id: "115", input: megapixels}
+  steps: {node_id: "124", input: steps}
+  fps: {node_id: "130", input: fps}
+  reference_size: {node_id: "136", input: ref_image_size}

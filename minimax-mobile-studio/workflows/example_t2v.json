@@ -1,0 +1,18 @@
+{
+  "10": {
+    "class_type": "ExampleTextNode",
+    "inputs": {
+      "text": "",
+      "negative": ""
+    }
+  },
+  "20": {
+    "class_type": "ExampleSamplerNode",
+    "inputs": {
+      "seed": 0,
+      "width": 1280,
+      "height": 720,
+      "duration": 6
+    }
+  }
+}

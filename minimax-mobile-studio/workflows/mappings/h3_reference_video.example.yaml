@@ -1,0 +1,6 @@
+workflow: h3_reference_video
+template: h3_reference_video.json
+inputs:
+  prompt: { node_id: "REPLACE_ME", input: "REPLACE_ME", required: true }
+  video: { node_id: "REPLACE_ME", input: "REPLACE_ME", required: true }
+  seed: { node_id: "REPLACE_ME", input: "REPLACE_ME" }

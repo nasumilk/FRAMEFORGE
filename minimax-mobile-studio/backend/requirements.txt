@@ -1,0 +1,11 @@
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+httpx==0.28.1
+websockets==15.0.1
+SQLAlchemy==2.0.43
+pydantic==2.11.7
+python-multipart==0.0.20
+PyYAML==6.0.2
+pytest==8.4.1
+pytest-asyncio==1.1.0
+pywebpush==2.1.1

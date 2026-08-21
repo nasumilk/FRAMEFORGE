@@ -1,0 +1,6 @@
+workflow: h3_reference_image
+template: h3_reference_image.json
+inputs:
+  prompt: { node_id: "REPLACE_ME", input: "REPLACE_ME", required: true }
+  image: { node_id: "REPLACE_ME", input: "REPLACE_ME", required: true }
+  seed: { node_id: "REPLACE_ME", input: "REPLACE_ME" }
